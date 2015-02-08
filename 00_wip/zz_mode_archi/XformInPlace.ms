@@ -1,0 +1,130 @@
+-- RESET IN PLACE
+-- !!: pour la duplication de la spine il faut placer les helper de la spine et les os avant la line dans l'array de selection et les controlleur de la spline aprés la line
+
+
+rollout XformRlt "Xform in place"
+(
+	-- backup de la rotation
+	local s
+	local bakRot
+
+	-- backup de la position
+	local bakPos
+
+	button disposeBT "dispose"
+	radiobuttons upAxisRB labels: #("x","y","z") default: 3
+	
+	button cancelBT "cancel"
+	button applyBT "reset xform"
+	
+	fn upDateUpAxisFN =
+	(
+		try
+		(
+			/*
+			s = $
+			-- 			backup
+			bakRot = s.rotation
+			bakPos = s.position
+			*/
+			case upAxisRB.state of
+			(
+				1: (
+					s.rotation = eulerAngles 0 90 0
+					s.position = [0,0,0]
+				)
+				2: (
+					s.rotation = eulerAngles -90 0 0
+					s.position = [0,0,0]
+				)
+				3: (
+					s.rotation = eulerAngles 0 0 0
+					s.position = [0,0,0]
+				)
+			)
+		)catch(print "error upDateUpAxisFN ")
+	)
+	
+	fn uiStateOne =
+	(
+		upAxisRB.enabled = false
+		cancelBT.enabled = false
+		applyBT.enabled = false
+		disposeBT.enabled = true
+	)
+	
+	fn uiStateTwo =
+	(
+		upAxisRB.enabled = true
+		cancelBT.enabled = true
+		applyBT.enabled = true
+		disposeBT.enabled = false
+	)
+	
+	
+	on XformRlt open do uiStateOne ()
+	
+	-- placement en zero
+	on disposeBT pressed do 
+	(
+		
+		try
+		(
+		s = $
+-- 			backup
+		bakRot = s.rotation 
+		bakPos = s.position
+		
+		upDateUpAxisFN ()
+-- 		s.rotation = eulerAngles 0 0 0
+-- 		s.position = [0,0,0]
+			
+		uiStatetwo ()
+			
+		)catch(print "error selection")
+		
+	)
+	
+	
+	on upAxisRB changed state do upDateUpAxisFN ()
+	
+	on cancelBT pressed do
+	(
+		-- application de la rotation 
+		s.rotation = bakRot
+
+		-- application de la position
+		s.position = bakPos
+				uiStateOne()
+	)
+	
+	
+	
+	on applyBT pressed do
+	(
+		-- reset x forme
+		resetxform s
+
+		-- application de la rotation 
+		case upAxisRB.state of
+		(
+			1: s.rotation = bakRot + ((eulerAngles 0 90 0) as quat)
+			2:	s.rotation = bakRot + ((eulerAngles -90 0 0) as quat)
+			3:	s.rotation = bakRot 
+		)
+		
+
+		-- application de la position
+		s.position = bakPos
+		uiStateOne()
+	)
+)
+createdialog XformRlt
+
+
+
+/*
+$.rotation = eulerangles -90 0 0
+$.rotation = eulerangles 0 90 0
+$.rotation = eulerangles 0 0 0
+*/
