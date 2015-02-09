@@ -1,3 +1,7 @@
+-- instances
+pointTemp = box  length: 5 width: 5 height: 80
+
+
 lineSel = $
 
 splineSelNum = numSplines lineSel
@@ -9,7 +13,7 @@ splineSegNumAr = for i = 1 to splineSelNum collect (numKnots lineSel i ) - 1
 numKnotsAr = for i = 1 to splineSelNum collect (numKnots lineSel i )
 
 -- pointTemp = point size: 20 cross: true box: false axis_tripod: false
-pointTemp = box  length: 5 width: 5 height: 80
+
 
 for i = 1 to splineSelNum do
 (
