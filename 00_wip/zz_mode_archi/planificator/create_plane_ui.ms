@@ -1,12 +1,13 @@
 /*
 maj:
-re open the selected folder
+xre open the selected folder
 display only jpg name
 add scaler on new plan
-make plane backface display
+x make plane backface display
 move plane on plan layer
-save last folder as global varand load it on reopen
-select plane after creation
+x save last folder as ini file
+xselect plane after creation
+
 function to extract part of a plan
 	- detach poly
 	- copy uvwap
@@ -18,7 +19,7 @@ function to extract part of a plan
 rollout createPlaneRLT "create plane"
 (
 	local openFileName
-	local root = "J:\\_svn"
+	local root = "C:\\"
 	local jpgList = #()
 	local jpgSel
 	
@@ -36,14 +37,14 @@ rollout createPlaneRLT "create plane"
 		jpgDir = getFilenamePath  oneJpg
 		jpgListTmp = getFiles (jpgDir + "*.jpg")
 		return jpgListTmp
-		
 	)
 	
 -- 	create plane and add plan material
 	fn createMappedPlane oneJpg = 
 	(
 	-- 	create plane
-		tmpPlane = Plane length:1000 width:800 pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ((filenameFromPath oneJpg) + "_plane")
+		tmpPlane = Plane length:1000 width:800 pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ((filenameFromPath oneJpg) + "_plane") \
+		backfacecull: on renderable: off
 	-- 	createMap
 		jpgMap = Bitmaptexture fileName: oneJpg
 	-- 	create material
@@ -70,7 +71,7 @@ rollout createPlaneRLT "create plane"
 -- 	rename plane and add plane material
 	fn reMapPlane onePlane oneJpg= 
 	( 
-		onePlane.name = (filenameFromPath oneJpg)
+		onePlane.name = (filenameFromPath oneJpg) 
 		
 		jpgMap = Bitmaptexture fileName: oneJpg
 	-- 	create material
@@ -105,9 +106,12 @@ rollout createPlaneRLT "create plane"
 	on searchBt pressed do
 	(
 		openFileName = getOpenFileName caption: "test" filename:root types: "jpg(*.jpg)|*.jpg|All Files|*.*"
-		pathToSearchET.text = openFileName
+		
 		if openFileName != undefined then
 		(
+			root = getFilenamePath openFileName
+			
+			pathToSearchET.text = root
 			jpgList = returnJpgList openFileName
 			jpgListBox.items = jpgList
 		)
@@ -151,15 +155,26 @@ rollout createPlaneRLT "create plane"
 	
 	on createPlaneRLT open do
 	(
-		print "opening"
+		-- load ini file
+		rootIni = getINISetting "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\scriptMode.ini" "planCreator" "jpgPath"
+		if rootIni != undefined and rootIni != "C:\\" do 
+		(
+			root = rootIni
+			
+			pathToSearchET.text = root
+			jpgList = getFiles (root + "*.jpg")
+			jpgListBox.items = jpgList
+			
+		)
 	)
 	
 	on createPlaneRLT close do
 	(
-		print "closing"
+		-- maj ini file
+		root = setINISetting "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\scriptMode.ini" "planCreator" "jpgPath" root
+		print "maj ini done"
 	)
 )
-createDialog createPlaneRLT width: 500
-
+createDialog createPlaneRLT width: 500 #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 
 

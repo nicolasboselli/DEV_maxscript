@@ -1,7 +1,7 @@
 
 
 
-fn extractFacesFN outVal shellVal objSel =
+fn extractFacesFN outVal shellVal objSel delFace=
 (
 	/*
 	param: 
@@ -12,7 +12,7 @@ fn extractFacesFN outVal shellVal objSel =
 	
 	newName = uniqueName( objSel[1].name + "_part")
 	-- detach faces
-	polyop.detachFaces objSel[1] #selection delete: false asNode: true name: newName
+	polyop.detachFaces objSel[1] #selection delete: delFace asNode: true name: newName
 
 
 	-- outline faces of new object
@@ -47,7 +47,14 @@ rollout extractFacesRLT "extract faces"
 (
 	local modeScriptFolder = getFilenamePath  (getThisScriptFilename() )
 	
-	group "extraction"
+	group "copy options:"
+	(
+		checkbox delOriCB "delete original face"
+		checkbox copyUvCB "copy UVWMap"
+	)
+	
+	
+	group "on extraction:"
 	(
 		spinner outSp "outline size" range: [-1000, 1000, 0]
 		spinner shellSp "shell size"  range: [-1000, 1000, 0]
@@ -60,7 +67,7 @@ rollout extractFacesRLT "extract faces"
 		sel = $selection as array
 		if sel.count == 1 do
 		(
-			extractFacesFN outSp.value shellSp.value sel 
+			extractFacesFN outSp.value shellSp.value sel delOriCB.state
 		)
 	)
 	

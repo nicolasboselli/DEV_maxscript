@@ -3,7 +3,7 @@ splineSel = $selection as array
 
 boxRef = box length: 5 width: 5 height: 100 name: "poteau"
 
-for o in splineSel do
+for o in splineSel doG
 (
 	numSpline = numSplines o
 	for i = 1 to numSpline do

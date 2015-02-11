@@ -14,7 +14,7 @@
 -- faire un nettoyage propre de la face decoupée
 
 
-zincCreatorFN = openfile "G:\Program Files\Autodesk\3ds Max 2012\Scripts\zz_mode_archi\bardageCreator\zinc_creator_bounding_box_fn.ms"
+zincCreatorFN = openfile "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\bardageCreator\zinc_creator_bounding_box_fn.ms"
 execute zincCreatorFN
 
 rollout zincCreatorRLT "Zinc creator"
