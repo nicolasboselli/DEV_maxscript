@@ -46,7 +46,7 @@ pointZ2 =  point position: (pointOne.pos + (cross  (pointY.pos - pointOne.pos) (
 */
 
 --coordonnées
-
+/*
 boxRef = box length: 5 width: 5 height: 100 name: "poteau"
 
 lineSel = $
@@ -96,7 +96,7 @@ for splineNum = 1 to splineSegNumAr.count do
 		boxTemp = instance boxRef
 		boxTemp.transform = tempMatrix
 		boxTemp.position = posOnKnot
-		
+		*/
 		/*
 		-- position suivant l'orientation de la spline
 		tempMatrix = matrix3 1
@@ -108,11 +108,82 @@ for splineNum = 1 to splineSegNumAr.count do
 
 		test2 = point axis_tripod: true cross: false size: 5 transform:tempMatrix name: "test2" wirecolor: (color 0 255 0)
 		*/
-		
+		/*
 		)
 	)
 )
 
 delete boxRef
+*/
+rollout potoCornerRLT "poteaux corner"
+(
+	local boxRef = undefined
+	
+	pickbutton  poteauRefCB "ref"
+	button multiplyBT "Multiply!"
+	
+	on poteauRefCB picked obj do
+	(
+		poteauRefCB.text = obj.name
+		boxRef = getNodebyname obj.name
+	)
+	
+	on multiplyBT pressed do
+	(
+		if boxRef == undefined do 
+		(
+			boxRef = box length: 5 width: 5 height: 100 name: "poteau_base"
+		)
+			
+				
+		lineSel = $
 
+		splineSel = 1
+		splineSelNum = numSplines lineSel
+
+		splineSeg = 2
+		splineSegNumAr = for i = 1 to splineSelNum collect (numKnots lineSel i ) - 1
+
+		percentCur = 0.99
+
+		-- posOnSpline = interpBezier3D lineSel splineSel splineSeg percentCur pathParam:true
+
+		posOnSplineAr = #()
+		for splineNum = 1 to splineSegNumAr.count do 
+		(
+			for i = 1 to splineSegNumAr[splineNum] do
+			(
+				
+				posOnKnot = 	getKnotPoint lineSel splineNum i
+				
+				posOnSpline = interpBezier3D lineSel splineNum  i percentCur pathParam:true
+				
+				pointX1 = tangentBezier3D lineSel splineNum i percentCur pathParam:true
+
+				pointZ2 = [0,0,1]
+
+				pointY =cross  pointZ2  pointX1
+
+				pointZ1 = cross pointX1  pointY
+
+				pointX2 = cross  pointY  pointZ2
+					
+					
+				-- 	position parallèle à l'axe z du monde
+				tempMatrix = matrix3 1
+				tempMatrix.row1 = normalize pointX2
+				tempMatrix.row2 = normalize pointY
+				tempMatrix.row3 = normalize pointZ2
+				tempMatrix.row4 = posOnSpline
+				orthogonalize tempMatrix
+				
+				boxTemp = instance boxRef
+				boxTemp.transform = tempMatrix
+				boxTemp.position = posOnKnot
+			)
+		)
+		
+	)
+)
+createdialog potoCornerRLT
 

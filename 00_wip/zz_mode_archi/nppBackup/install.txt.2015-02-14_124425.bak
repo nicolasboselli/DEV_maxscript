@@ -1,0 +1,20 @@
+################# INSTALL.ms
+1 modif fichier ini de max pour ajouter chemin de plug in
+2 script pour installer un barre d'outil
+3 barre d'outil pour charger les scripts présent dans le debug?
+
+
+
+deroulement de l'installation.
+l'installer fait...
+ecrit le dossier de script dans le 3dsmax.ini
+ecrit un  macroscript pour lancer le launcher et reinit le chemin dans 3dsmax.ini
+	maj: prevoir l'installation d'un script de reinit dans le startup pour créé une fonction qui trouve le fichier ini des script dans l'espace user de max
+installe le launcher dans la barre de max?
+installe directement certains scripts comme macroscript (supaslice, extrude 25, gestionnaire fenetre)
+
+
+############## script pour detacher les faces avec des materiaux differents
+
+
+############## script pour créer des fenetres plus detaillées

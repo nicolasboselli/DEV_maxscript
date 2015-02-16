@@ -14,11 +14,51 @@ fn randomColorFN sel =
 	randomColor = color (random 0 255) (random 0 255) (random 0 255)
 	sel.wirecolor =  randomColor
 )
-random 0 255
+
+
+fn goutteDeauFN sel =
+(
+	polyop.bevelFaces sel #selection 3 0
+	polyop.bevelFaces sel #selection 0 -5
+	polyop.bevelFaces sel #selection  -1 0
+	polyop.bevelFaces sel #selection 0 -1
+	polyop.bevelFaces sel #selection 1 0
+	polyop.bevelFaces sel #selection 0 -5
+	polyop.bevelFaces sel #selection -3 0
+)
+
+fn debordFN sel = 
+(
+	polyop.bevelFaces sel #selection 3 0
+	polyop.bevelFaces sel #selection 0 -10
+	polyop.bevelFaces sel #selection  -3 0
+)
+
+fn randomWireFN =
+(
+	for mat in sceneMaterials do 
+	(
+		randomWire = color (random 0 255) (random 0 255) (random 0 255) 
+		for o in $* do 
+		(
+			if (superclassof o == GeometryClass) do 
+			(
+				if  o.material == mat do
+				(
+					o.wirecolor = randomWire
+				)
+			)
+		)
+	)
+)
+
 rollout miscRLT "misc"
 (
 	button getInstBT "get instances"
 	button randColBT "random color"
+	button goutteBT "goutte d'eau"
+	button debordBT "debord balcon"
+	button randomWireBT "random wirecolor"
 	
 	on getInstBT pressed do
 	(
@@ -39,5 +79,9 @@ rollout miscRLT "misc"
 		)
 		
 	)
+	
+	on goutteBT pressed do goutteDeauFN $	
+	on debordBT pressed do debordFN $
+	on randomWireBT pressed do randomWireFN()
 )
 createDialog miscRLT

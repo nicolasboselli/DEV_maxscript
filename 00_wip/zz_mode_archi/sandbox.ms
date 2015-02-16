@@ -34,3 +34,28 @@ else
 	appui = sceneMaterials["appui"]
 )
 newNode.material = appui
+
+fn makeFloorFN sel =
+(
+	-- add editpoly
+	myEditPoly = Edit_Poly()
+	addmodifier sel myEditPoly
+	convertto sel editable_poly
+
+	-- outline 15 cm
+	polyop.setFaceSelection  sel #all
+	sel.outlineAmount = -15
+	sel.EditablePoly.Outline ()
+
+	-- shell 10cm
+	myShell = Shell innerAmount:10 outerAmount:10
+	addmodifier sel myShell
+
+	-- convert to poly
+	convertto sel editable_poly
+
+	-- material "interieur"G
+	sel.material = sceneMaterials["interieur"]
+)
+
+makeFloorFN $

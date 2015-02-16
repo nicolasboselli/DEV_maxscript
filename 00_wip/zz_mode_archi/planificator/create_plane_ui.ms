@@ -32,6 +32,22 @@ rollout createPlaneRLT "create plane"
 	button changeMapBT "change map"
 	
 	
+	fn createPlansLayerFN =
+	(
+		local LM = layermanager
+		local planLayer
+		if (LM.getLayerFromName "plans") == undefined then
+		(
+			planLayer = LM.newLayerFromName "plans"
+		)
+		else
+		(
+			planLayer = LM.getLayerFromName "plans"
+		)
+		return planLayer
+	)
+	
+	
 	fn returnJpgList oneJpg =
 	(
 		jpgDir = getFilenamePath  oneJpg
@@ -124,6 +140,9 @@ rollout createPlaneRLT "create plane"
 		mapPlane = createMappedPlane jpgSel
 		ajustUVWmap mapPlane
 		
+		lay = createPlansLayerFN()
+		lay.addnode mapPlane
+		
 		select mapPlane
 	)
 	
@@ -156,7 +175,7 @@ rollout createPlaneRLT "create plane"
 	on createPlaneRLT open do
 	(
 		-- load ini file
-		rootIni = getINISetting "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\scriptMode.ini" "planCreator" "jpgPath"
+		rootIni = getINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath"
 		if rootIni != undefined and rootIni != "C:\\" do 
 		(
 			root = rootIni
@@ -171,7 +190,7 @@ rollout createPlaneRLT "create plane"
 	on createPlaneRLT close do
 	(
 		-- maj ini file
-		root = setINISetting "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\scriptMode.ini" "planCreator" "jpgPath" root
+		root = setINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath" root
 		print "maj ini done"
 	)
 )

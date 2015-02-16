@@ -22,6 +22,9 @@ fn checkIniFileFn =
 )
 
 
+
+
+
 rollout mxsLaunchRLT "maxscript launcher"
 (
 	local var = checkIniFileFn()
@@ -29,20 +32,16 @@ rollout mxsLaunchRLT "maxscript launcher"
 	local root = modeArchiScriptRoot
 -- 	local scriptArray = #()
 	local scriptArray = #( "planificator\create_Plane_UI.ms", \
-		"XformInPlace.ms", \
 		"extractFaces2.ms", \
 		"extractFaces.ms", \
 		"plan_opacity.ms", \
 		"rotater.ms", \
 		"UvwSquare.ms", \
-		"misc.ms", \
-		"Rembarde_copieur\RembardeCopierUI.ms" , \
-		"Rembarde_copieur\PoteauCreatorCoin.ms" , \
-		"edgeToSweep.ms" , \
+		"\Rembarde_copieur\RembardeCopierUI.ms", \
 		"Plan_resizer.ms")
 	
 	
-	
+
 	listbox scriptArrayLB "scripts list:" items: scriptArray
 	
 	button launchBT "launch" across: 2

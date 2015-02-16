@@ -72,8 +72,8 @@ local edgesToShape = undefined
 	(
 		repereBox = createBBoxFN ()
 		
-		depart = point name: ( uniquename "dep_decoupe_") rotation: repereBox.rotation position: repereBox.center box: on wirecolor: green
-		fin  = point name: ( uniquename "fin_decoupe_") rotation: repereBox.rotation position: repereBox.center parent: depart  box: off wirecolor: green
+		depart = point name: ( uniquename "dep_decoupe_") rotation: repereBox.rotation position: repereBox.center box: on
+		fin  = point name: ( uniquename "fin_decoupe_") rotation: repereBox.rotation position: repereBox.center parent: depart
 
 		moveVal = case dirRB.state of (
 		1: [50,0,0]

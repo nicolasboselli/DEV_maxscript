@@ -13,8 +13,8 @@
 -- afficher la bounding box en box
 -- faire un nettoyage propre de la face decoupée
 
--- zincCreatorFN = openfile "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\bardageCreator\zinc_creator_bounding_box_fn.ms"
-zincCreatorFN = openfile (modeArchiScriptRoot + "\bardageCreator\zinc_creator_bounding_box_fn.ms")
+
+zincCreatorFN = openfile "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\bardageCreator\zinc_creator_bounding_box_fn.ms"
 execute zincCreatorFN
 
 rollout zincCreatorRLT "Zinc creator"
@@ -72,8 +72,8 @@ local edgesToShape = undefined
 	(
 		repereBox = createBBoxFN ()
 		
-		depart = point name: ( uniquename "dep_decoupe_") rotation: repereBox.rotation position: repereBox.center box: on wirecolor: green
-		fin  = point name: ( uniquename "fin_decoupe_") rotation: repereBox.rotation position: repereBox.center parent: depart  box: off wirecolor: green
+		depart = point name: ( uniquename "dep_decoupe_") rotation: repereBox.rotation position: repereBox.center box: on
+		fin  = point name: ( uniquename "fin_decoupe_") rotation: repereBox.rotation position: repereBox.center parent: depart
 
 		moveVal = case dirRB.state of (
 		1: [50,0,0]

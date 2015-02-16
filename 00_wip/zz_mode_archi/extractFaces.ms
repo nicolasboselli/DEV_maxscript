@@ -13,7 +13,8 @@ fn extractFacesFN outVal shellVal objSel =
 	newName = uniqueName( objSel[1].name + "_part")
 	-- detach faces
 	polyop.detachFaces objSel[1] #selection delete: false asNode: true name: newName
-
+-- 	polyop.setVertSelection objSel[1] #none
+	subobjectLevel = 0
 
 	-- outline faces of new object
 	newNode = getnodebyname newName
