@@ -32,8 +32,6 @@
 		polyop.detachFaces $ #selection delete: false asNode: true name: newName
 		
 		newSkin = getnodebyname newName
-			
-		
 		
 		-- option: split edge by smoothing group
 		-- appliquer un shell sur le nouvel objet
