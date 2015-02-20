@@ -52,6 +52,29 @@ fn randomWireFN =
 	)
 )
 
+fn makeFloorFN sel =
+(
+	-- add editpoly
+	myEditPoly = Edit_Poly()
+	addmodifier sel myEditPoly
+	convertto sel editable_poly
+
+	-- outline 15 cm
+	polyop.setFaceSelection  sel #all
+	sel.outlineAmount = -15
+	sel.EditablePoly.Outline ()
+
+	-- shell 10cm
+	myShell = Shell innerAmount:10 outerAmount:10
+	addmodifier sel myShell
+
+	-- convert to poly
+	convertto sel editable_poly
+
+	-- material "interieur"G
+	sel.material = sceneMaterials["interieur"]
+)
+
 rollout miscRLT "misc"
 (
 	button getInstBT "get instances"
@@ -59,6 +82,7 @@ rollout miscRLT "misc"
 	button goutteBT "goutte d'eau"
 	button debordBT "debord balcon"
 	button randomWireBT "random wirecolor"
+	button makeFloorBT "make floor"
 	
 	on getInstBT pressed do
 	(
@@ -83,5 +107,6 @@ rollout miscRLT "misc"
 	on goutteBT pressed do goutteDeauFN $	
 	on debordBT pressed do debordFN $
 	on randomWireBT pressed do randomWireFN()
+	on makeFloorBT pressed do makeFloorFN $
 )
 createDialog miscRLT

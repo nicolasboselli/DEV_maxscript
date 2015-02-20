@@ -127,6 +127,7 @@ RecreateEdgeX
 	s.EditablePoly.setSelection #face selection_globale_bak
 
 	polyop.deleteFaces s selection_globale_bak
+	return fenetres_array
 	)
 
 ----------------------------------------------------------------------------------------------------------------------------------
