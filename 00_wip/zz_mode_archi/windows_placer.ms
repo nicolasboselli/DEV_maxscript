@@ -1,71 +1,9 @@
 -- filein (modeArchiScriptRoot + "bardageCreator\zinc_creator_bounding_box_fn.ms")
 
-filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
+-- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
+filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 
-/*
--- selectionner chaque element
-polyop.setFaceSelection  $ #all
-$.getselection #face
-
-test = detach_elements_selected $
-
-print test
-
-
-
--- find orientation
--- ($.rotation as quaternion).axis = faceAxis
--- ($.rotation as angleAxis).axis = faceAxis
--- $.rotation = (angleAxis 10 faceAxis)
-test = $.rotation as eulerangles
-$.rotation = test
-
-fn GetAngleFromNormal theNormal =
-(
-	local theX = normalize theNormal --this is the original vector
-	if (dot theX [0,0,1]) > 0.99999 then --if the vector is nearly parallel to Z, assume 0
-		eulerangles 0 0 0
-	else
-	(
-		local theY = normalize (cross [0,0,1] theX ) --this is the Y axis orthogonal to the Normal and Up
-		local theZ = normalize (cross theY theX) --this is the X orthogonal to Normal and Y
-		local theTM = matrix3   theX theY theZ [0,0,0] --this is the matrix3 describing the orientation of the Normal
-		print theTM
-		theTM.rotationpart as quat --return its Euler rotation 
-	)
-)
-
-
-ref = $Box077
-target = $Box078
-
-sel = polyop.getFaceSelection ref
-sel = sel as array
-theNormal = polyop.getFaceNormal ref sel[1]
-
-
-newAngle = GetAngleFromNormal theNormal
-newAngle.z = newAngle.z*-1
-target.rotation = newAngle
-target.position = [0,0,0]
-
---> (eulerAngles 0 45 0)
-
--- oriente le pivot en fonction de la bonne orientation
-
-
-$.pivot
-
-obj1 = $Box077
-obj2 = $Box078
-
-pivrot=obj1.rotation
-
-in coordsys local obj2.rotation =pivrot
-
-obj2.objectoffsetrot =pivrot
-
-*/
+/*##############################cubizator ########################"*/
 
 -- $.pivot
 
@@ -85,18 +23,20 @@ fn GetAngleFromNormal theNormal =
 )
 
 -- reset x form on selection!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+resetxform $ 
+ConvertTo $ Editable_Poly
 
 -- detacher chaque element
 polyop.setFaceSelection  $ #all
-$.getselection #face
+-- $.getselection #face
 
-sel = detach_elements_selected $
-
+selArr = detach_elements_selected $
+-- select selArr
 -- select test
 
--- sel = $selection as array
+-- selArr = $selection as array
 
-for o in sel do
+for o in selArr do
 (
 	if (polyop.getNumFaces o)>0 do
 	(
@@ -118,8 +58,8 @@ for o in sel do
 	)
 )
 
-sel = $selection as array
-for o in sel do
+-- selArr = $selection as array
+for o in selArr do
 (
 	if (polyop.getNumFaces o)>0 do
 	(	
@@ -136,13 +76,3 @@ for o in sel do
 )
 
 
--- convert to poly
--- reset x form
--- collect x,y and z max
--- generate position for cage
--- position the cage
-
-
-modFFD =  $.modifiers[#FFD_2x2x2]
-animateVertex  modFFD #all
-modFFD.Control_Point_1 = [10,0,0]

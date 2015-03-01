@@ -75,6 +75,13 @@ fn makeFloorFN sel =
 	sel.material = sceneMaterials["interieur"]
 )
 
+fn connectRingFN loopNum =
+(
+	PolyToolsSelect.ring()
+	$.connectEdgeSegments   = loopNum
+	$.connectEdges()
+)
+
 rollout miscRLT "misc"
 (
 	button getInstBT "get instances"
@@ -83,6 +90,8 @@ rollout miscRLT "misc"
 	button debordBT "debord balcon"
 	button randomWireBT "random wirecolor"
 	button makeFloorBT "make floor"
+	button connectRingBT "connect ring x1"
+	button connectRing2BT "connect ring x2"
 	
 	on getInstBT pressed do
 	(
@@ -108,5 +117,8 @@ rollout miscRLT "misc"
 	on debordBT pressed do debordFN $
 	on randomWireBT pressed do randomWireFN()
 	on makeFloorBT pressed do makeFloorFN $
+	on connectRingBT pressed do connectRingFN 1
+	on connectRing2BT pressed do connectRingFN 2
+		
 )
 createDialog miscRLT

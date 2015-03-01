@@ -13,6 +13,7 @@ maj:
 -- add root and target system selection
 -- add plan opacity
 -- separate ui and function
+-- minimize scaler size
 
 add scaler on each plan
 activate reference on demand

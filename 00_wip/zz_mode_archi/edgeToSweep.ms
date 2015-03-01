@@ -1,3 +1,8 @@
+/*
+maj
+add param: reset xform, center pivot, add extrusion, add uvwmap, add mat, setup sweep, keep spline or subobject.
+*/
+
 fn removeEdgeAndVerticesFN sel =
 (
 	sel.EditablePoly.ConvertSelectionToBorder #Edge #Vertex

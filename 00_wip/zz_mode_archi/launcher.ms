@@ -1,3 +1,11 @@
+/*
+maj: make install file with:
+	- ini near of 3dsmax.ini
+	- fonction to return script root from ini. paste in macro script or startup?
+	- command to install lancher in 3dsmax ui
+*/
+
+
 fn checkIniFileFn = 
 (
 	global modeArchiScriptRoot
@@ -39,6 +47,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 		"Rembarde_copieur\RembardeCopierUI.ms" , \
 		"Rembarde_copieur\PoteauCreatorCoin.ms" , \
 		"edgeToSweep.ms" , \
+		"bardageCreator\zinc_creatorv2.ms", \
 		"Plan_resizer.ms")
 	
 	

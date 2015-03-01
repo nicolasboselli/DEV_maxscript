@@ -1,6 +1,19 @@
 -- RESET IN PLACE
 -- !!: pour la duplication de la spine il faut placer les helper de la spine et les os avant la line dans l'array de selection et les controlleur de la spline aprés la line
-
+fn resetInPlaceFN sel=
+(
+	bakPos = sel.position
+	bakRot = sel.rotation
+	
+	sel.rotation = eulerangles 0 0 0
+	sel.position = [0,0,0]
+	
+	resetxform sel 
+	ConvertTo sel Editable_Poly
+	
+	sel.rotation = bakRot
+	sel.position = bakPos
+)
 
 rollout XformRlt "Xform in place"
 (
@@ -16,6 +29,8 @@ rollout XformRlt "Xform in place"
 	
 	button cancelBT "cancel"
 	button applyBT "reset xform"
+	
+	button xpressXformBT "Xpress Xform!"
 	
 	fn upDateUpAxisFN =
 	(
@@ -118,13 +133,14 @@ rollout XformRlt "Xform in place"
 		s.position = bakPos
 		uiStateOne()
 	)
+	
+	on xpressXformBT pressed do
+	(
+		sel = $selection as array
+		for s in sel do
+		(
+			resetInPlaceFN s
+		)
+	)
 )
 createdialog XformRlt
-
-
-
-/*
-$.rotation = eulerangles -90 0 0
-$.rotation = eulerangles 0 90 0
-$.rotation = eulerangles 0 0 0
-*/
