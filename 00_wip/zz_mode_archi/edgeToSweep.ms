@@ -13,7 +13,10 @@ fn removeEdgeAndVerticesFN sel =
 rollout edgeToShapeRLT "edge to shape"
 (
 	checkbox addSweepCB "add Sweep"
+	checkbox addExtrusionCB "add extrusion"
 	checkbox removeEdgeCB "remove edge"
+	checkbox resetXformCB "reset x form"
+	checkbox keepSelCB "keep selection"
 	button extractBT "extract"
 	
 	on extractBT pressed do
@@ -28,16 +31,30 @@ rollout edgeToShapeRLT "edge to shape"
 			-- create shape
 			newName = uniqueName (s.name + "_shape")
 			s.createShape  newName  false s
-			subobjectLevel = 0			
+			
 			newShape = getnodebyname newName
 			updateshape newShape
+			
+			-- option reset x form
+			if resetXformCB.state = true do
+			(
+				resetxform newShape 
+				
+			)
 			
 			-- option: remove edge
 			if removeEdgeCB.state == True do removeEdgeAndVerticesFN s
 			
+			if addExtrusionCB.state == true do
+			(
+				myExtrusion = Extrude ()
+				addmodifier newShape myExtrusion
+			)
+			
+			-- option: add sweep
 			if addSweepCB.state == true do
 			(
-				-- option: add sweep
+				
 				mySweep = Sweep CurrentBuiltInShape: 2 PivotAlignment:8
 				mySmooth = Smooth name: "my_Smooth" autosmooth: on
 				
@@ -50,8 +67,29 @@ rollout edgeToShapeRLT "edge to shape"
 				newSweep.modifiers[#Sweep][#Bar_Section].width = 20
 			)
 			
-			select newShape
+			-- option keep selection
+			if keepSelCB.state == true then
+			(
+				select s
+				subobjectLevel = 4	
+
+			)
+			else
+			(
+				subobjectLevel = 0		
+				select newShape
+			)
 		)
+	)
+	
+	on addSweepCB changed theState do
+	(
+		addExtrusionCB.state = false
+	)
+	
+	on addExtrusionCB changed  theState do
+	(
+		addSweepCB.state = false
 	)
 	
 	on edgeToShapeRLT open do

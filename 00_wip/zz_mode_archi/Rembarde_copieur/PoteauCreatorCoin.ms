@@ -119,13 +119,29 @@ rollout potoCornerRLT "poteaux corner"
 (
 	local boxRef = undefined
 	
-	pickbutton  poteauRefCB "ref"
+-- 	pickbutton  poteauRefCB "ref"
+	button addRefBT "ref>>"
+	edittext refNameET "ref:" readonly: true
 	button multiplyBT "Multiply!"
 	
-	on poteauRefCB picked obj do
+-- 	on poteauRefCB picked obj do
+-- 	(
+-- 		poteauRefCB.text = obj.name
+-- 		boxRef = getNodebyname obj.name
+-- 	)
+-- 	
+	on addRefBT pressed do
 	(
-		poteauRefCB.text = obj.name
-		boxRef = getNodebyname obj.name
+		sel = $selection as array
+		if sel.count == 1 then
+		(
+			boxRef = sel[1]
+			refNameET.text = boxRef.name
+		)
+		else
+		(
+			print "non conform selection"
+		)
 	)
 	
 	on multiplyBT pressed do
@@ -133,6 +149,7 @@ rollout potoCornerRLT "poteaux corner"
 		if boxRef == undefined do 
 		(
 			boxRef = box length: 5 width: 5 height: 100 name: "poteau_base"
+			refNameET.text = boxRef.name
 		)
 			
 				
@@ -147,7 +164,8 @@ rollout potoCornerRLT "poteaux corner"
 		percentCur = 0.99
 
 		-- posOnSpline = interpBezier3D lineSel splineSel splineSeg percentCur pathParam:true
-
+		copyBoxRef = copy boxRef
+		
 		posOnSplineAr = #()
 		for splineNum = 1 to splineSegNumAr.count do 
 		(
@@ -177,7 +195,7 @@ rollout potoCornerRLT "poteaux corner"
 				tempMatrix.row4 = posOnSpline
 				orthogonalize tempMatrix
 				
-				boxTemp = instance boxRef
+				boxTemp = instance copyBoxRef
 				boxTemp.transform = tempMatrix
 				boxTemp.position = posOnKnot
 			)

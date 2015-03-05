@@ -1,6 +1,6 @@
 -- instances
--- pointTemp = box  length: 3 width: 3 height: 80
-pointTemp = copy $Box489
+-- pointTemp = box  length: 3 width: 3 height: 13G5
+pointTemp = copy $Box174
 -- pointTemp = copy $post_inbt_
 
 
@@ -28,7 +28,7 @@ for i = 1 to splineSelNum do
 		
 		distTemp =  (distance startKnotPos endKnotPos)
 -- 		poteauNum =  (int (floor (distTemp / ecart))) 
-		poteauNum = 5
+		poteauNum = 9
 		
 		percentCurInc = 1.0 / poteauNum
 		percentCur= 0

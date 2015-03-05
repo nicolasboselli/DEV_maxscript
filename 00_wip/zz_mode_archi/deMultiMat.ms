@@ -52,10 +52,46 @@ for mat in sceneMaterials do
 		append  multimatArray mat
 	)
  print 	multimatArray
-	
+
 for i = 1 to multimatArray.count do
 (meditMaterials[i] = multimatArray[i])
 
 -- remove materiel
 $.material = undefined
+
+
+-- display scene material in medit material
+for i = 1 to sceneMaterials.count do
+(
+	meditMaterials[i] = sceneMaterials[i]
+)
+
+-- convert standard to vray
+vrMat = VRayMtl diffuse: meditMaterials[activeMeditSlot].diffuse name: meditMaterials[activeMeditSlot].name
+replaceinstances meditMaterials[activeMeditSlot] vrMat
+	
+test =  meditMaterials[activeMeditSlot]
+classof test
+delete test
+
+allMatAr = for mat in sceneMaterials collect mat
+
+lastMatNum = 0
+
+for i = 1 to 24 do
+(
+	if ((i + lastMatNum) <  allMatAr.count) then
+	(
+		if (classof  allMatAr[i+lastMatNum]) != vraymtl do
+		(
+			meditMaterials[i] = allMatAr[i+lastMatNum]
+		)
+	)
+	else
+	(
+		lastMatNum = 0
+		break
+	)
+)
+lastMatNum +=24
 
