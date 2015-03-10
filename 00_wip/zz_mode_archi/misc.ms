@@ -82,6 +82,13 @@ fn connectRingFN loopNum =
 	$.connectEdges()
 )
 
+fn updateSceneMaterials =
+ (
+ saveNodes #() "c:/temp.max"
+ deleteFile "c:/temp.max"
+ )
+updateSceneMaterials()
+
 rollout miscRLT "misc"
 (
 	button getInstBT "get instances"

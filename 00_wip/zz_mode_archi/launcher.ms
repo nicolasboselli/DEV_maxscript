@@ -4,7 +4,7 @@ maj: make install file with:
 	- fonction to return script root from ini. paste in macro script or startup?
 	- command to install lancher in 3dsmax ui
 */
-
+-- subrollout or roller floater that is the question
 
 fn checkIniFileFn = 
 (

@@ -1,12 +1,15 @@
 /*
 maj:
-xre open the selected folder
+
 display only jpg name
+check plan already in scene and display with "*" in the list
+add button  to open plan folder
+add button to view plan in xnview
+add button to select plan in scene
+
 add scaler on new plan
-x make plane backface display
-move plane on plan layer
-x save last folder as ini file
-xselect plane after creation
+
+
 
 function to extract part of a plan
 	- detach poly
@@ -16,6 +19,61 @@ function to extract part of a plan
 */
 
 
+
+ 
+ 
+struct planClass
+(
+	path,
+
+	fn checkinscene  =
+	(
+		local inscene = False
+		for mat in scenematerials do 
+		(
+			bitMapFile = undefined
+			try
+			(
+				bitMapFile = mat.diffuseMap.bitmap.filename
+			)
+			catch
+			(
+				bitMapFile = undefined
+			)
+			
+			if bitMapFile != undefined do
+			(
+				if bitMapFile == path do
+				(
+					inscene =  true
+					break
+				)
+			)
+		)
+		return inscene
+	),
+		
+	inscene = checkinscene(),
+	
+	fn checkname =
+	(
+		local basename = getFilenameFile path
+		if inscene == true then
+		(
+			return ("_______LOADED____" + basename )
+		)
+		else
+		(
+			return basename
+		)
+	),
+
+	name = checkname()
+	
+)
+
+
+ 
 rollout createPlaneRLT "create plane"
 (
 	local openFileName
@@ -23,14 +81,17 @@ rollout createPlaneRLT "create plane"
 	local jpgList = #()
 	local jpgSel
 	
-	label pathLab "path :" across: 3
-	edittext pathToSearchET readOnly: true
+	local lastLine = 220
+	
+	local planObjList = #()
+	
+	edittext pathToSearchET"path: "readOnly: true
 	button searchBT "..."
 	listbox jpgListBox "jpg list:"
-	button createPlaneBT "create" across:3
-	button injectMapBT "inject"
-	button changeMapBT "change map"
 	
+	button createPlaneBT "create"  pos:[ 50 , lastLine]
+	button injectMapBT "inject" pos:[150,lastLine]
+	button changeMapBT "change map" pos:[250,lastLine]
 	
 	fn createPlansLayerFN =
 	(
@@ -52,19 +113,27 @@ rollout createPlaneRLT "create plane"
 	(
 		jpgDir = getFilenamePath  oneJpg
 		jpgListTmp = getFiles (jpgDir + "*.jpg")
+
 		return jpgListTmp
+	)
+	
+	fn initPlanClass jpgList =
+	(
+		planObjList = for oneJpg in jpgList collect (planClass oneJpg)
+		print planObjList
+		return planObjList
 	)
 	
 -- 	create plane and add plan material
 	fn createMappedPlane oneJpg = 
 	(
 	-- 	create plane
-		tmpPlane = Plane length:1000 width:800 pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ((filenameFromPath oneJpg) + "_plane") \
+		tmpPlane = Plane length:1000 width:800 pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ("plane_" + (getFilenameFile oneJpg)) \
 		backfacecull: on renderable: off
 	-- 	createMap
-		jpgMap = Bitmaptexture fileName: oneJpg
+		jpgMap = Bitmaptexture fileName: oneJpg name: ("zz_map_" + (getFilenameFile oneJpg))
 	-- 	create material
-		tmpMaterial = Standardmaterial name: ((filenameFromPath oneJpg) + "mat")
+		tmpMaterial = Standardmaterial name: ("zz_plan_" + (getFilenameFile oneJpg))
 		tmpMaterial.diffuseMap = jpgMap
 		tmpMaterial.showInViewport =on
 		-- 	assign material on plane
@@ -87,11 +156,11 @@ rollout createPlaneRLT "create plane"
 -- 	rename plane and add plane material
 	fn reMapPlane onePlane oneJpg= 
 	( 
-		onePlane.name = (filenameFromPath oneJpg) 
+		onePlane.name = ("plane_" + (getFilenameFile oneJpg)) 
 		
-		jpgMap = Bitmaptexture fileName: oneJpg
+		jpgMap = Bitmaptexture fileName: oneJpg name: ("zz_map_" + (getFilenameFile oneJpg))
 	-- 	create material
-		tmpMaterial = Standardmaterial name: ((filenameFromPath oneJpg) + "mat")
+		tmpMaterial = Standardmaterial name: ("zz_plan_" +(getFilenameFile oneJpg))
 		tmpMaterial.diffuseMap = jpgMap
 		tmpMaterial.showInViewport =on
 		-- 	assign material on plane
@@ -129,19 +198,27 @@ rollout createPlaneRLT "create plane"
 			
 			pathToSearchET.text = root
 			jpgList = returnJpgList openFileName
-			jpgListBox.items = jpgList
+			planObjList = initPlanClass jpgList
+			
+			
+			jpgListBox.items = for jpg in planObjList collect jpg.name
 		)
 	)
 	
 	on createPlaneBT pressed do
 	(
-		jpgSel = jpgListBox.selected
+		intSel = jpgListBox.selection 
+		jpgSel = planObjList[intSel]
 		
-		mapPlane = createMappedPlane jpgSel
+		mapPlane = createMappedPlane jpgSel.path
 		ajustUVWmap mapPlane
 		
 		lay = createPlansLayerFN()
 		lay.addnode mapPlane
+		
+		-- update listbox
+		planObjList = initPlanClass jpgList
+		jpgListBox.items = for jpg in planObjList collect jpg.name
 		
 		select mapPlane
 	)
@@ -153,10 +230,15 @@ rollout createPlaneRLT "create plane"
 		(
 			deleteUVWmap sel[1]
 			
-			jpgSel = jpgListBox.selected
+			intSel = jpgListBox.selection 
+			jpgSel = planObjList[intSel]
 
-			mapPlane = reMapPlane sel[1] jpgSel
+			mapPlane = reMapPlane sel[1] jpgSel.path
 			ajustUVWmap mapPlane
+			
+			-- update listbox
+			planObjList = initPlanClass jpgList
+			jpgListBox.items = for jpg in planObjList collect jpg.name
 		)
 	)
 	
@@ -165,9 +247,10 @@ rollout createPlaneRLT "create plane"
 		sel = $selection as array
 		if sel.count == 1 then
 		(
-			jpgSel = jpgListBox.selected
+			intSel = jpgListBox.selection 
+			jpgSel = planObjList[intSel]
 			
-			mapPlane = reMapPlane sel[1] jpgSel
+			mapPlane = reMapPlane sel[1] jpgSel.path
 -- 			ajustUVWmap mapPlane
 		)
 	)
@@ -182,7 +265,9 @@ rollout createPlaneRLT "create plane"
 			
 			pathToSearchET.text = root
 			jpgList = getFiles (root + "*.jpg")
-			jpgListBox.items = jpgList
+			planObjList = initPlanClass jpgList
+			
+			jpgListBox.items = for jpg in planObjList collect jpg.name
 			
 		)
 	)
@@ -193,7 +278,15 @@ rollout createPlaneRLT "create plane"
 		root = setINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath" root
 		print "maj ini done"
 	)
+	
+	on createPlaneRLT resized size do
+	(
+		local sub = 30
+		jpgListBox.height = createPlaneRLT.height - 120
+		createPlaneBT.pos = [ 50, createPlaneRLT.height - sub]
+		injectMapBT.pos = [150, createPlaneRLT.height - sub]
+		changeMapBT.pos = [250, createPlaneRLT.height - sub]
+	)
 )
-createDialog createPlaneRLT width: 500 #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
-
+createDialog createPlaneRLT width: 500 style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 
