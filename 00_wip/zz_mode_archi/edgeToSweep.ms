@@ -12,10 +12,25 @@ fn removeEdgeAndVerticesFN sel =
 
 rollout edgeToShapeRLT "edge to shape"
 (
+-- 	vars
+	local extSize  = 100
+	
+-- 	ui
 	checkbox addSweepCB "add Sweep"
-	checkbox addExtrusionCB "add extrusion"
-	checkbox removeEdgeCB "remove edge"
-	checkbox resetXformCB "reset x form"
+	group "Extrusion options:"
+	(
+		checkbox addExtrusionCB "add extrusion" 
+		checkbox addMatCB "add grid base material" enabled: false
+		spinner extSizeSP "extrusion size:" range: [0, 1000, extSize] type: #worldunits
+
+	)
+	checkbox removeEdgeCB "remove edge selection"
+	group "reset x form optons:"
+	(
+		checkbox resetXformCB "reset x form"
+		checkbox collapseXformCB "collapse x form"
+	)
+	
 	checkbox keepSelCB "keep selection"
 	button extractBT "extract"
 	
@@ -36,10 +51,14 @@ rollout edgeToShapeRLT "edge to shape"
 			updateshape newShape
 			
 			-- option reset x form
-			if resetXformCB.state = true do
+			if resetXformCB.state == true do
 			(
 				resetxform newShape 
-				
+				if collapseXformCB.state == true do
+				(
+					converttosplineshape  newShape
+					updateshape newShape
+				)
 			)
 			
 			-- option: remove edge
@@ -47,7 +66,7 @@ rollout edgeToShapeRLT "edge to shape"
 			
 			if addExtrusionCB.state == true do
 			(
-				myExtrusion = Extrude ()
+				myExtrusion = Extrude amount: extSize capStart: off capEnd: off
 				addmodifier newShape myExtrusion
 			)
 			
@@ -85,11 +104,21 @@ rollout edgeToShapeRLT "edge to shape"
 	on addSweepCB changed theState do
 	(
 		addExtrusionCB.state = false
+		addMatCB.enabled = false
+		extSizeSP.enabled = false
+	)
+	
+	on extSizeSP changed size do
+	(
+		extSize = size
 	)
 	
 	on addExtrusionCB changed  theState do
 	(
 		addSweepCB.state = false
+
+		addMatCB.enabled = false
+		extSizeSP.enabled = true
 	)
 	
 	on edgeToShapeRLT open do
@@ -98,7 +127,11 @@ rollout edgeToShapeRLT "edge to shape"
 		try
 		(
 			addSweepCB.state =  		(getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "sweepState") as booleanClass
+			extSizeSP.value = (getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionSize") as float
+			extSize = (getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionSize") as float
+			addExtrusionCB.state =  		(getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionState") as booleanClass
 			removeEdgeCB.state = 	(getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "removeState") as booleanClass
+			resetXformCB.state = (getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "resetXformState") as booleanClass
 		)
 		catch
 		(
@@ -110,11 +143,13 @@ rollout edgeToShapeRLT "edge to shape"
 	(
 		-- maj ini file
 		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "sweepState" (addSweepCB.state as string)
+		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionSize" (extSizeSP.value as string)
+		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionState" (addExtrusionCB.state as string)
 		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "removeState" (removeEdgeCB.state as string)
+		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "resetXformState" (resetXformCB.state as string)
 		print "maj ini done"
 	)
 	
 )
-createDialog edgeToShapeRLT
+createDialog edgeToShapeRLT 
 
-"false" as booleanClass 

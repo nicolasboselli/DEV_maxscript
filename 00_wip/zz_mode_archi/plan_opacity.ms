@@ -7,6 +7,7 @@ rollout opaRLT "selection opacity"
 	
 
 -- vars
+	local opaVal = 60
 	local sel = $selection
 	local bitmapVar
 -- fn
@@ -14,8 +15,10 @@ rollout opaRLT "selection opacity"
 	editText mapName_et "map name:" readOnly: true fieldWidth: 50
 	button refreshMap_bt "refresh" across:2
 	button openFolder_bt "open folder"
-	button opa60BT "opa 60" across: 2
+	spinner opaVarSP "opacity: "  range: [0,100,opaVal]  across: 3
+	button opa60BT "opa 60"  
 	button opa100BT "opa 100" 
+	
 -- actions
 	on refreshMap_bt pressed do
 	(
@@ -47,12 +50,17 @@ rollout opaRLT "selection opacity"
 
 	)
 		
+	on opaVarSP changed val do
+	(
+		opaVal = val
+	)
+	
 	on opa60BT pressed do
 	(
+		sel = $selection
 		for s in sel do
 		(
-			
-			s.material.opacity = 60
+			s.material.opacity = opaVal
 		)
 	)
 	
@@ -77,5 +85,5 @@ rollout opaRLT "selection opacity"
 
 
 
-createdialog opaRLT  style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
+createdialog opaRLT  width: 300 style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 
