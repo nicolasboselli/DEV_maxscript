@@ -115,7 +115,7 @@ for splineNum = 1 to splineSegNumAr.count do
 
 delete boxRef
 */
-rollout potoCornerRLT "poteaux corner"
+rollout potoCornerRLT "Posts Corner"
 (
 	local boxRef = undefined
 	
