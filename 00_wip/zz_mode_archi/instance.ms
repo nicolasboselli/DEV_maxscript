@@ -1,18 +1,20 @@
 
 
-fn cleancombine grp =
+select $.modifiers[1]
+
+modPanel.setCurrentObject $
+
+setSelectionLevel $ #face
+
+
+fn selectAllChildren =
 (
-	master = grp[1]
-	converttopoly master
-	InstanceMgr.MakeObjectsUnique master #individual
-
-	for i = grp.count to 2 by -1 do
+	for obj in selection do
 	(
-		master.EditablePoly.attach grp[i] master
-	-- 	print sel[i]
+		if obj.children != undefined do
+		(
+			selectmore obj.children
+		)
 	)
-	return master
 )
-
-sel = $selection as array
-cleancombine sel
+selectAllChildren()

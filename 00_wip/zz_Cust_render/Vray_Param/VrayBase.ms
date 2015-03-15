@@ -14,30 +14,23 @@ Global AutoIllumMat = vraylightmtl ()
 -- VrayBase.imageSampler_type = 1
 -- VrayBase.filter_on = false
 
-Global VrayBase = V_Ray_Adv_2_20_03 \
+VrayBase = V_Ray_Adv_2_20_03 \
 imageSampler_type: 1 \
-filter_on: false
+filter_on: false \
+gi_on: true \
+-- gi irradiance setup setup
+gi_primary_type: 0 gi_irradmap_showCalcPhase: true  gi_irradmap_showDirectLight: true  gi_irradmap_preset: 2 gi_irradmap_subdivs: 30 \
 
-VrayBase.gi_on = true
-
-VrayBase.gi_primary_type = 0
-VrayBase.gi_irradmap_showCalcPhase = true
-VrayBase.gi_irradmap_showDirectLight = true
-VrayBase.gi_irradmap_preset = 2
-VrayBase.gi_irradmap_subdivs = 30
-
-VrayBase.gi_secondary_type = 3
-VrayBase.lightcache_subdivs = 400
-VrayBase.lightcache_storeDirectLight = 0
-VrayBase.lightcache_showCalcPhase = 1
+-- gi light cache setup
+gi_secondary_type: 3  lightcache_subdivs: 400 lightcache_storeDirectLight: 0 lightcache_showCalcPhase: 1
 
 VrayBase.colorMapping_type = 1
 VrayBase.colorMapping_darkMult = 1.2
 VrayBase.colorMapping_brightMult = 0.8
 VrayBase.colorMapping_gamma = 2.2
-VrayBase.colorMapping_linearWorkflow = true
+VrayBase.colorMapping_linearWorkflow = false
 
-Global VrayAlphaPreset = V_Ray_Adv_2_10_01 ()
+Global VrayAlphaPreset = V_Ray_Adv_2_20_03 ()
 
 VrayAlphaPreset.imageSampler_type = 1
 VrayAlphaPreset.filter_on = false
@@ -50,7 +43,7 @@ VrayAlphaPreset.options_defaultLights = 0
 VrayAlphaPreset.colorMapping_type = 0
 VrayAlphaPreset.colorMapping_darkMult = 1
 VrayAlphaPreset.colorMapping_brightMult = 1
-VrayAlphaPreset.colorMapping_gamma = 1
+VrayAlphaPreset.colorMapping_gamma = 2.2
 VrayAlphaPreset.colorMapping_linearWorkflow = false
 
 Global vray_exp = (vray_exposure_control ())
@@ -58,18 +51,20 @@ Global vray_exp = (vray_exposure_control ())
 
 
 -- rollout
-rollout CurrentRender "Current Render"
+rollout VrayRenderRLT "Vray Options"
 (
+-- 	UI
 	button VRScenebaseBT "Vray Scene Base" 
 	
-	group "preset"
+	group "Presets:"
 	(
-		button VRbasePresetBT "Vray Base Preset" across: 2
+		button VRbasePresetBT "Vray Base Preset" 
 		button VRAlphaPresetBT "Vray Alpha Preset"
 	)
 	
 	button AlphaSelRenderBT "Render Alpha of Selection"
 	
+-- 	Actions
 	on  VRScenebaseBT pressed do
 	(
 		renderers.current = VrayBase
@@ -129,4 +124,4 @@ rollout CurrentRender "Current Render"
 	)
 )
 
-createdialog CurrentRender width: 400
+createdialog VrayRenderRLT 

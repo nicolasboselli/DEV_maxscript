@@ -1,3 +1,93 @@
+rollout potoCornerRLT "poteaux corner"
+(
+	local boxRef = undefined
+	
+-- 	pickbutton  poteauRefCB "ref"
+	button addRefBT "ref>>"
+	edittext refNameET "ref:" readonly: true
+	button multiplyBT "Multiply!"
+	
+-- 	on poteauRefCB picked obj do
+-- 	(
+-- 		poteauRefCB.text = obj.name
+-- 		boxRef = getNodebyname obj.name
+-- 	)
+-- 	
+	on addRefBT pressed do
+	(
+		sel = $selection as array
+		if sel.count == 1 then
+		(
+			boxRef = sel[1]
+			refNameET.text = boxRef.name
+		)
+		else
+		(
+			print "non conform selection"
+		)
+	)
+	
+	on multiplyBT pressed do
+	(
+		if boxRef == undefined do 
+		(
+			boxRef = box length: 5 width: 5 height: 100 name: "poteau_base"
+			refNameET.text = boxRef.name
+		)
+			
+				
+		lineSel = $
+
+		splineSel = 1
+		splineSelNum = numSplines lineSel
+
+		splineSeg = 2
+		splineSegNumAr = for i = 1 to splineSelNum collect (numKnots lineSel i ) - 1
+
+		percentCur = 0.99
+
+		-- posOnSpline = interpBezier3D lineSel splineSel splineSeg percentCur pathParam:true
+		copyBoxRef = copy boxRef
+		
+		posOnSplineAr = #()
+		for splineNum = 1 to splineSegNumAr.count do 
+		(
+			for i = 1 to splineSegNumAr[splineNum] do
+			(
+				
+				posOnKnot = 	getKnotPoint lineSel splineNum i
+				
+				posOnSpline = interpBezier3D lineSel splineNum  i percentCur pathParam:true
+				
+				pointX1 = tangentBezier3D lineSel splineNum i percentCur pathParam:true
+
+				pointZ2 = [0,0,1]
+
+				pointY =cross  pointZ2  pointX1
+
+				pointZ1 = cross pointX1  pointY
+
+				pointX2 = cross  pointY  pointZ2
+					
+					
+				-- 	position parallèle à l'axe z du monde
+				tempMatrix = matrix3 1
+				tempMatrix.row1 = normalize pointX2
+				tempMatrix.row2 = normalize pointY
+				tempMatrix.row3 = normalize pointZ2
+				tempMatrix.row4 = posOnSpline
+				orthogonalize tempMatrix
+				
+				boxTemp = instance copyBoxRef
+				boxTemp.transform = tempMatrix
+				boxTemp.position = posOnKnot
+			)
+		)
+		
+	)
+)
+createdialog potoCornerRLT
+
 /*
 splineSel = $selection as array
 
@@ -115,93 +205,5 @@ for splineNum = 1 to splineSegNumAr.count do
 
 delete boxRef
 */
-rollout potoCornerRLT "poteaux corner"
-(
-	local boxRef = undefined
-	
--- 	pickbutton  poteauRefCB "ref"
-	button addRefBT "ref>>"
-	edittext refNameET "ref:" readonly: true
-	button multiplyBT "Multiply!"
-	
--- 	on poteauRefCB picked obj do
--- 	(
--- 		poteauRefCB.text = obj.name
--- 		boxRef = getNodebyname obj.name
--- 	)
--- 	
-	on addRefBT pressed do
-	(
-		sel = $selection as array
-		if sel.count == 1 then
-		(
-			boxRef = sel[1]
-			refNameET.text = boxRef.name
-		)
-		else
-		(
-			print "non conform selection"
-		)
-	)
-	
-	on multiplyBT pressed do
-	(
-		if boxRef == undefined do 
-		(
-			boxRef = box length: 5 width: 5 height: 100 name: "poteau_base"
-			refNameET.text = boxRef.name
-		)
-			
-				
-		lineSel = $
 
-		splineSel = 1
-		splineSelNum = numSplines lineSel
-
-		splineSeg = 2
-		splineSegNumAr = for i = 1 to splineSelNum collect (numKnots lineSel i ) - 1
-
-		percentCur = 0.99
-
-		-- posOnSpline = interpBezier3D lineSel splineSel splineSeg percentCur pathParam:true
-		copyBoxRef = copy boxRef
-		
-		posOnSplineAr = #()
-		for splineNum = 1 to splineSegNumAr.count do 
-		(
-			for i = 1 to splineSegNumAr[splineNum] do
-			(
-				
-				posOnKnot = 	getKnotPoint lineSel splineNum i
-				
-				posOnSpline = interpBezier3D lineSel splineNum  i percentCur pathParam:true
-				
-				pointX1 = tangentBezier3D lineSel splineNum i percentCur pathParam:true
-
-				pointZ2 = [0,0,1]
-
-				pointY =cross  pointZ2  pointX1
-
-				pointZ1 = cross pointX1  pointY
-
-				pointX2 = cross  pointY  pointZ2
-					
-					
-				-- 	position parallèle à l'axe z du monde
-				tempMatrix = matrix3 1
-				tempMatrix.row1 = normalize pointX2
-				tempMatrix.row2 = normalize pointY
-				tempMatrix.row3 = normalize pointZ2
-				tempMatrix.row4 = posOnSpline
-				orthogonalize tempMatrix
-				
-				boxTemp = instance copyBoxRef
-				boxTemp.transform = tempMatrix
-				boxTemp.position = posOnKnot
-			)
-		)
-		
-	)
-)
-createdialog potoCornerRLT
 

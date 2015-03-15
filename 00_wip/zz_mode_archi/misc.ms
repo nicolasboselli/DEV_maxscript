@@ -52,6 +52,7 @@ fn randomWireFN =
 	)
 )
 
+--debug: make usabled on multiselection
 fn makeFloorFN sel =
 (
 	-- add editpoly
@@ -77,11 +78,13 @@ fn makeFloorFN sel =
 
 fn connectRingFN loopNum =
 (
+-- 	maj: init connect decay
 	PolyToolsSelect.ring()
 	$.connectEdgeSegments   = loopNum
 	$.connectEdges()
 )
 
+-- refresh scenematerial
 fn updateSceneMaterials =
  (
  saveNodes #() "c:/temp.max"
@@ -89,20 +92,46 @@ fn updateSceneMaterials =
  )
 updateSceneMaterials()
 
+
+-- attach object select in the same object
+fn cleancombine grp =
+(
+	master = grp[1]
+	converttopoly master
+	InstanceMgr.MakeObjectsUnique master #individual
+
+	for i = grp.count to 2 by -1 do
+	(
+		master.EditablePoly.attach grp[i] master
+	-- 	print sel[i]
+	)
+	return master
+)
+
 rollout miscRLT "misc"
 (
 	button getInstBT "get instances"
-	button randColBT "random color"
-	button goutteBT "goutte d'eau"
-	button debordBT "debord balcon"
-	button randomWireBT "random wirecolor"
-	button makeFloorBT "make floor"
-	button connectRingBT "connect ring x1"
-	button connectRing2BT "connect ring x2"
+	
+	group "wirecolor: "
+	(
+		button randColBT "random color"
+		button randomWireBT "wirecolor by material"
+	)
+	
+	group "modeling"
+	(
+		button goutteBT "goutte d'eau"
+		button debordBT "debord balcon"
+		
+		button makeFloorBT "make floor"
+		button connectRingBT "connect ring x1"
+		button connectRing2BT "connect ring x2"
+		button cleanCombineBT "combine"
+	)
 	
 	on getInstBT pressed do
 	(
-		sel = $selection as array
+		sel = selection as array
 		if sel.count == 1 do
 		(
 			getInstancesFN sel[1]
@@ -112,12 +141,7 @@ rollout miscRLT "misc"
 	
 	on randColBT pressed do
 	(
-		sel = $selection as array
-		for s in sel do
-		(
-			randomColorFN s
-		)
-		
+		for s in selection do randomColorFN s
 	)
 	
 	on goutteBT pressed do goutteDeauFN $	
@@ -127,5 +151,9 @@ rollout miscRLT "misc"
 	on connectRingBT pressed do connectRingFN 1
 	on connectRing2BT pressed do connectRingFN 2
 		
+	on cleanCombineBT pressed do cleancombine selection
+		
 )
 createDialog miscRLT
+
+

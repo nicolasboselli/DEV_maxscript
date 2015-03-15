@@ -36,7 +36,7 @@ rollout edgeToShapeRLT "edge to shape"
 	
 	on extractBT pressed do
 	(
-		sel = $selection as array
+		sel = selection as array
 
 		for s in sel do
 		(
@@ -90,6 +90,7 @@ rollout edgeToShapeRLT "edge to shape"
 			if keepSelCB.state == true then
 			(
 				select s
+				modPanel.setCurrentObject s
 				subobjectLevel = 4	
 
 			)
