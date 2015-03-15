@@ -205,5 +205,47 @@ for splineNum = 1 to splineSegNumAr.count do
 
 delete boxRef
 */
+<<<<<<< HEAD
+=======
+rollout potoCornerRLT "Posts Corner"
+(
+	local boxRef = undefined
+	
+-- 	pickbutton  poteauRefCB "ref"
+	button addRefBT "ref>>"
+	edittext refNameET "ref:" readonly: true
+	button multiplyBT "Multiply!"
+	
+-- 	on poteauRefCB picked obj do
+-- 	(
+-- 		poteauRefCB.text = obj.name
+-- 		boxRef = getNodebyname obj.name
+-- 	)
+-- 	
+	on addRefBT pressed do
+	(
+		sel = $selection as array
+		if sel.count == 1 then
+		(
+			boxRef = sel[1]
+			refNameET.text = boxRef.name
+		)
+		else
+		(
+			print "non conform selection"
+		)
+	)
+	
+	on multiplyBT pressed do
+	(
+		if boxRef == undefined do 
+		(
+			boxRef = box length: 5 width: 5 height: 100 name: "poteau_base"
+			refNameET.text = boxRef.name
+		)
+			
+				
+		lineSel = $
+>>>>>>> origin/master
 
 
