@@ -14,7 +14,7 @@ Global AutoIllumMat = vraylightmtl ()
 -- VrayBase.imageSampler_type = 1
 -- VrayBase.filter_on = false
 
-VrayBase = V_Ray_Adv_2_20_03 \
+VrayBase = V_Ray_Adv_2_30_01 \
 imageSampler_type: 1 \
 filter_on: false \
 gi_on: true \
@@ -30,7 +30,7 @@ VrayBase.colorMapping_brightMult = 0.8
 VrayBase.colorMapping_gamma = 2.2
 VrayBase.colorMapping_linearWorkflow = false
 
-Global VrayAlphaPreset = V_Ray_Adv_2_20_03 ()
+Global VrayAlphaPreset = V_Ray_Adv_2_30_01 ()
 
 VrayAlphaPreset.imageSampler_type = 1
 VrayAlphaPreset.filter_on = false
