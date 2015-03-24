@@ -53,27 +53,34 @@ fn randomWireFN =
 )
 
 --debug: make usabled on multiselection
-fn makeFloorFN sel =
+fn makeFloorFN currentSel =
 (
+	local sel =  currentSel
 	-- add editpoly
-	myEditPoly = Edit_Poly()
-	addmodifier sel myEditPoly
-	convertto sel editable_poly
+	for s in sel do
+	(
+		if classof s == splineshape do
+		(
+			myEditPoly = Edit_Poly()
+			addmodifier s myEditPoly
+			convertto s editable_poly
 
-	-- outline 15 cm
-	polyop.setFaceSelection  sel #all
-	sel.outlineAmount = -15
-	sel.EditablePoly.Outline ()
+			-- outline 15 cm
+			polyop.setFaceSelection  s #all
+			s.outlineAmount = -15
+			s.EditablePoly.Outline ()
 
-	-- shell 10cm
-	myShell = Shell innerAmount:10 outerAmount:10
-	addmodifier sel myShell
+			-- shell 10cm
+			myShell = Shell innerAmount:10 outerAmount:10
+			addmodifier s myShell
 
-	-- convert to poly
-	convertto sel editable_poly
+			-- convert to poly
+			convertto s editable_poly
 
-	-- material "interieur"G
-	sel.material = sceneMaterials["interieur"]
+			-- material "interieur"G
+			sel.material = sceneMaterials["interieur"]
+		)
+	)
 )
 
 fn connectRingFN loopNum =
@@ -147,7 +154,7 @@ rollout miscRLT "misc"
 	on goutteBT pressed do goutteDeauFN $	
 	on debordBT pressed do debordFN $
 	on randomWireBT pressed do randomWireFN()
-	on makeFloorBT pressed do makeFloorFN $
+	on makeFloorBT pressed do makeFloorFN selection
 	on connectRingBT pressed do connectRingFN 1
 	on connectRing2BT pressed do connectRingFN 2
 		

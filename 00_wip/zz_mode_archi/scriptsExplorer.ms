@@ -17,7 +17,14 @@ struct fileClass
 
 rollout scriptExplorerRLT "Scripts Explorer"
 (
-	local root = getFilenamePath  (getThisScriptFilename() )
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
+	
+	local favAr = #()
+	
+-- 	local root = getFilenamePath  (getThisScriptFilename() )
 	local folderContent
 	local folderAr = #()
 	
@@ -27,9 +34,12 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local currentFolder
 	
 	edittext pathET "current path:" readonly: true
-	listbox scriptsListLB "Scripts:" 
+	listbox scriptsListLB "Scripts:" height: 30
 	button enterFolderBT "open folder"
 	button backFolderBT "parent folder"
+	button printPathBT "add to favorites"
+	button editScriptBT "edit script"
+	button copyPathBT "copy path"
 	
 	fn scanFolder onePath =
 	(
@@ -48,6 +58,17 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	(
 		currentFolder = root
 		scanFolder root
+		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
+		(
+			favArTmp = getINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray"
+			favAr = execute favArTmp
+			print "load favorites done"
+		)
+		else
+		(
+			favAr = #()
+			print "favorites array init"
+		)
 	)
 	
 	on enterFolderBT pressed do
@@ -82,6 +103,33 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		)
 		currentFolder = sum
 		scanFolder currentFolder
+	)
+	
+	on printPathBT pressed do
+	(
+		if classof allAr[scriptsListLB.selection] != folderClass then
+		(
+			append  favAr allAr[scriptsListLB.selection].path 
+			favAr = makeuniquearray favAr
+			print favAr
+			setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" (favAr as string)
+		)
+		else
+		(
+			print "this is a folder"
+		)
+		
+	)
+	
+	on editScriptBT pressed do
+	(
+		 edit (allAr[scriptsListLB.selection].path)
+	)
+	
+	on copyPathBT pressed do
+	(
+		pathTmp =  (allAr[scriptsListLB.selection].path)
+		setclipboardText pathTmp
 	)
 )
 

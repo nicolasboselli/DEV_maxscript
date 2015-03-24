@@ -1,18 +1,10 @@
-macroScript GF_Return2Faces
-	category:"mode_archi"
-	buttonText: "Return2Faces"
-	toolTip:""
 
-
-
-(
-	
 
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 	
 
-	if $selection.count != 0 then
+	if selection.count != 0 then
 	(
 		if (modPanel.getCurrentObject() == undefined) then  max modify mode
 		
@@ -108,4 +100,3 @@ macroScript GF_Return2Faces
 	)
 	else print "selectionner des objets ou des elements d'objet"
 
-)

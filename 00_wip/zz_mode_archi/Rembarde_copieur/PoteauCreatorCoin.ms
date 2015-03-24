@@ -205,6 +205,8 @@ for splineNum = 1 to splineSegNumAr.count do
 
 delete boxRef
 */
+
+/*
 <<<<<<< HEAD
 =======
 rollout potoCornerRLT "Posts Corner"
@@ -248,4 +250,4 @@ rollout potoCornerRLT "Posts Corner"
 		lineSel = $
 >>>>>>> origin/master
 
-
+*/

@@ -1,11 +1,4 @@
-macroScript GF_SuperFenetre
-	category:"mode_archi"
-	buttonText: "FenOuvrable"
-	toolTip:""
 
-
-
-(
 		
 -------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -115,4 +108,3 @@ macroScript GF_SuperFenetre
 	else print "selectionner des objets ou des elements d'objet"
 
 	
-)

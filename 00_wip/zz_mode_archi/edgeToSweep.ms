@@ -13,6 +13,10 @@ fn removeEdgeAndVerticesFN sel =
 rollout edgeToShapeRLT "edge to shape"
 (
 -- 	vars
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+-- 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
 	local extSize  = 100
 	
 -- 	ui
@@ -127,12 +131,12 @@ rollout edgeToShapeRLT "edge to shape"
 		-- load ini file
 		try
 		(
-			addSweepCB.state =  		(getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "sweepState") as booleanClass
-			extSizeSP.value = (getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionSize") as float
-			extSize = (getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionSize") as float
-			addExtrusionCB.state =  		(getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionState") as booleanClass
-			removeEdgeCB.state = 	(getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "removeState") as booleanClass
-			resetXformCB.state = (getINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "resetXformState") as booleanClass
+			addSweepCB.state =  		(getINISetting armadasScriptsIni "edgeToSweep" "sweepState") 		as booleanClass
+			extSizeSP.value = 			(getINISetting armadasScriptsIni "edgeToSweep" "extrusionSize") 	as float
+			extSize = 						(getINISetting armadasScriptsIni "edgeToSweep" "extrusionSize") 	as float
+			addExtrusionCB.state =  	(getINISetting armadasScriptsIni "edgeToSweep" "extrusionState") 	as booleanClass
+			removeEdgeCB.state = 	(getINISetting armadasScriptsIni "edgeToSweep" "removeState") 	as booleanClass
+			resetXformCB.state = 		(getINISetting armadasScriptsIni "edgeToSweep" "resetXformState")	as booleanClass
 		)
 		catch
 		(
@@ -143,11 +147,11 @@ rollout edgeToShapeRLT "edge to shape"
 	on edgeToShapeRLT close do
 	(
 		-- maj ini file
-		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "sweepState" (addSweepCB.state as string)
-		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionSize" (extSizeSP.value as string)
-		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "extrusionState" (addExtrusionCB.state as string)
-		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "removeState" (removeEdgeCB.state as string)
-		setINISetting (modeArchiScriptRoot + "scriptMode.ini") "edgeToSweep" "resetXformState" (resetXformCB.state as string)
+		setINISetting armadasScriptsIni "edgeToSweep" "sweepState" 			(addSweepCB.state as string)
+		setINISetting armadasScriptsIni "edgeToSweep" "extrusionSize" 		(extSizeSP.value as string)
+		setINISetting armadasScriptsIni "edgeToSweep" "extrusionState" 		(addExtrusionCB.state as string)
+		setINISetting armadasScriptsIni "edgeToSweep" "removeState" 		(removeEdgeCB.state as string)
+		setINISetting armadasScriptsIni "edgeToSweep" "resetXformState" 	(resetXformCB.state as string)
 		print "maj ini done"
 	)
 	

@@ -2,6 +2,7 @@
 -- - récupérer le nom de la version de vray présente
 -- rectifier les valeurs d IRmap en low, mettre 4000 en memoire
 -- vérifier que ça n'active pas le gamma de max
+-- test renderer installation
 
 -- Vars
 -- Global AutoIllumMat = standard twosided: on Diffuse: (color 255 255 255) selfIllumAmount: 100
@@ -14,7 +15,7 @@ Global AutoIllumMat = vraylightmtl ()
 -- VrayBase.imageSampler_type = 1
 -- VrayBase.filter_on = false
 
-VrayBase = V_Ray_Adv_2_30_01 \
+VrayBase = V_Ray_Adv_2_20_03 \
 imageSampler_type: 1 \
 filter_on: false \
 gi_on: true \
@@ -30,7 +31,7 @@ VrayBase.colorMapping_brightMult = 0.8
 VrayBase.colorMapping_gamma = 2.2
 VrayBase.colorMapping_linearWorkflow = false
 
-Global VrayAlphaPreset = V_Ray_Adv_2_30_01 ()
+Global VrayAlphaPreset = V_Ray_Adv_2_20_03 ()
 
 VrayAlphaPreset.imageSampler_type = 1
 VrayAlphaPreset.filter_on = false

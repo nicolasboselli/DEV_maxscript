@@ -1,5 +1,5 @@
 -- Vars pour GF_return2faces.ms et GF_super_fenetre.ms
-
+/*
 vector_z
 vectors
 Tutor_matrix_bak
@@ -25,10 +25,10 @@ selection_globale
 tutor
 vector_x
 vector_y
-	
+*/
 
 -- FONCTIONS pour GF_return2faces.ms et GF_super_fenetre.ms
-
+/*
 ySort
 detach_elements_selected
 clean_une_fenetre
@@ -39,8 +39,25 @@ FlipAllNormals
 VertexSorting
 RecreateEdgeY
 RecreateEdgeX
+*/
 
+function to create and detach face 
+fn detach_face_fenetre s =
 (
+
+	edges_list = s.EditablePoly.getSelection #edge
+
+	polyop.capHolesByEdge s edges_list
+	s.ConvertSelection #edge #face
+
+	s.EditablePoly.ShrinkSelection selLevel: #face
+
+	fenetres_list = s.EditablePoly.getSelection #face
+
+	polyop.detachFaces s fenetres_list delete:true asNode:true name: (uniquename "fenetre") 
+)
+
+
 	-- classement array
 	fn ySort v1 v2 =
 	(
@@ -449,11 +466,11 @@ RecreateEdgeX
 
 	)
 
-)
 
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 -- Vars pour GF_fenetres_v3.ms
+/*
 s
 face_count
 face_fenetre
@@ -462,8 +479,9 @@ face_fenetre
 
 FenetresMaterial
 fenetres_base
+	*/
 
-(
+
 -- declaration des materiaux vitre
 	fn FenetresMaterial =
 	(
@@ -533,15 +551,15 @@ fenetres_base
 	
 	-- appliquer les couleurs
 	)
-)
+
 
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
 -- FONCTIONS pour GF_fenetres_ouvrables.ms et GF_super_fenetre.ms
 
-FenetreOuvrable
 
-(
+
+
 	fn FenetreOuvrable s = 
 	(
 		-- Creation materiaux
@@ -749,4 +767,4 @@ FenetreOuvrable
 			battants_ctr[1].parent = cadre
 		)
 	)		
-)
+
