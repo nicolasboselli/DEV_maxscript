@@ -41,7 +41,7 @@ RecreateEdgeY
 RecreateEdgeX
 */
 
-function to create and detach face 
+-- function to create and detach face 
 fn detach_face_fenetre s =
 (
 
