@@ -1,1 +1,0 @@
-for o in ($selection as array) do o.pivot = [0,0,0]

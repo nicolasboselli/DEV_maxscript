@@ -1,0 +1,208 @@
+=============================== HELP TO MAXSCRIPT DEVELOPPEMENT
+-- scripts explorer
+	- bug: on "enter folder" on script, script opened
+	maj:
+	x - add access to ini file
+	 - enter folder on double click
+	 - back folder in list
+	 - back folder on back touch
+	 - manager many set of favorites
+	 - copy/cut/paste file
+
+
+
+-- favorites launcher
+	-- maj:
+		-- remove favorite
+		-- catch obsolete path
+		-- manage different favorites
+		x-- crash on first opening, when fav list ini is empty
+		-- init first fav list with core list
+		-- save favorite in xml
+
+
+-- create script outliner
+	-- display functions lists
+	-- display filein 
+	-- display imported function (showsource)
+
+=============================== ARCHVIZ MODELING
+-- make floor
+	x-- bug: crash on multiple selection(0.5h: add select selection)
+	-- maj: how to use editablepoly without select mesh? 
+
+-- GF_UI "windows manager"
+	-- maj:
+		x-- make base windows settable and consequence (3h)
+		-- simplify mesh selection send to functions
+
+-- edge to sweep
+	-- x bug: can't remove vertices with edge(2h: change convert type, check vertex to del, bug when use remove on fn def and use function after)
+	-- maj: get sweep profile from sweep editor(to do)
+
+-- object resizer
+	-- maj: 
+		- no ffd on selection
+		- calculate ffd from the center of the object
+		- scale the object instead of use ffd
+		
+-- rembardecopieur
+	-- maj: 
+		x-- add above and below sweep (3h)
+		-- make addSweepAboveDef independant from ui, add parameters
+		-- rename "rembarde_master" and "copy_rembarde"
+		-- see what to do with cleanCopyFN and ConvertToReelSplineFN
+		-- on add reference, find the masterSpline
+	
+-- post inbeetweener
+	-- maj: 
+		x-- add min distance treshold (0.5h)
+		
+-- supaslice:
+	-- bug 2015: snap on grid index is 4 and not 3 (snapMode.setOSnapItemActive 4 1 true)
+	x-- add to armadas suite
+	-- slice option
+	-- supaslice vertical/horizontal
+	
+-- centerpivot:
+	x-- add to armadas suite
+	
+-- extrusion box:
+	-- add to armadas suite
+
+-- misc: wirecolor from material
+	x-- on object with multimaterial set the wirecolor with the wirecolor of the first id
+	
+-- planresizer:
+	maj:
+	-- add deletion system
+	-- add root and target system selection
+	-- separate ui and function
+
+	-- make distance interactive(event)
+	-- make ui interactive to scaler deletion
+
+	-- add tool to pick root position  and target position 
+	-- scale resizer with map
+	-- calculate dimension on bounding box and do not use plane size anymore
+	
+-- tool to insert edge loop:
+	-- see in testTool
+
+-- dev: 
+	-- toolbox to change sweep value
+	
+	
+	-- function to clean spline knot
+	-- function to clean vertex on border
+	-- function to make wall with chamfered sides
+	
+	-- mod to split knot
+
+================================== ARCHVIZ VRAY RENDERING =================
+x-- found vray version
+
+-- demultimat:
+	x-- make ui
+	x-- collect multimat in medit material
+	-- refresh scene material
+	x-- explode from material id (def done)
+
+	x-- make skin from id mat
+	x -- split from edge angle
+
+-- vray base
+	x-- correct setting
+	-- add plane
+	
+-- vray material
+	x-- material collector 
+	x-- material listener
+	-- uv associate
+	-- delete material
+	-- map amterial in list with material in editor
+
+	
+-- vraySelAphaMask \ vray pass render
+	bug: when load vray night on render occlu setting save bat render presset
+	x-- vray night:
+		-- def: presset for auto illum rendering
+		-- with toggle on vray night stay permanent with toggle off vray night is pre/post script to differents rendering
+	x-- render alpha
+		-- desync with vray night
+		x-- on selection
+		x-- on material
+		-- use opacity map
+	x-- render occlu
+		-- sync with vray night
+		-- on scene
+		x-- apply material
+		-- param of occlu mat
+		-- exclu/exclude object from vray dirt
+	-- zdepht
+	-- wirecolor
+	-- direct shadow?
+
+
+
+-- dev:
+	-- quickssave render: precomplited dialog box
+	-- lock render on  camera
+	-- explore render folder
+	-- open render in xnview or photoshop
+	-- matte render
+	
+	-- render checker to avoid error: missing texture, uv, ref, proxy, setting, save path, net render, dr 
+	
+================================= RESSOURCE EXPLORER ===============
+-- treeview to explore 3d ressource
+	-- button to add selection to ressource
+	-- button to import as reference or object reference
+
+
+================================== RIG ===========================
+-- bones
+	-- make it like maya joint
+	-- pos rot and scale constraint
+	-- orient end freeze joint
+	-- symetrize joints
+	-- keep bone original place on rig deletion
+-- parent multiple
+-- body rig
+	-- ik/fk with stretch, resize and snap ik>fk and fk to ik.
+	-- ik/ fk spline stretchable
+	-- ribbon 
+-- facial rig
+	-- bones on morph system
+-- morphs
+	-- make symetry
+-- corrective morphs
+	-- corrective morph on the fly
+	-- 
+-- tool to visualize parent and constraint
+-- skin
+	-- transfer weight
+	-- copy paste weight from one point to another
+-- character node
+
+
+================================== ANIMATION =====================
+-- pose library
+-- copy/paste curve in graph editor
+-- retarget animation
+-- channel box
+-- picker
+
+================================= MAXSCRIPT PROBLEMATIC ============
+Problems:
+-- subrollout or roller floater that is the question
+x-- event (for sweep)
+/-- tool (for loop tool)
+x-- make scripts undoable
+x-- test relative path "..\" (doesn't work)
+x-- preview
+x-- pick on scene
+-- dotnet
+	-- listview
+	-- datagridview
+-- xml

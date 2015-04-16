@@ -1,43 +1,15 @@
 /*
-maj: make install file with:
-	- ini near of 3dsmax.ini
-	- fonction to return script root from ini. paste in macro script or startup?
-	- command to install lancher in 3dsmax ui
-*/
--- subrollout or roller floater that is the question
-
-/*
-fn checkIniFileFn = 
-(
-	global modeArchiScriptRoot
-
-	-- test init file
-	maxIni = getMAXIniFile()
-	rootTest = getINISetting maxIni "modeArchiScript" "root"
-	
-	if rootTest.count == 0 then
-	(
-		-- get root path
-		modeArchiScriptRoot = getFilenamePath  (getThisScriptFilename() )
-		-- write init
-		setINISetting maxIni "modeArchiScript" "modeArchiScriptRoot" modeArchiScriptRoot
-	)
-	else
-	(
-		-- set modeArchiScriptRoot
-		modeArchiScriptRoot = rootTest
-	)
-	return modeArchiScriptRoot
-)
-*/
-
--- maxIni = getMAXIniFile()
-
-
 -- maj:
 -- remove favorite
+-- catch obsolete path
+-- add cleaner at opening and update on closing
+*/
 
-struct fileClass
+-- with printAllElements on propArVal as string
+
+try(destroyDialog mxsLaunchRLT)catch()
+
+struct favFileClass
 (
 	path,
 	name = getFilenameFile path
@@ -52,7 +24,8 @@ rollout mxsLaunchRLT "maxscript launcher"
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	local tmpRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	local root = substituteString tmpRoot "\\" "/"
 	
 	local favAr = #()
 	
@@ -93,20 +66,31 @@ rollout mxsLaunchRLT "maxscript launcher"
 		
 	on openFolder pressed do 
 	(
-		
-		var = stringstream ""
-		format "explorer %" root to: var
-		doscommand (var as string)
+		foldToOpen = substituteString root "/" "\\"
+-- 		print root
+		doscommand ("explorer " + foldToOpen)
 	)
 	
 	on loadFavoritesBT pressed do
 	(
 		-- load favorite list from ini file
-		if (hasINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot") == true then
+		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
 		(
-			favArTmp = getINISetting armadasScriptsIni  "armadasScriptsFavorite" "armadasScriptsArray"
-			favAr = execute favArTmp
-			print favAr
+			print "ini key found"
+			favArStr = getINISetting armadasScriptsIni  "armadasScriptsFavorite" "armadasScriptsArray"
+			favArTmp = execute favArStr
+-- 			print favArTmp
+			-- test if file exist
+			for onePath in favArTmp do
+			(
+				if doesFileExist onePath == true do
+				(
+					appendifunique favAr onePath
+				)
+			)
+			
+			-- correct file string
+-- 			print favAr.count
 			print "load favorites done"
 		)
 		else
@@ -115,14 +99,24 @@ rollout mxsLaunchRLT "maxscript launcher"
 			print "favorites array init"
 		)
 		
-		fileClassArray = for script in favAr collect (fileClass script)
-		scriptArrayLB.items = for script in fileClassArray collect script.name
+		
+		print favAr.count
+		if favAr.count >= 1 then
+		(
+			fileClassArray = for script in favAr collect (favFileClass script)
+			scriptArrayLB.items = for script in fileClassArray collect script.name
+		)
+		else
+		(
+			print "no favorites to load"
+		)
 	)
 	
 	on loadHardCoresBT pressed do
 	(
 		-- 		convert script selection 
-		fileClassArray = for script in scriptArray collect (fileClass (root + "\\zz_mode_archi\\" +  script))
+		
+		fileClassArray = for script in scriptArray collect (favFileClass (root + "\\zz_mode_archi\\" +  script))
 -- 		collect list box items
 		scriptArrayLB.items = for script in fileClassArray collect script.name
 		
@@ -130,10 +124,9 @@ rollout mxsLaunchRLT "maxscript launcher"
 	
 	on mxsLaunchRLT open do
 	(
-
 		
 -- 		convert script selection 
-		fileClassArray = for script in scriptArray collect (fileClass (root + "\\zz_mode_archi\\" +  script))
+		fileClassArray = for script in scriptArray collect (favFileClass (root + "\\zz_mode_archi\\" +  script))
 		
 -- 		collect list box items
 		scriptArrayLB.items = for script in fileClassArray collect script.name
@@ -148,7 +141,39 @@ rollout mxsLaunchRLT "maxscript launcher"
 		
 		scriptArrayLB.height = mxsLaunchRLT.height - 80
 	)
-
+	
+	on mxsLaunchRLT close do
+	(
+		print "bye"
+	)
 )
 createdialog mxsLaunchRLT width:300 style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 
+
+
+/*
+fn checkIniFileFn = 
+(
+	global modeArchiScriptRoot
+
+	-- test init file
+	maxIni = getMAXIniFile()
+	rootTest = getINISetting maxIni "modeArchiScript" "root"
+	
+	if rootTest.count == 0 then
+	(
+		-- get root path
+		modeArchiScriptRoot = getFilenamePath  (getThisScriptFilename() )
+		-- write init
+		setINISetting maxIni "modeArchiScript" "modeArchiScriptRoot" modeArchiScriptRoot
+	)
+	else
+	(
+		-- set modeArchiScriptRoot
+		modeArchiScriptRoot = rootTest
+	)
+	return modeArchiScriptRoot
+)
+*/
+
+-- maxIni = getMAXIniFile()

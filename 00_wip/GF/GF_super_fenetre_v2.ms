@@ -5,9 +5,10 @@
 -- Script Detach n Clean
 
 
-	if $selection.count != 0 then
+	if selection.count != 0 then
 	(
-		fenetres_array
+		local fenetres_array = #()
+		local vertArList = #()
 		
 		case of
 		(
@@ -16,7 +17,7 @@
 			(
 			s = $
 
-			detach_elements_selected s
+			fenetres_array = detach_elements_selected s
 
 				for o in fenetres_array do 
 				(	
@@ -33,14 +34,19 @@
 					redress_pivot o
 
 					--edgesVariables o
+					/*
 					VertexSorting o
 					RecreateEdgeY o
 					RecreateEdgeX o
+					*/
+					vertArList = VertexSorting o
+					RecreateEdgeY o vertArList[1]
+					RecreateEdgeX o vertArList[3]
 				)
 				
 				select fenetres_array
 				
-				s_array = $selection as array
+				s_array = selection as array
 
 				for s in s_array do
 				(
@@ -54,7 +60,7 @@
 		
 			(subobjectLevel == 0):
 			(
-				s_array = $selection as array
+				s_array = selection as array
 				
 				if (modPanel.getCurrentObject() == undefined) then  max modify mode
 				
@@ -64,7 +70,7 @@
 					select s
 					polyop.setFaceSelection s #all
 
-					detach_elements_selected s
+					fenetres_array = detach_elements_selected s
 
 					for o in fenetres_array do 
 					(
@@ -81,14 +87,19 @@
 						redress_pivot o
 
 						--edgesVariables o
+						/*
 						VertexSorting o
 						RecreateEdgeY o
 						RecreateEdgeX o
+						*/
+						vertArList = VertexSorting o
+						RecreateEdgeY o vertArList[1]
+						RecreateEdgeX o vertArList[3]
 					)
 					
 					select fenetres_array
 					
-					s_array = $selection as array
+					s_array = selection as array
 
 					for s in s_array do
 					(

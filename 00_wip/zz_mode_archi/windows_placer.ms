@@ -1,8 +1,8 @@
 -- filein (modeArchiScriptRoot + "bardageCreator\zinc_creator_bounding_box_fn.ms")
 
 -- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
-filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
-
+-- filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
+filein"J:/GitHub_repo/DEV_maxscript/00_wip/GF/FN_gestion_fenetres.ms"
 /*##############################cubizator ########################"*/
 
 -- $.pivot
@@ -34,7 +34,7 @@ selArr = detach_elements_selected $
 -- select selArr
 -- select test
 
--- selArr = $selection as array
+selArr = selection as array
 
 for o in selArr do
 (
@@ -75,4 +75,5 @@ for o in selArr do
 	)
 )
 
+-- passer un coup de xforminplace
 

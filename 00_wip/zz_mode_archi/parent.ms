@@ -42,7 +42,7 @@ rollout hierarchyRLT "hierarchy"
 	button selectChidrenBT "select children"
 	
 	on mayaGrpBT pressed do mayaGrpFN selection
-	on parentBT pressed do parentFN selection
+	on parentBT pressed do parentFN (selection as array)
 	
 	on selectChidrenBT pressed do selectAllChildren selection
 )

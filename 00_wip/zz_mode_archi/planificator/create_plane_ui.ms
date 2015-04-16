@@ -19,9 +19,6 @@ function to extract part of a plan
 */
 
 
-
- 
- 
 struct planClass
 (
 	path,
@@ -72,10 +69,15 @@ struct planClass
 	
 )
 
-
- 
+try(destroyDialog createPlaneRLT)catch()
+-- global createPlaneRLT
 rollout createPlaneRLT "create plane"
 (
+	
+-- 	vars
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 	local openFileName
 	local root = "C:\\"
 	local jpgList = #()
@@ -86,7 +88,8 @@ rollout createPlaneRLT "create plane"
 	local planObjList = #()
 	
 	edittext pathToSearchET"path: "readOnly: true
-	button searchBT "..."
+	button searchBT "..." across: 2
+	button openFoldBT "open"
 	listbox jpgListBox "jpg list:"
 	
 	button createPlaneBT "create"  pos:[ 50 , lastLine]
@@ -205,6 +208,13 @@ rollout createPlaneRLT "create plane"
 		)
 	)
 	
+	on openFoldBT pressed do
+	(
+-- 		foldToOPen = pathToSearchET.text
+		print root
+		doscommand ("explorer " + root)
+	)
+	
 	on createPlaneBT pressed do
 	(
 		intSel = jpgListBox.selection 
@@ -225,7 +235,7 @@ rollout createPlaneRLT "create plane"
 	
 	on injectMapBT pressed do
 	(
-		sel = $selection as array
+		sel = selection as array
 		if sel.count == 1 then
 		(
 			deleteUVWmap sel[1]
@@ -244,7 +254,7 @@ rollout createPlaneRLT "create plane"
 	
 	on changeMapBT pressed do
 	(
-		sel = $selection as array
+		sel = selection as array
 		if sel.count == 1 then
 		(
 			intSel = jpgListBox.selection 
@@ -258,7 +268,16 @@ rollout createPlaneRLT "create plane"
 	on createPlaneRLT open do
 	(
 		-- load ini file
-		rootIni = getINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath"
+-- 		rootIni = getINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath"
+		try
+		(
+			rootIni = getINISetting armadasScriptsIni "planCreator" "jpgPath"
+		)
+		catch
+		(
+			format "*** % ***\n" (getCurrentException())
+		)
+		
 		if rootIni != undefined and rootIni != "C:\\" do 
 		(
 			root = rootIni
@@ -275,7 +294,7 @@ rollout createPlaneRLT "create plane"
 	on createPlaneRLT close do
 	(
 		-- maj ini file
-		root = setINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath" root
+		root = setINISetting armadasScriptsIni "planCreator" "jpgPath" root
 		print "maj ini done"
 	)
 	
@@ -288,5 +307,7 @@ rollout createPlaneRLT "create plane"
 		changeMapBT.pos = [250, createPlaneRLT.height - sub]
 	)
 )
+
+
 createDialog createPlaneRLT width: 500 style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 

@@ -1,9 +1,11 @@
+filein "windows_placer_fn.ms"
+
 fn centerizeGroupFN =
 (
 	print "start"
 	 local target
 	 local source
-	 local sel = $selection as array
+	 local sel = selection as array
 	
 	if sel.count > 1 do
 	(
@@ -12,20 +14,23 @@ fn centerizeGroupFN =
 			if classof s == editable_poly and s.parent == undefined then 
 			(
 				target = s
+				print s
 			)
 			else if classof s == dummy then
 			(
 				source = s 
+				print s
 			)
 			else
 			(
-				print 
+				print "bouh"
 			)
 		)
 		
 		if target != undefined and source != undefined do
 		(
 			source.center = target.center
+			print"centered"
 		)
 	)
 	print "done"
@@ -48,7 +53,7 @@ rollout objReplacerRLT "objects replacer"
 	return: node
 	*/
 	(
-		sel = ($selection as array)
+		sel = selection as array
 		if (sel.count == 1) then
 		(
 			local correctFFD = False
@@ -105,7 +110,7 @@ rollout objReplacerRLT "objects replacer"
 	
 	fn checkTargetSelectionFN =
 	(
-		local tgtSel = $selection as array
+		local tgtSel = selection as array
 		return tgtSel
 	)
 	

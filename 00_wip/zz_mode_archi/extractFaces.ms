@@ -46,12 +46,16 @@ fn extractFacesFN outVal shellVal objSel =
 
 rollout extractFacesRLT "extract faces"
 (
-	local modeScriptFolder = getFilenamePath  (getThisScriptFilename() )
+	-- 	vars
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
+-- 	local modeScriptFolder = getFilenamePath  (getThisScriptFilename() )
 	
 	group "extraction"
 	(
-		spinner outSp "outline size" range: [-1000, 1000, 0]
-		spinner shellSp "shell size"  range: [-1000, 1000, 0]
+		spinner outSp "outline size" type: #worldunits range: [-1000, 1000, 0]
+		spinner shellSp "shell size"  type: #worldunits range: [-1000, 1000, 0]
 	)
 	
 	button extractBT "extract"
@@ -69,8 +73,8 @@ rollout extractFacesRLT "extract faces"
 	(
 		try 
 		(
-		outSp.value = 	(getINISetting (modeScriptFolder + "scriptMode.ini") "extractFace" "outSp") as float
-		shellSp.value = 	(getINISetting (modeScriptFolder + "scriptMode.ini") "extractFace" "shellSp" ) as float
+		outSp.value = 	(getINISetting armadasScriptsIni "extractFace" "outSp") as float
+		shellSp.value = 	(getINISetting armadasScriptsIni "extractFace" "shellSp" ) as float
 		)
 		catch
 		(
@@ -81,8 +85,8 @@ rollout extractFacesRLT "extract faces"
 	on extractFacesRLT close do
 	(
 		-- maj ini file
-		setINISetting (modeScriptFolder + "scriptMode.ini") "extractFace" "outSp" (outSp.value as string)
-		setINISetting (modeScriptFolder + "scriptMode.ini") "extractFace" "shellSp" (shellSp.value as string)
+		setINISetting armadasScriptsIni "extractFace" "outSp" (outSp.value as string)
+		setINISetting armadasScriptsIni "extractFace" "shellSp" (shellSp.value as string)
 		print "maj ini done"
 	)
 )

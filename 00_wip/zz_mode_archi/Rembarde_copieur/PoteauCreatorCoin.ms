@@ -1,3 +1,7 @@
+-- bug:	
+	-- missing first or last post corner
+	-- do not work on closed spliene
+
 rollout potoCornerRLT "poteaux corner"
 (
 	local boxRef = undefined
@@ -15,7 +19,7 @@ rollout potoCornerRLT "poteaux corner"
 -- 	
 	on addRefBT pressed do
 	(
-		sel = $selection as array
+		sel = selection as array
 		if sel.count == 1 then
 		(
 			boxRef = sel[1]
@@ -29,14 +33,26 @@ rollout potoCornerRLT "poteaux corner"
 	
 	on multiplyBT pressed do
 	(
+
+		local boxOrigin = undefined
+		
 		if boxRef == undefined do 
 		(
-			boxRef = box length: 5 width: 5 height: 100 name: "poteau_base"
-			refNameET.text = boxRef.name
+			boxOrigin =  box  length: 3 width: 3 height: 80 name: "post_inb_base"
+			refNameET.text = boxOrigin.name
+			boxRef = boxOrigin
 		)
-			
-				
-		lineSel = $
+
+		local lineSel = undefined
+		sel = selection as array
+		
+		for s in sel do
+		(
+			-- test spline shape class
+			-- action on each element of the array
+			lineSel = s
+		)
+		
 
 		splineSel = 1
 		splineSelNum = numSplines lineSel
@@ -83,10 +99,12 @@ rollout potoCornerRLT "poteaux corner"
 				boxTemp.position = posOnKnot
 			)
 		)
+		delete copyBoxRef
 		
 	)
 )
 createdialog potoCornerRLT
+
 
 /*
 splineSel = $selection as array

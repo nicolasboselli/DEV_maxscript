@@ -1,4 +1,10 @@
-Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
+/*
+maj:
+	-- make addSweepAboveDef independant from ui, add parameters
+	-- rename "remabarde_master" and copy remabarde
+	-- see what to do with cleanCopyFN and ConvertToReelSplineFN
+*/
+Rollout RembardeCopierUi "Rembarde Builder" width: 400
 
 (
 -- 	vars
@@ -19,6 +25,7 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 		(
 			deletemodifier WorkingCopy 1
 		)
+		return WorkingCopy
 	)
 	
 	fn ConvertToReelSplineFN v2 =
@@ -26,6 +33,27 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 		addmodifier v2 (Edit_Spline ())
 		converttosplineshape v2
 		updateshape v2
+	)
+	
+	-- find master to duplicate
+	fn findMasterDef sel =
+	(
+		local master = undefined
+-- 		find master
+		for s in sel do
+		(
+			InstanceMgr.GetInstances s &instances
+			print instances
+			for o in instances do
+			(
+				if o.modifiers.count == 0 then
+				(
+					master = o
+					break
+				)
+			)
+		)
+		return master
 	)
 	
 	fn ApplyModelFN WorkingCopyVars =
@@ -45,32 +73,130 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 		)
 	)
 	
+	
 -- 	UI
-
-	group "start"
+	/*
+	group "building:"
 	(
-		button StartRembardeBT "start" across: 2
-		button addLiceBT "add Lice"
+		button StartRembardeBT "template"  across:2
+-- 		button addLiceBT "one Lice" 
+	)
+	*/
+	
+	group "building:"
+	(
+		button addAboveBT "add above ^" enabled: true across: 3
+		button addBelowBT "add below v"  enabled: true
+		spinner decaySP "decay" type: #worldunits range: [0, 200, 5]  enabled: true -- across: 3
+-- 		checkbox fromSelCB "from  selection" checked: true
+-- 		checkbox fromOrigCB "from  origin" 
+		checkbox addDecayCB "add decay" checked: true across: 4
+		checkbox profileCB "copy profile"  enabled: true
+		checkbox materialCB "copy material"  enabled: true
+		checkbox selectNewCB "select new"  enabled: true
 	)
 	
-	group "copy"
+	group "copying:"
 	(
-		pickbutton SelRefPB "Pick reference"
-		button SelRefBT "Add reference" 
+-- 		pickbutton SelRefPB "Pick reference"
+		button SelRefBT "Add reference >>" 
 		edittext RefNameET readonly: true text: "reference"
-	)
-	group "paste"
-	(
-		button ApplyModelBT "appliquer la reference"
+		button ApplyModelBT "make copy"
 	)
 
+	
+	-- UI functions
+	
+	
+	fn addSweepAboveDef s state: true =
+	(
+		local invertVal = 1
+		if state == false do invertVal = - 1
+			
+		local matref = s.material
+		local yoffsetStart = 0
+		-- find spline master
+		local master = findMasterDef s
+		
+		-- create new sweep
+		local newSweep = sweep  yOffset: 0 CurrentBuiltInShape: 2 PivotAlignment:5 SmoothPath: off
+		
+		-- find sweep reference
+		local sweepCopy = undefined
+		
+		for oneMod in s.modifiers do
+		(
+			if classof oneMod == sweep do
+			(
+				sweepCopy = copy oneMod
+				yoffsetStart = oneMod.yoffset
+				break
+			)
+		)
+		
+		-- define sweep to paste
+		local sweepToPaste = undefined
+		
+		if 	profileCB.state == true and sweepCopy != undefined then
+		(
+			sweepToPaste = sweepCopy
+		)
+		else
+		(
+			sweepToPaste = sweep  yOffset: yoffsetStart CurrentBuiltInShape: 2 PivotAlignment:5
+		)
+		
+		-- 		add sweep
+		if master != undefined then
+		(
+			print "master found"
+			workingCopy = reference master
+			
+			if materialCB.state == true do workingCopy.material = matref
+-- 			add y offset
+			if addDecayCB.state == true do sweepToPaste.yoffset = sweepToPaste.yoffset + decaySP.value*invertVal
+
+			addmodifier workingCopy sweepToPaste
+			
+			if selectNewCB.state == true do select workingCopy
+		)
+		else
+		(
+			print "no master found"
+		)
+	)
 	
 -- 	Actions
+	on fromSelCB changed theState do
+	(
+		if theState == true then
+		(
+			fromOrigCB.state = false
+		)
+		else
+		(
+			fromOrigCB.state = true
+		)
+	)
+	
+	on fromOrigCB changed thestate do
+	(
+		if theState == true then
+		(
+			fromSelCB.state = false
+		)
+		else
+		(
+			fromSelCB.state = true
+		)
+	)
 	
 	on StartRembardeBT pressed do
 	(
+		-- cleaning
 		CleanCopyFN $
 		ConvertToReelSplineFN workingCopy
+		
 		StartRembarde = workingCopy
 		StartRembarde.name = uniquename "rembarde_"
 		Pas = 0
@@ -78,6 +204,8 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 		(
 			CopyRembarde = reference StartRembarde
 			CopyRembarde.name = uniquename (StartRembarde.name + "_inst_")
+			
+			
 			
 			addmodifier CopyRembarde (sweep ())
 			
@@ -90,26 +218,62 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 			pas += 25
 		)
 	)
-	
+/*
 	on addLiceBT pressed do
 	(
-		print "toto"
-		newLice = reference $
-		addmodifier newLice (sweep ())
-	)
+		sel = selection as array
+		if sel.count == 1 then
+		(
+			
+			-- find spline master
+			local master = findMasterDef sel
 
-	
-	
-	on SelRefPB picked ModRef do
-	(
-		print ModRef
-		RefNameET.text = ModRef.name
-		SuperModRef = ModRef
+	-- 		add sweep
+			if master != undefined then
+			(
+				print "master found"
+				workingCopy = reference master
+				
+				startingSweep = sweep  yOffset: 0 CurrentBuiltInShape: 2 PivotAlignment:5
+				addmodifier workingCopy startingSweep
+			)
+			else
+			(
+				print "no master found"
+			)
+		)
 	)
+*/
+	on addAboveBT pressed do
+	(
+		sel = selection as array
+		
+		if sel.count == 1 then
+		(
+			for s in sel do
+			(
+				addSweepAboveDef s state: true
+			)
+		)
+	)
+	
+	on addBelowBT pressed do
+	(
+		sel = selection as array
+		
+		if sel.count == 1 then
+		(
+			for s in sel do
+			(
+				addSweepAboveDef s state: false
+			)
+		)
+	)		
+
 	
 	on SelRefBT pressed do
 	(
-		if $selection.count == 1 then
+		if selection.count == 1 then
 		(
 			RefNameET.text = $.name
 			SuperModRef = $
@@ -124,7 +288,7 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 	(
 		if SuperModRef != undefined then
 		(
-			if $selection.count == 1 then
+			if selection.count == 1 then
 			(
 				NumRef = InstanceMgr.GetInstances SuperModRef &toto
 				print NumRef
@@ -150,5 +314,26 @@ Rollout RembardeCopierUi "Rembarde Copier UI" width: 400
 
 createdialog RembardeCopierUi
 
-classof $ == SplineShape
-classof $
+/*
+
+
+
+struct sweepCopierClass
+(
+	oneSweep,
+	
+)
+
+newMod
+for oneMod in $.modifiers do
+(
+	if classof oneMod == sweep do
+	(
+		print (newMod = copy sweep)
+	)
+)
+classof oneMod
+
+addModifier $ newMod
+*/
+

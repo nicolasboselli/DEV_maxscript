@@ -2,32 +2,54 @@
 -- add uvwMapAutoFit on panel
 -- create plane
 
-rollout opaRLT "selection opacity"
+try(destroyDialog opaRLT)catch()
+rollout opaRLT "plan manipulator"
 (
+	struct planClass 
+	(
+		obj,
+		difmap = obj.material.diffusemap.filename
+		
+	)
 	
-
+	fn returnBitmapDef s =
+	(
+		return s.material.diffusemap.filename
+	)
 -- vars
 	local opaVal = 60
-	local sel = $selection
+	local sel = selection as array
 	local bitmapVar
 -- fn
 -- UI
-	editText mapName_et "map name:" readOnly: true fieldWidth: 50
-	button refreshMap_bt "refresh" across:2
-	button openFolder_bt "open folder"
-	spinner opaVarSP "opacity: "  range: [0,100,opaVal]  across: 3
-	button opa60BT "opa 60"  
-	button opa100BT "opa 100" 
+	group "map info:" 
+	(
+		editText mapName_et "map name:" readOnly: true fieldWidth: 200 
+		button refreshMap_bt "refresh" across:2
+		button openFolder_bt "open folder"
+	)
+	
+	group "opacity:"
+	(
+		spinner opaVarSP "opacity: "  range: [0,100,opaVal]  across: 3
+		button opa60BT "opa 60"  
+		button opa100BT "opa 100" 
+	)
+	
+	group "transform:"
+	(
+		-- import rotater
+	)
 	
 -- actions
 	on refreshMap_bt pressed do
 	(
-		sel = $selection
+		sel = selection as array
 		if sel.count == 1 then
 		(
 			for s in sel do
 			(
-				bitmapVar = s.material.diffusemap.filename
+				bitmapVar = returnBitmapDef s
 				mapName_et.text = bitmapVar
 			)
 		)
@@ -41,11 +63,9 @@ rollout opaRLT "selection opacity"
 	(
 		if bitmapVar != undefined do
 		(
-			folder = getFileNamePath bitmapVar
-
-			var = stringstream ""
-			format "explorer %" folder to: var
-			doscommand (var as string)
+			foldToOpen = getFileNamePath bitmapVar
+			print foldToOpen
+			doscommand ("explorer " + foldToOpen)
 		)
 
 	)
@@ -57,7 +77,7 @@ rollout opaRLT "selection opacity"
 	
 	on opa60BT pressed do
 	(
-		sel = $selection
+		sel = selection as array
 		for s in sel do
 		(
 			s.material.opacity = opaVal
@@ -67,6 +87,7 @@ rollout opaRLT "selection opacity"
 	
 	on opa100BT pressed do
 	(
+		sel = selection as array
 		for s in sel do
 		(
 			

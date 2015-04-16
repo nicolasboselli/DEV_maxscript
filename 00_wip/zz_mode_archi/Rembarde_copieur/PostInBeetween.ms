@@ -1,9 +1,9 @@
-fn postInbeetweenDef boxref postNum =
+fn postInbeetweenDef boxref postNum: 5 distTreshold: 15 =
 (
 	local lineSel = $
 	local splineSelNum = numSplines lineSel
 
-	local ecart =20
+-- 	local ecart =20
 
 	local splineSegNumAr = for i = 1 to splineSelNum collect (numKnots lineSel i ) - 1
 
@@ -16,12 +16,17 @@ fn postInbeetweenDef boxref postNum =
 		
 		for j = 1 to splineSegNumAr[i] do
 		(
+			poteauNum = postNum
 			startKnotPos = getKnotPoint lineSel i j
 			endKnotPos = getKnotPoint lineSel i (j+1)
 			
 			distTemp =  (distance startKnotPos endKnotPos)
-	-- 		poteauNum =  (int (floor (distTemp / ecart))) 
+			postTreshold =  (int (floor (distTemp / distTreshold))) 
+			print postTreshold
 -- 			poteauNum = 5
+			if postTreshold < poteauNum do poteauNum = postTreshold
+			
+			print poteauNum
 			
 			percentCurInc = 1.0 / poteauNum
 			percentCur= 0
@@ -71,7 +76,8 @@ rollout potoCornerRLT "posts inbeetween"
 -- 	pickbutton  poteauRefCB "ref"
 	button addRefBT "ref>>"
 	edittext refNameET "ref:" readonly: true
-	spinner postNumSP "post number:" type: #integer range:[1,100,5]
+	spinner postNumSP "post number:" type: #integer range:[1,1000,5]
+	spinner postTresholdSP "dist treshold:" type: #worldunits range:[0.1,1000,15]
 	button multiplyBT "Multiply!"
 	
 	on addRefBT pressed do
@@ -90,14 +96,22 @@ rollout potoCornerRLT "posts inbeetween"
 	
 	on multiplyBT pressed do
 	(
+		local boxOrigin = undefined
+		
 		if boxRef == undefined do 
 		(
-			boxRef =  box  length: 3 width: 3 height: 80 name: "post_inb_base"
-			refNameET.text = boxRef.name
+			boxOrigin =  box  length: 3 width: 3 height: 80 name: "post_inb_base"
+			refNameET.text = boxOrigin.name
+			boxRef = boxOrigin
 		)
 		
 		local boxCopy = copy boxRef
-		postInbeetweenDef boxCopy postNumSP.value
+		undo on
+		(
+			postInbeetweenDef boxCopy postNum: postNumSP.value distTreshold: postTresholdSP.value
+		)
+		delete boxCopy
+		if boxOrigin != undefined do delete boxOrigin
 	)
 	
 )

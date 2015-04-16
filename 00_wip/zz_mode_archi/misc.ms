@@ -15,6 +15,14 @@ fn randomColorFN sel =
 	sel.wirecolor =  randomColor
 )
 
+fn centerPivotDef sel = 
+(
+	for s in sel do
+	(
+		s.pivot = s.center
+	)
+)
+
 
 fn goutteDeauFN sel =
 (
@@ -34,7 +42,7 @@ fn debordFN sel =
 	polyop.bevelFaces sel #selection  -3 0
 )
 
-fn randomWireFN =
+fn randomWireFN useFirstId: true =
 (
 	for mat in sceneMaterials do 
 	(
@@ -43,7 +51,13 @@ fn randomWireFN =
 		(
 			if (superclassof o == GeometryClass) do 
 			(
-				if  o.material == mat do
+				if (classof o.material) == multimaterial and useFirstId == true then
+				(
+-- 					print mat 
+-- 					print o
+					if o.material[1] == mat  do o.wirecolor = randomWire
+				)
+				else if  o.material == mat then
 				(
 					o.wirecolor = randomWire
 				)
@@ -51,6 +65,7 @@ fn randomWireFN =
 		)
 	)
 )
+-- randomWireFN()
 
 --debug: make usabled on multiselection
 fn makeFloorFN currentSel =
@@ -61,34 +76,38 @@ fn makeFloorFN currentSel =
 	(
 		if classof s == splineshape do
 		(
-			myEditPoly = Edit_Poly()
-			addmodifier s myEditPoly
-			convertto s editable_poly
+			undo on
+			(
+				myEditPoly = Edit_Poly()
+				addmodifier s myEditPoly
+				convertto s editable_poly
 
-			-- outline 15 cm
-			polyop.setFaceSelection  s #all
-			s.outlineAmount = -15
-			s.EditablePoly.Outline ()
+				-- outline 15 cm
+				select s
+				polyop.setFaceSelection  s #all
+				s.outlineAmount = -15
+				s.EditablePoly.Outline ()
 
-			-- shell 10cm
-			myShell = Shell innerAmount:10 outerAmount:10
-			addmodifier s myShell
+				-- shell 10cm
+				myShell = Shell innerAmount:10 outerAmount:10
+				addmodifier s myShell
 
-			-- convert to poly
-			convertto s editable_poly
+				-- convert to poly
+				convertto s editable_poly
 
-			-- material "interieur"G
-			sel.material = sceneMaterials["interieur"]
+				-- material "interieur"G
+				sel.material = sceneMaterials["interieur"]
+			)
 		)
 	)
 )
 
-fn connectRingFN loopNum =
+fn connectRingFN s loopNum: 1 =
 (
 -- 	maj: init connect decay
 	PolyToolsSelect.ring()
-	$.connectEdgeSegments   = loopNum
-	$.connectEdges()
+	s.connectEdgeSegments   = loopNum
+	s.connectEdges()
 )
 
 -- refresh scenematerial
@@ -103,17 +122,22 @@ updateSceneMaterials()
 -- attach object select in the same object
 fn cleancombine grp =
 (
-	master = grp[1]
-	converttopoly master
-	InstanceMgr.MakeObjectsUnique master #individual
-
-	for i = grp.count to 2 by -1 do
+	undo on
 	(
-		master.EditablePoly.attach grp[i] master
-	-- 	print sel[i]
+		master = grp[1]
+		converttopoly master
+		InstanceMgr.MakeObjectsUnique master #individual
+
+		for i = grp.count to 2 by -1 do
+		(
+			master.EditablePoly.attach grp[i] master
+		-- 	print sel[i]
+		)
 	)
 	return master
 )
+
+try(destroyDialog miscRLT)catch()
 
 rollout miscRLT "misc"
 (
@@ -122,6 +146,7 @@ rollout miscRLT "misc"
 	group "wirecolor: "
 	(
 		button randColBT "random color"
+		checkbox multiMatIDCB "use first id for multimaterial" checked: true
 		button randomWireBT "wirecolor by material"
 	)
 	
@@ -134,7 +159,13 @@ rollout miscRLT "misc"
 		button connectRingBT "connect ring x1"
 		button connectRing2BT "connect ring x2"
 		button cleanCombineBT "combine"
+		
+		button converttopolyBT "convert to poly"
 	)
+	
+	button centerPivotBT "center pivot"
+	
+
 	
 	on getInstBT pressed do
 	(
@@ -153,13 +184,46 @@ rollout miscRLT "misc"
 	
 	on goutteBT pressed do goutteDeauFN $	
 	on debordBT pressed do debordFN $
-	on randomWireBT pressed do randomWireFN()
-	on makeFloorBT pressed do makeFloorFN selection
-	on connectRingBT pressed do connectRingFN 1
-	on connectRing2BT pressed do connectRingFN 2
+	on randomWireBT pressed do
+	(
+		randomWireFN useFirstId: multiMatIDCB.state
+	)
+	on makeFloorBT pressed do makeFloorFN (selection as array) 
+	on connectRingBT pressed do 
+	(
+		sel = selection as array
+		for s in sel do
+		(
+			undo on
+			(
+				connectRingFN s loopNum:1
+			)
+		)
+	)
+	on connectRing2BT pressed do 
+	(
+		sel = selection as array
+		for s in sel do
+		(
+			undo on
+			(
+				connectRingFN s loopNum:2
+			)
+		)
+	)
+	
 		
-	on cleanCombineBT pressed do cleancombine selection
+	on cleanCombineBT pressed do cleancombine (selection as array)
 		
+	on centerPivotBT pressed do centerPivotDef (selection as array)
+	on converttopolyBT pressed do 
+	(
+		sel = selection as array
+		for s in sel do
+		(
+			converttopoly s
+		)
+	)
 )
 createDialog miscRLT
 

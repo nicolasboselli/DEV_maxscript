@@ -1,45 +1,3 @@
--- Vars pour GF_return2faces.ms et GF_super_fenetre.ms
-/*
-vector_z
-vectors
-Tutor_matrix_bak
-num_vertex
-s_pos
-faces_num
-s_array
-fenetres_array
-faces_bitarray
-vertex_up_array
-vertex_array
-duo_array
-vertex_left_array
-max_value_bak
-pas
-max_value
-tour
-selection_globale_bak
-selection_globale_array
-elts_num
-une_selection
-selection_globale
-tutor
-vector_x
-vector_y
-*/
-
--- FONCTIONS pour GF_return2faces.ms et GF_super_fenetre.ms
-/*
-ySort
-detach_elements_selected
-clean_une_fenetre
-vectors_by_matrix
-sort_by_z
-redress_pivot
-FlipAllNormals
-VertexSorting
-RecreateEdgeY
-RecreateEdgeX
-*/
 
 -- function to create and detach face 
 fn detach_face_fenetre s =
@@ -81,21 +39,16 @@ fn detach_face_fenetre s =
 	
 
 	-- detache elements d'un objet un par un
-	fn detach_elements_selected s =
-	(
-
+fn detach_elements_selected s =
+(
 	-- selection de plusieurs elements 
+	local selection_globale = s.getselection #face
+	local selection_globale_array = selection_globale as array
+	local une_selection = polyop.getElementsUsingFace s #{selection_globale_array[1]} as array
 
-
-	selection_globale = s.getselection #face
-
-	selection_globale_array = selection_globale as array
-
-	une_selection = polyop.getElementsUsingFace s #{selection_globale_array[1]} as array
-
-	max_value = selection_globale_array.count
-	pas = 0
-	tour = 0
+	local max_value = selection_globale_array.count
+	local pas = 0
+	local tour = 0
 
 	-- trouver le nombre d'elements à détacher
 	-- compteur d'éléments
@@ -145,65 +98,65 @@ fn detach_face_fenetre s =
 
 	polyop.deleteFaces s selection_globale_bak
 	return fenetres_array
-	)
+)
 
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------	
 
 	-- fonction clean_une_fenetre
-	fn clean_une_fenetre s =
-	(
+fn clean_une_fenetre s =
+(
 
-	-- detache la selection
-	s.EditablePoly.GetNumFaces ()
+-- detache la selection
+s.EditablePoly.GetNumFaces ()
 
-	-- fermeture des face ouvertes
-	s.EditablePoly.SetSelection #Edge ((polyOp.getOpenEdges s) as bitarray)
-	edges_list = (polyOp.getOpenEdges s)
-	polyop.capHolesByEdge s edges_list
-	s.ConvertSelection #edge #face
+-- fermeture des face ouvertes
+s.EditablePoly.SetSelection #Edge ((polyOp.getOpenEdges s) as bitarray)
+edges_list = (polyOp.getOpenEdges s)
+polyop.capHolesByEdge s edges_list
+s.ConvertSelection #edge #face
 
-	-- recup selection faces à garder
-	--select s
-	--subobjectLevel = 4
-	s.EditablePoly.ShrinkSelection selLevel: #face
-	face_survive = s.getselection #face
-	--subobjectLevel = 0
+-- recup selection faces à garder
+--select s
+--subobjectLevel = 4
+s.EditablePoly.ShrinkSelection selLevel: #face
+face_survive = s.getselection #face
+--subobjectLevel = 0
 
-	-- recup selection faces à supprimer
-	face_fenetre_seule_count = s.EditablePoly.GetNumFaces ()
-	face_fenetre_seule = #{} 
-	for i = 1 to face_fenetre_seule_count do append face_fenetre_seule i
-	face_to_delete = face_fenetre_seule - face_survive
+-- recup selection faces à supprimer
+face_fenetre_seule_count = s.EditablePoly.GetNumFaces ()
+face_fenetre_seule = #{} 
+for i = 1 to face_fenetre_seule_count do append face_fenetre_seule i
+face_to_delete = face_fenetre_seule - face_survive
 
-	-- suppression  des faces inutiles
-	s.EditablePoly.setSelection #face face_to_delete
-	s.delete #face
+-- suppression  des faces inutiles
+s.EditablePoly.setSelection #face face_to_delete
+s.delete #face
 
-	)
+)
 
-----------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------		
 
-	-- fonction pour récupérer les vecteurs des edges d'une face
-	fn vectors_by_matrix v = 
-	(
-		v.EditablePoly.setSelection #face #{1}
-		v.ConvertSelection #face #edge
-		edge_col = v.getselection #edge
-		edge_array = edge_col as array
-		v.EditablePoly.setSelection #face #{}
+-- fonction pour récupérer les vecteurs des edges d'une face
+fn vectors_by_matrix v = 
+(
+	v.EditablePoly.setSelection #face #{1}
+	v.ConvertSelection #face #edge
+	edge_col = v.getselection #edge
+	edge_array = edge_col as array
+	v.EditablePoly.setSelection #face #{}
 
-			for o in edge_array collect
-			(
-			v.EditablePoly.setSelection #edge #{o}
-			v.ConvertSelection #edge #vertex
-			vertex_duo = v.getselection #vertex
-			vertex_duo_int = vertex_duo as array
-			vertex_coord = for o in vertex_duo_int collect v.GetVertex  o
-			normalize (vertex_coord[1]*(v.transform) - vertex_coord[2]*(v.transform))
-			)
-	 )
+		for o in edge_array collect
+		(
+		v.EditablePoly.setSelection #edge #{o}
+		v.ConvertSelection #edge #vertex
+		vertex_duo = v.getselection #vertex
+		vertex_duo_int = vertex_duo as array
+		vertex_coord = for o in vertex_duo_int collect v.GetVertex  o
+		normalize (vertex_coord[1]*(v.transform) - vertex_coord[2]*(v.transform))
+		)
+ )
 
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------	
@@ -291,7 +244,7 @@ fn detach_face_fenetre s =
 	fn VertexSorting s =
 	(
 		num_vertex = s.EditablePoly.GetNumVertices ()
-		vertex_array = for i = 1 to num_vertex collect i
+		global vertex_array = for i = 1 to num_vertex collect i
 		vertex_bitarray = vertex_array as bitarray
 		vertex_pos = for i = 1 to num_vertex collect s.getvertex i
 		print (vertex_pos as string)
@@ -375,17 +328,17 @@ fn detach_face_fenetre s =
 
 		vertex_right_array = vertex_x_min
 
-		"vertex_up_array : " + (vertex_up_array as string) + "; vertex_down_array :"  + (vertex_down_array as string) + "; vertex_left_array :" + (vertex_left_array as string)  + "; vertex_right_array :"  + ( vertex_right_array as string )
-
+-- 		"vertex_up_array : " + (vertex_up_array as string) + "; vertex_down_array :"  + (vertex_down_array as string) + "; vertex_left_array :" + (vertex_left_array as string)  + "; vertex_right_array :"  + ( vertex_right_array as string )
+		return #(vertex_up_array,vertex_down_array, vertex_left_array, vertex_right_array)
 	)
 
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------		
 
 	-- recréation des edge en Y
-	fn RecreateEdgeY s =
+	fn RecreateEdgeY s vertex_up_array =
 	(
-		asset_array = #()
+		local asset_array = #()
 
 		for a = 1 to vertex_up_array.count do
 		(
@@ -421,7 +374,7 @@ fn detach_face_fenetre s =
 ----------------------------------------------------------------------------------------------------------------------------------		
 
 	-- recréation des edge en X
-	fn RecreateEdgeX s =
+	fn RecreateEdgeX s vertex_left_array =
 	(
 
 		asset_array_x = #()
@@ -482,7 +435,7 @@ fenetres_base
 	*/
 
 
--- declaration des materiaux vitre
+-- DEF des materiaux vitre
 	fn FenetresMaterial =
 	(
 				-- creation des materiaux
@@ -507,10 +460,14 @@ fenetres_base
 	)
 		
 -- declaration de la modelisation de fenetre de base
-	fn fenetres_base s =
+	fn fenetres_base s cadreSize: 4 dormantSize: 4 battantSize: 4 =
 	(
 	-- application des opérations
-	
+		/*
+	if cadreSize == unsupplied then cadreSize = 4
+	if cadreSize == unsupplied then cadreSize = 4
+	if cadreSize == unsupplied then cadreSize = 4
+		*/
 	subobjectLevel = 0
 	
 	s.material = sceneMaterials ["fenetre"]
@@ -518,13 +475,14 @@ fenetres_base
 	subobjectLevel = 4
 	
 	s.EditablePoly.setMaterialIndex 1 1
-	
-	s.insetAmount = 4
+	-- cadre creation
+	s.insetAmount = cadreSize
 	s.insetType = 0
 	s.EditablePoly.buttonOp #Inset
-
+		
+	-- dormant creation
 	s.extrusionType = 0
-	s.faceExtrudeHeight = -4
+	s.faceExtrudeHeight = dormantSize*-1
 	s.EditablePoly.buttonOp #Extrude
 
 	s.insetAmount = 0.3
@@ -534,8 +492,9 @@ fenetres_base
 	s.faceExtrudeHeight = 2.5
 	s.faceExtrudeHeight = 3
 	s.EditablePoly.buttonOp #Extrude
-
-	s.insetAmount = 4
+	
+	-- battant creation
+	s.insetAmount = battantSize
 	s.insetType = 1
 	s.EditablePoly.buttonOp #Inset
 
@@ -768,3 +727,48 @@ fenetres_base
 		)
 	)		
 
+	
+print "all windows functions loaded"
+	
+-- Vars pour GF_return2faces.ms et GF_super_fenetre.ms
+/*
+vector_z
+vectors
+Tutor_matrix_bak
+num_vertex
+s_pos
+faces_num
+s_array
+fenetres_array
+faces_bitarray
+vertex_up_array
+vertex_array
+duo_array
+vertex_left_array
+max_value_bak
+pas
+max_value
+tour
+selection_globale_bak
+selection_globale_array
+elts_num
+une_selection
+selection_globale
+tutor
+vector_x
+vector_y
+*/
+
+-- FONCTIONS pour GF_return2faces.ms et GF_super_fenetre.ms
+/*
+ySort
+detach_elements_selected
+clean_une_fenetre
+vectors_by_matrix
+sort_by_z
+redress_pivot
+FlipAllNormals
+VertexSorting
+RecreateEdgeY
+RecreateEdgeX
+*/

@@ -3,10 +3,13 @@
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 	
-
+print "start return to face"
 	if selection.count != 0 then
 	(
 		if (modPanel.getCurrentObject() == undefined) then  max modify mode
+		
+		local fenetres_array = #()
+		local vertArList = #()
 		
 		case of
 		(
@@ -15,7 +18,7 @@
 			(
 			s = $
 
-			detach_elements_selected s
+			fenetres_array = detach_elements_selected s
 
 				for o in fenetres_array do 
 				(	
@@ -32,9 +35,13 @@
 					--redress_pivot o
 
 					--edgesVariables o
-					VertexSorting o
-					RecreateEdgeY o
-					RecreateEdgeX o
+					print "check 2"
+					vertArList = VertexSorting o
+					print "check 0"
+					print vertArList
+					RecreateEdgeY o vertArList[1]
+					RecreateEdgeX o vertArList[3]
+					print"check1"
 				)
 				
 				select fenetres_array
@@ -51,7 +58,7 @@
 		
 			(subobjectLevel == 0):
 			(
-				s_array = $selection as array
+				s_array = selection as array
 				
 				for s in s_array do
 				(
@@ -59,8 +66,7 @@
 					select s
 					polyop.setFaceSelection s #all
 
-					detach_elements_selected s
-
+					fenetres_array = detach_elements_selected s
 					for o in fenetres_array do 
 					(
 						select o
@@ -88,15 +94,12 @@
 					
 					temp = getNodeByname first.name
 					temp.material = undefined
-					
 				)
 			)
 			
 			-- dans tous les autres cas de selection
 			default: print "selectionner des objets ou des elements d'objet"
-			
 		)
-	
 	)
-	else print "selectionner des objets ou des elements d'objet"
-
+	else print "selectionner des objets ou des elements d'objet"	
+print "end return to face"

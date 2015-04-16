@@ -1,5 +1,5 @@
 -- Align and parent
-duoAr = $selection as array
+duoAr = selection as array
 -- Align
 
 duoAr[1].parent = duoAr[2]

@@ -14,8 +14,21 @@
 -- faire un nettoyage propre de la face decoupée
 
 -- zincCreatorFN = openfile "D:\github_repo\DEV_maxscript\00_wip\zz_mode_archi\bardageCreator\zinc_creator_bounding_box_fn.ms"
-zincCreatorFN = openfile (modeArchiScriptRoot + "\bardageCreator\zinc_creator_bounding_box_fn.ms")
-execute zincCreatorFN
+
+-- 	vars
+fn returnScriptRoot =
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	return scriptRoot
+)
+
+scriptRoot = returnScriptRoot()
+filein (scriptRoot + "\zz_mode_archi\\bardageCreator\\zinc_creator_bounding_box_fn.ms")
+
+-- zincCreatorFN = openfile (modeArchiScriptRoot + "\bardageCreator\zinc_creator_bounding_box_fn.ms")
+-- execute zincCreatorFN
 
 rollout zincCreatorRLT "Zinc creator"
 (

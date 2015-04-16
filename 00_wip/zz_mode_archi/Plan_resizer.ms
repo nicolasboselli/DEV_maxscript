@@ -8,35 +8,92 @@ numeric resize
 5. "resize" to resize map
 tz
 maj:
--- add init scaler and resizer on opening rollout
+
 -- add deletion system
 -- add root and target system selection
--- add plan opacity
 -- separate ui and function
--- minimize scaler size
 
-add scaler on each plan
-activate reference on demand
-add function to rotate plan
-add function to snap scaler
-add scale function on rescaler
+-- make distance interactive(event)
+-- make ui interactive to scaler deletion
+
+-- add tool to pick root position  and target position 
+-- scale resizer with map
+-- calculate dimension on bounding box and do not use plane size anymore
+
+-- add plan opacity
+-- add scaler on each plan
+-- activate reference on demand
+-- add function to rotate plan
+-- add function to snap scaler
+
+x-- hide scaler
+x-- place scaler on helper layer
+x-- minimize scaler size
+x-- add init scaler and resizer on opening rollout
+
 */
+
+-- helpers layer creation
+fn createHelperLayerDef =
+(
+	local LM = layermanager
+	local planLayer
+	if (LM.getLayerFromName "helpers") == undefined then
+	(
+		planLayer = LM.newLayerFromName "helpers"
+	)
+	else
+	(
+		planLayer = LM.getLayerFromName "helpers"
+	)
+	return planLayer
+)
+
+-- check system presence
+fn checkScalerDef =
+(
+	local scalerAr =#()
+	local startPt, endPt, scaler
+	startPt = getnodebyname  "startPoint"
+	endPt = getnodebyname  "endPoint"
+	scaler = getnodebyname  "scaler"
+	
+	if startPt != undefined do append scalerAr startPt
+	if endPt != undefined do append scalerAr endPt
+	if scaler != undefined do append scalerAr scaler
+		
+	if scalerAr.count == 3 then
+	(
+		return scalerAr
+	)
+	else
+	(
+		return undefined
+	)
+)
 
 
 --  create system
 fn createScalerSys =
 (
+	oneLayer = createHelperLayerDef()
+	
+	
 	local startPt, endPt, scaler
 
 	startPt = getnodebyname  "startPoint"
-	if  startPt == undefined do startPt = point name: "startPoint" wirecolor: red size: 20 box: true cross: false
+	if  startPt == undefined do startPt = point name: "startPoint" wirecolor: red size: 20 box: true cross: true
 
 	endPt = getnodebyname  "endPoint"
 	if  endPt == undefined do endPt = point name: "endPoint" wirecolor: red parent: startPt size: 15 box: false cross: true pos: [10,0,0]
 		
 	scaler = getnodebyname  "scaler"
-	if  scaler == undefined do scaler = point name: "scaler" wirecolor: yellow parent: startPt size: 15 box: true cross: true
-		
+	if  scaler == undefined do scaler = point name: "scaler" wirecolor: yellow parent: startPt size: 2 box: true cross: false
+	
+	oneLayer.addnode startPt
+	oneLayer.addnode endPt
+	oneLayer.addnode scaler
+	
 	return #(startPt, endPt, scaler)
 )
 
@@ -80,6 +137,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 			-- create resizer
 	group "Scaler:"
 	(
+		edittext scalerSpyET "scaler in scene :" readonly: true
 		button createScaler_bt "create scaler" across:2
 		button selScaler_bt "select scaler"
 
@@ -109,6 +167,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	group "visual reference:"
 	(
+		
 		button createSizeRef_bt "create size reference" across: 2
 		button selSize_bt "select size reference"
 		
@@ -136,12 +195,39 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	-- rescale points
 	button rescale_bt "resize map"
+	
+-- 	UI functions
+	
 
 -- 	actions
+	on planResizerRLT open do
+	(
+		scalerArray = checkScalerDef()
+		
+		if scalerArray == undefined then 
+		(
+			scalerSpyET.text = "no"
+		)
+		else 
+		(
+			scalerSpyET.text = "yes"
+		
+			startPt = scalerArray[1]
+			endPt = scalerArray[2]
+			scaler = scalerArray[3]
+		)
+	)
+	
 	
 	on createScaler_bt pressed do
 	(
-		scalerArray = createScalerSys()
+		createScalerSys()
+		
+		scalerArray = checkScalerDef()
+		
+		if scalerArray == undefined then scalerSpyET.text = "no"
+		else scalerSpyET.text = "yes"
+		
 		startPt = scalerArray[1]
 		endPt = scalerArray[2]
 		scaler = scalerArray[3]
@@ -161,7 +247,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	on parentScaler_bt pressed do
 	(
-		sel = $selection
+		sel = selection as array
 		if sel.count == 1 then
 		(
 			for s in sel do
@@ -227,7 +313,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	on parentRef_bt pressed do
 	(
-		sel = $selection
+		sel = selection as array
 		if sel.count == 1 then
 		(
 			for s in sel do
@@ -301,18 +387,27 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		(
 			print "fail"
 		)
-		print aimedDist
-		reelDist = float( distance startPt endPt)
-		-- aimedDist =  float(distance startSize endSize)
-		ratio = aimedDist/reelDist
-
-		startPt.parent = undefined
-		scalerParent.parent = scaler
-		scaler.scale = scaler.scale*ratio
-		scalerParent.parent = undefined
 		
-		scaler.scale = [1,1,1]
-		startPt.parent = scalerParent
+		print aimedDist
+		
+		if startPt != undefined and scalerParent != undefined then
+		(
+			reelDist = float( distance startPt endPt)
+			-- aimedDist =  float(distance startSize endSize)
+			ratio = aimedDist/reelDist
+
+			startPt.parent = undefined
+			scalerParent.parent = scaler
+			scaler.scale = scaler.scale*ratio
+			scalerParent.parent = undefined
+			
+			scaler.scale = [1,1,1]
+			startPt.parent = scalerParent
+		)
+		else
+		(
+			print "correct your selection"
+		)
 	)
 	
 )

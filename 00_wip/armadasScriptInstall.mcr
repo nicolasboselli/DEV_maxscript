@@ -20,19 +20,25 @@ fn installAmadasScripts =
 
 installAmadasScripts()
 
+iconsFolder = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
+doscommand ("explorer "+ maxIni)
+
+
 
 fn copyBmpIcons =
 (
 	-- copy icon
 -- get icon
+	
 	maxIni = getMAXIniFile()
 	armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	iconsArray = getfiles (scriptRoot + "\icons\*.bmp")
-
+	
 	-- get icon root folder
-	iconsRoot = (getdir #maxroot) + "\UI\Icons"
-
+-- 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
+	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
+		
 	-- make copy
 	for icon in iconsArray do
 	(

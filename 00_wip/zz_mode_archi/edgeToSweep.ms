@@ -1,12 +1,30 @@
 /*
 maj
-add param: reset xform, center pivot, add extrusion, add uvwmap, add mat, setup sweep, keep spline or subobject.
+add param:  center pivot,  add uvwmap, add mat, setup sweep, 
 */
 
 fn removeEdgeAndVerticesFN sel =
 (
-	sel.EditablePoly.ConvertSelectionToBorder #Edge #Vertex
+	sel.EditablePoly.ConvertSelection #Edge #Vertex
 	sel.EditablePoly.Remove selLevel: #Edge
+		-- check vertex
+	-- get vertex selection 
+	local vertBitAr = sel.GetSelection #vertex
+	local vertAr = vertBitAr as array
+	-- for each vertex
+		-- if vertex edge num <= 3 collect vertex
+	local vertToDel = #()
+	for id in vertAr do
+	(
+		num = sel.GetVertexEdgeCount  id
+		if num <=2 then
+		(
+			append vertToDel id
+		)
+	)
+	vertToDelBit = vertToDel as bitarray
+	-- set vertex selection with good vertex
+	sel.setSelection #vertex vertToDelBit
 	sel.EditablePoly.Remove selLevel: #Vertex
 )
 
@@ -41,67 +59,70 @@ rollout edgeToShapeRLT "edge to shape"
 	on extractBT pressed do
 	(
 		sel = selection as array
-
-		for s in sel do
+		
+		undo on
 		(
-			-- convert selection if necessary
-			if subObjectLevel == 4 do s.ConvertSelectionToBorder #Face #Edge
-			
-			-- create shape
-			newName = uniqueName (s.name + "_shape")
-			s.createShape  newName  false s
-			
-			newShape = getnodebyname newName
-			updateshape newShape
-			
-			-- option reset x form
-			if resetXformCB.state == true do
+			for s in sel do
 			(
-				resetxform newShape 
-				if collapseXformCB.state == true do
+				-- convert selection if necessary
+				if subObjectLevel == 4 do s.ConvertSelectionToBorder #Face #Edge
+				
+				-- create shape
+				newName = uniqueName (s.name + "_shape")
+				s.createShape  newName  false s
+				
+				newShape = getnodebyname newName
+				updateshape newShape
+				
+				-- option reset x form
+				if resetXformCB.state == true do
 				(
-					converttosplineshape  newShape
-					updateshape newShape
+					resetxform newShape 
+					if collapseXformCB.state == true do
+					(
+						converttosplineshape  newShape
+						updateshape newShape
+					)
 				)
-			)
-			
-			-- option: remove edge
-			if removeEdgeCB.state == True do removeEdgeAndVerticesFN s
-			
-			if addExtrusionCB.state == true do
-			(
-				myExtrusion = Extrude amount: extSize capStart: off capEnd: off
-				addmodifier newShape myExtrusion
-			)
-			
-			-- option: add sweep
-			if addSweepCB.state == true do
-			(
 				
-				mySweep = Sweep CurrentBuiltInShape: 2 PivotAlignment:8
-				mySmooth = Smooth name: "my_Smooth" autosmooth: on
+				-- option: remove edge
+				if removeEdgeCB.state == True do removeEdgeAndVerticesFN s
 				
-				addmodifier newShape mySweep
-				addmodifier newShape mySmooth
+				if addExtrusionCB.state == true do
+				(
+					myExtrusion = Extrude amount: extSize capStart: off capEnd: off
+					addmodifier newShape myExtrusion
+				)
 				
-				newSweep = getnodebyname newShape.name
+				-- option: add sweep
+				if addSweepCB.state == true do
+				(
+					
+					mySweep = Sweep CurrentBuiltInShape: 2 PivotAlignment:8
+					mySmooth = Smooth name: "my_Smooth" autosmooth: on
+					
+					addmodifier newShape mySweep
+					addmodifier newShape mySmooth
+					
+					newSweep = getnodebyname newShape.name
 
-				newSweep.modifiers[#Sweep][#Bar_Section].length = 20
-				newSweep.modifiers[#Sweep][#Bar_Section].width = 20
-			)
-			
-			-- option keep selection
-			if keepSelCB.state == true then
-			(
-				select s
-				modPanel.setCurrentObject s
-				subobjectLevel = 4	
+					newSweep.modifiers[#Sweep][#Bar_Section].length = 20
+					newSweep.modifiers[#Sweep][#Bar_Section].width = 20
+				)
+				
+				-- option keep selection
+				if keepSelCB.state == true then
+				(
+					select s
+					modPanel.setCurrentObject s
+					subobjectLevel = 4	
 
-			)
-			else
-			(
-				subobjectLevel = 0		
-				select newShape
+				)
+				else
+				(
+					subobjectLevel = 0		
+					select newShape
+				)
 			)
 		)
 	)
