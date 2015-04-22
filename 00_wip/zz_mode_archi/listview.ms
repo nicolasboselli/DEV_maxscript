@@ -1,45 +1,53 @@
 
-rollout listview_rollout "ListView Selected"
+rollout treeview_rollout "TreeView Scene Browser"
 (
 
-	fn initListView lv =
-	(
-		lv.gridLines = true --same as in ActiveX --The following controls the display of details. We use defaults:
-		lv.View = (dotNetClass "System.Windows.Forms.View").Details
-		lv.fullRowSelect = true --same as in ActiveX
-		layout_def = #("Object Name", "Object Class", "Verts", "Material","pos x")
-		for i in layout_def do
-		lv.Columns.add i 96 --add column with name and optional width
-	)
 
-	fn fillInSpreadSheet lv =
+	fn initTreeView tv =
 	(
-		theRange = #() --array to collect the list items
-		for o in selection do
+		tv.Indent= 28 --property name is different and value is in pixels --the default style already has root lines.
+	) 
+
+
+	fn addChildren theNode theChildren =
+	(
+		for c in theChildren do
 		(
-			--First we create a ListViewItem objectwith the object's name:
-			li = dotNetObject "System.Windows.Forms.ListViewItem" o.name
-			--Then we add all the sub-itemswith the desired string values:
-			sub_li = li.SubItems.add ((classof o) as string)
-			sub_li = li.SubItems.add (try((o.mesh.numverts) as string)catch("--"))
--- 			sub_li = li.SubItems.add (try((o.mesh.numfaces) as string)catch("--"))
-			sub_li = li.SubItems.add ((o.material) as string)
-			sub_li = li.SubItems.add ((o.pos.x) as string)
-			append theRange li--we add the list item to the array
+			newNode = theNode.Nodes.add c.name --add to the parent!
+			newNode.tag = dotNetMXSValue c --.tag can contain a MXS value
+			addChildren newNode c.children --recursive call for new node
 		)
-	lv.Items.AddRange theRange--when done, we populate the ListView
 	)
 
-	dotNetControl lv_objects "System.Windows.Forms.ListView" width:490 height:190 align:#center 
 
-	on listview_rollout open do
+	fn fillInTreeView tv =
 	(
--- 		lv_objects.Checkboxes = true
-		lv_objects.LabelEdit  = true
-		lv_objects.MultiSelect = true
-		initListView lv_objects
-		fillInSpreadSheet lv_objects
+		theRoot = tv.Nodes.add "WORLD ROOT" --add parent node
+		rootNodes = for o in objects where o.parent == undefined collect o
+		addChildren theRoot rootNodes --no need to pass theTreeView
+	)
+
+
+	dotNetControl tv "TreeView" width: 190 height:290 align:#center
+	spinner spn_indent "Indentation" range:[0,100,28] type:#integer fieldwidth:40
+
+
+	on tv Click arg do
+	(
+		--First get theTreeView node below the mouse cursor --The arg argument has properties .x and .y with the current pos. --Use showProperties arg to see what is available... --We use the TreeView method GetNodeAt to see what was clicked:
+		hitNode = tv.GetNodeAt (dotNetObject "System.Drawing.Point" arg.x arg.y)
+		if hitNode != undefined do --if a TreeView node was clicked,
+		try(select hitNode.tag.value)catch(max select none)
+	--...we try to select the object stored as value in the .tag
+	)
+	--We change the .indentation to .indent:
+	on spn_indent changed val do tv.indent = val
+	--The rest of the script does not require changes:
+	on treeview_rollout open do
+	(
+		initTreeView tv
+		fillInTreeView tv
 	)
 )
-try(destroyDialog listview_rollout)catch()
-createDialog listview_rollout 500 200
+try(destroyDialog treeview_rollout)catch()
+createDialog treeview_rollout 200 320

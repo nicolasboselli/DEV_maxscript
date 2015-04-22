@@ -9,8 +9,6 @@
 	 - manager many set of favorites
 	 - copy/cut/paste file
 
-
-
 -- favorites launcher
 	-- maj:
 		-- remove favorite
@@ -20,6 +18,16 @@
 		-- init first fav list with core list
 		-- save favorite in xml
 
+-- install script
+	done:
+		-- install script explorer macro
+		-- install script launcher
+		-- init script ini file
+		-- init root script value
+	-- maj:
+		-- looking for core script list in script folder to init script list
+		-- use xml instead of ini file to list scripts favorite
+		-- create one function to return script root
 
 -- create script outliner
 	-- display functions lists
@@ -205,4 +213,5 @@ x-- pick on scene
 -- dotnet
 	-- listview
 	-- datagridview
+	-- drag and drop
 -- xml

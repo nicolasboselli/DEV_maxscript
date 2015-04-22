@@ -53,7 +53,8 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	edittext pathET "current folder:" readonly: true
 	button openFoldBT "open folder" across: 2
 	button accessIniBT "access ini"
-	listbox scriptsListLB "Scripts:" tooltip: "script list" height: 30
+	listbox scriptsListLB "Scripts:" tooltip: "script list" height: 30 -- across: 2
+-- 	dotNetControl tv "TreeView"  height:450 visible: false
 	
 	group "navigation:"
 	(
@@ -73,9 +74,26 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	(
 		button printPathBT "add to favorites"
 	)
-	
+
 		
 -- 	functions
+
+	
+	/*
+	fn fillInTreeView tv =
+	(
+-- 		tv.AllowDrop = true
+		theRoot = tv.Nodes.add "SCRIPT ROOT" --add parent node
+		rootNodes =  for elt in allAr collect  elt
+		for o in rootNodes do
+		(
+			newNode = theRoot.Nodes.add o.name
+-- 			newNode.tag = dotNetMXSValue o
+		)
+-- 		addChildren theRoot rootNodes --no need to pass theTreeView
+	)
+	*/
+	
 	fn refreshUI =
 	(
 		print currentFolder
@@ -94,7 +112,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			append folderAr (folderClass f)
 		)
 		filesAr = for f in filesContent  collect fileClass f
-		allAr = join folderAr filesAr 
+		local allAr = join folderAr filesAr 
 		return allAr
 -- 		scriptsListLB.items = for fold in folderAr collect (toUpper fold.name)
 	)
@@ -116,8 +134,8 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	on scriptExplorerRLT open do
 	(
 		currentFolder = root
-
-		scanFolder root
+		allAr = scanFolder root
+		
 		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
 		(
 			favArStr = getINISetting armadasScriptsIni  "armadasScriptsFavorite" "armadasScriptsArray"
@@ -139,6 +157,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		)
 		
 		refreshUI()
+-- 		fillInTreeView tv
 		
 	)
 	
@@ -152,7 +171,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			if classof obj == folderClass then
 			(
 				currentFolder = obj.path
-				scanFolder currentFolder
+				allAr = scanFolder currentFolder
 			)
 			else
 			(
@@ -174,7 +193,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			sum = sum + splitFolder[i] + "/"
 		)
 		currentFolder = sum
-		scanFolder currentFolder
+		allAr = scanFolder currentFolder
 		refreshUI()
 	)
 	
