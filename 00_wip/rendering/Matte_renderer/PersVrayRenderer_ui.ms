@@ -110,7 +110,7 @@ rollout MattePropertiesRLT "Vray Matte Utilities"
 	
 	on MakeOthersMatteBT pressed do
 	(
-		InvertSel = invertSelFN ($selection as array)
+		InvertSel = invertSelFN (selection as array)
 		VisiblesObj = ObjVisFN InvertSel
 		VrInvertSel = VrPropFilterFN VisiblesObj
 		for o in VrInvertSel do MakeObjVrMatteFN o
@@ -335,7 +335,7 @@ Rollout MatteRendConfigRLT "Render Selection"
 	on RenderOtherAlphaBT pressed do
 	(
 		-- prepa de la selection
-		local SelToAlpha = $selection as array
+		local SelToAlpha = selection as array
 		print SelToAlpha
 		Material_Bak = for o in SelToAlpha collect o.material
 		for o in SelToAlpha do o.material = AutoIllumMat

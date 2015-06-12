@@ -3,8 +3,13 @@
 -- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 -- filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 filein"J:/GitHub_repo/DEV_maxscript/00_wip/GF/FN_gestion_fenetres.ms"
+filein "J:/GitHub_repo/DEV_maxscript/00_wip/zz_mode_archi/XformInPlace.ms"
 /*##############################cubizator ########################"*/
 
+
+/*
+function to boxerize selection
+*/
 -- $.pivot
 
 fn GetAngleFromNormal theNormal =
@@ -28,13 +33,9 @@ ConvertTo $ Editable_Poly
 
 -- detacher chaque element
 polyop.setFaceSelection  $ #all
--- $.getselection #face
-
 selArr = detach_elements_selected $
--- select selArr
--- select test
 
-selArr = selection as array
+-- ## reorient each element
 
 for o in selArr do
 (
@@ -55,25 +56,21 @@ for o in selArr do
 		in coordsys local o.rotation =newAngle
 		o.objectoffsetrot =newAngle
 		o.pivot = o.center
-	)
-)
-
--- selArr = $selection as array
-for o in selArr do
-(
-	if (polyop.getNumFaces o)>0 do
-	(	
+		
+		-- select o
 		polyop.setfaceselection o #all
 		
+		-- config outline
 		select o
 		$.outlineAmount = 2
 		$.EditablePoly.Outline ()
 		
 		-- add shell on object
 		myShell = Shell innerAmount:0 outerAmount:28
-		addmodifier o myShell	
+		addmodifier o myShell
+		
+		resetInPlaceFN o
+		o.material = undefined
 	)
 )
-
--- passer un coup de xforminplace
 

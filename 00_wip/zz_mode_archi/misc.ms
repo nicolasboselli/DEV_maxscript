@@ -137,6 +137,33 @@ fn cleancombine grp =
 	return master
 )
 
+-- transfert
+fn transfertModifiers sel =
+(
+	source = sel[1]
+
+	for i = 2 to sel.count do
+	(
+		for m in source.modifiers  do
+		(
+			addmodifier sel[i] m
+		)
+	)
+)
+
+
+fn transferColor sel =
+(
+	source = sel[1]
+
+	for i = 2 to sel.count do
+	(
+		sel[i].material = source.material
+	)
+)
+
+
+
 try(destroyDialog miscRLT)catch()
 
 rollout miscRLT "misc"
@@ -165,7 +192,11 @@ rollout miscRLT "misc"
 	
 	button centerPivotBT "center pivot"
 	
-
+	group "transfert"
+	(
+		button transferModBT "transfer modifiers"
+		button transferMatBT "transfer material"
+	)
 	
 	on getInstBT pressed do
 	(
@@ -223,6 +254,18 @@ rollout miscRLT "misc"
 		(
 			converttopoly s
 		)
+	)
+	
+	on transferModBT pressed do
+	(
+		sel = selection as array
+		transfertModifiers sel
+	)
+	
+	on transferMatBT pressed do
+	(
+		sel = selection as array
+		transferColor sel
 	)
 )
 createDialog miscRLT

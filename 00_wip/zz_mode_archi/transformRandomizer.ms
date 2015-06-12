@@ -29,7 +29,7 @@ print "yo\rtoto"
 
 sel = selection as array
 undo on
-(
+(e
 	for s in sel do
 	(
 		refAngle = in coordsys local s.controller.rotation as eulerangles

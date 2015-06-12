@@ -6,6 +6,8 @@
 
 
 
+
+
 fn findVray  =
 (
 	for r in rendererClass.classes do
@@ -38,8 +40,26 @@ rollout VrayRenderRLT "Vray Options"
 
 	local vrayExp = vray_exposure_control shutter: 500
 
-	
 -- 	functions
+	fn createInfiniteGround =
+	(
+		local vrGround
+		test = getnodebyname "vr_ground"
+		
+		if test == undefined then
+		(
+			solMat = vraymtl name: "sol_mat"
+			vrGround = vrayplane name: "vr_ground" pos: [0,0,-50]
+			vrGround.material = solMat
+		)
+		else 
+		(
+			vrGround = test
+		)
+		return vrGround
+	)
+	
+
 	fn createVraySun =
 	(
 		local vraySunVar = undefined
@@ -83,6 +103,7 @@ rollout VrayRenderRLT "Vray Options"
 		button vrayBaseSetBT "Vray base settings"
 		button vraySunBT "vray sun and sky"
 		button vrayExposureBT "vray exposure"
+		button createVrayGroundBT "vray ground"
 	)
 
 -- 	Actions
@@ -113,7 +134,17 @@ rollout VrayRenderRLT "Vray Options"
 		sceneExposureControl.exposureControl =  vrayExp
 	)
 	
+	on createVrayGroundBT pressed do
+	(
+		createInfiniteGround()
+	)
 )
 
 createdialog VrayRenderRLT 
+
+
+
+
+
+
 

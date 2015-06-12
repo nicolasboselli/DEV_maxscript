@@ -52,7 +52,7 @@
 	-- maj: 
 		- no ffd on selection
 		- calculate ffd from the center of the object
-		- scale the object instead of use ffd
+		x- scale the object instead of use ffd
 		
 -- rembardecopieur
 	-- maj: 
@@ -121,7 +121,7 @@ x-- found vray version
 
 -- vray base
 	x-- correct setting
-	-- add plane
+	x-- add plane
 	
 -- vray material
 	x-- material collector 
@@ -130,6 +130,7 @@ x-- found vray version
 	-- delete material
 	-- map amterial in list with material in editor
 
+-- tansfert material on selection
 	
 -- vraySelAphaMask \ vray pass render
 	bug: when load vray night on render occlu setting save bat render presset
@@ -193,6 +194,7 @@ x-- found vray version
 	-- copy paste weight from one point to another
 -- character node
 
+-- add control on bouding box selection
 
 ================================== ANIMATION =====================
 -- pose library

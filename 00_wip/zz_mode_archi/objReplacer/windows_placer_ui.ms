@@ -1,4 +1,5 @@
 filein "windows_placer_fn.ms"
+filein "objReplacerDef.ms"
 
 fn centerizeGroupFN =
 (
@@ -118,7 +119,10 @@ rollout objReplacerRLT "objects replacer"
 	button addRefBT "ref>>"
 	edittext refnameET readonly: true
 	button replaceBT "replace!"
+
 	button centerBT "center selection"
+	
+	button replaceV2BT "replaceV2!"
 	
 	-- connections
 	on addRefBT pressed do
@@ -170,6 +174,34 @@ rollout objReplacerRLT "objects replacer"
 	on centerBT pressed do
 	(
 		centerizeGroupFN()
+	)
+	
+	on replaceV2BT pressed do
+	(
+		targetArr = checkTargetSelectionFN()
+		if refObj !=undefined and targetArr != undefined then
+		(
+			for s in targetArr do
+			(
+				if (s != refObj) then
+				(
+					print refObj
+					print s
+					res = replaceRefDef refObj s
+					print ("result:" + res.name)
+					
+					res.center = s.center
+				)
+				else
+				(
+					print "reference and target are the same object"
+				)
+			)
+		)
+		else
+		(
+			print "check your selections."
+		)
 	)
 	
 )

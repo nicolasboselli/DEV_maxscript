@@ -36,7 +36,7 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 	local vrayClass = findVray()
 	
 -- 	button VRScenebaseBT "Vray Sun Scene Creator" 
-	local AutoIllumMat = vraylightmtl ()
+	local AutoIllumMat = vraylightmtl twoSided: true
 	local re = maxOps.GetCurRenderElementMgr ()
 	
 	local vrayBak = renderers.current
@@ -121,7 +121,8 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 	
 	group "render occlu:"
 	(
-		button OccluRenderBT "Render"
+		button OccluRenderBT "Set Render"
+		button CleanRenderBT "Clean Render"
 	)
 
 	on VRAlphaPresetCB changed state do
@@ -144,7 +145,7 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 	(
 		-- backup material selection
 		local SelToAlpha = selection as array
-		print SelToAlpha
+		
 		Material_Bak = for o in SelToAlpha collect o.material
 		for o in SelToAlpha do o.material = AutoIllumMat
 		
@@ -152,6 +153,7 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 		backupRenderDef()
 		-- applications des params de rendus alpha
 		setVrayNight()
+		backgroundColor = color 0 0 0
 		
 		-- rendus
 		max quick render
@@ -172,7 +174,7 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 		backupRenderDef()
 		-- applications des params de rendus alpha
 		setVrayNight()
-		
+		backgroundColor = color 0 0 0
 		-- rendus
 		max quick render
 		
@@ -185,8 +187,32 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 	
 	on OccluRenderBT pressed do
 	(
-		renderers.current.options_overrideMtl_mtl = occluMat
+		vr=renderers.current
+
+		MatMaqDirt = VRayDirt radius: 100 
+		autoIllumMtl = VRayLightMtl texmap: MatMaqDirt name: "occluMat" twoSided: true
+
+		backgroundColor = color 255 255 255
+		renderers.current.options_overrideMtl_mtl = autoIllumMtl
 		renderers.current.options_overrideMtl_on = true
+	)
+	
+	on CleanRenderBT pressed do
+	(
+		vr=renderers.current
+		
+		backgroundColor = color 0 0 0
+		renderers.current.options_overrideMtl_mtl = undefined
+		renderers.current.options_overrideMtl_on = false
+	)
+	
+	on VrayAlphaMaskRLT close do
+	(
+		if VRAlphaPresetCB.state == true do
+		(
+			print "restore parameters"
+			restoreRenderDef()
+		)
 	)
 	
 	/*

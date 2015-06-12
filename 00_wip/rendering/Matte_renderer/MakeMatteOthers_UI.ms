@@ -107,7 +107,7 @@ rollout MakeSelectionMatte "make selection matte" width: 600
 	
 	on MakeOthersMatteBT pressed do
 	(
-		InvertSel = invertSelFN ($selection as array)
+		InvertSel = invertSelFN (selection as array)
 		VisiblesObj = ObjVisFN InvertSel
 		VrInvertSel = VrPropFilterFN VisiblesObj
 		for o in VrInvertSel do MakeObjVrMatteFN o
@@ -124,7 +124,7 @@ rollout MakeSelectionMatte "make selection matte" width: 600
 	
 	on RenderOtherMatteBT pressed do
 	(
-		InvertSel = invertSelFN ($selection as array)
+		InvertSel = invertSelFN (selection as array)
 		VisiblesObj = ObjVisFN InvertSel
 		VrInvertSel = VrPropFilterFN VisiblesObj
 		for o in VrInvertSel do MakeObjVrMatteFN o
