@@ -163,13 +163,68 @@ x-- found vray version
 	
 	-- render checker to avoid error: missing texture, uv, ref, proxy, setting, save path, net render, dr 
 	
-================================= RESSOURCE EXPLORER ===============
+================================= RESSOURCE EXPLORER (asset manager)===============
+
+
+
+
+ASSETPUBLISHER
+-- export selection as asset
+	-- save as wip
+-- save scene as asset
+	-- save as version
+
+
+ASSETSCANNER
+-- scan folders and return only asset with info file and available arbo under gender classement
+-- generate html with thumbnail
+
+ASSETEDITOR
+-- edit asset
+	-- copy file in wip and open
+-- import(merge)
+	-- merge top scene + children
+-- update asset
+	-- check if update is possible
+	-- delete asset selected
+	-- import last version off asset
+	
+-- publish new asset
+	-- versionning the assets
+
+TOOLS
+	-- topscene name = file name + ctrl
+
+	-- create info file with type of asset
+		-- name
+		-- superclass
+		-- class
+		-- status: wip, approved
+		
+	-- add texture in folder
+		-- collect ressource with network path in associate textures folder
+		
+	-- vrmeshes in folder
+	-- create thumbnail
+
+
+-- object placer
+-- auto selection script
+	-- when select on object of the asset automatic selection af the controller
+
 -- treeview to explore 3d ressource
 	-- button to add selection to ressource
 	-- button to import as reference or object reference
 
 
 ================================== RIG ===========================
+
+x-- createCtrl
+	--add control on bouding box selection
+
+x-- parent 
+	-- manage hierarchy like in maya
+
 -- bones
 	-- make it like maya joint
 	-- pos rot and scale constraint
@@ -194,7 +249,6 @@ x-- found vray version
 	-- copy paste weight from one point to another
 -- character node
 
--- add control on bouding box selection
 
 ================================== ANIMATION =====================
 -- pose library

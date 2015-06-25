@@ -1,9 +1,24 @@
+
+
+
 sel = selection as array
 AutoIllumMat = vraylightmtl twoSided: on
 
 Material_Bak = for o in sel collect o.material
 
 vrayBak = renderers.current
+
+
+fn VrayCamExpStateFN TheState = 
+(
+	for o in cameras do
+	(
+		if classof o == Vrayphysicalcamera then
+		(
+			o.exposure = TheState
+		)
+	)
+)
 
 fn standardToVrLightMtlOpa s =
 (
@@ -65,9 +80,10 @@ for s in sel do
 	)
 )
 
-
+VrayCamExpStateFN false
 max quick render
 for i = 1 to sel.count do sel[i].material = Material_Bak[i]
+VrayCamExpStateFN true
 	
 
 

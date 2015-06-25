@@ -9,3 +9,7 @@ for c in selList do
 	)
 )
 
+for i = 1 to scenematerials.count do
+(
+	meditmaterials[i] = scenematerials[i]
+)

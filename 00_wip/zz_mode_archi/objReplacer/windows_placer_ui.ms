@@ -118,11 +118,11 @@ rollout objReplacerRLT "objects replacer"
 	-- ui
 	button addRefBT "ref>>"
 	edittext refnameET readonly: true
-	button replaceBT "replace!"
+-- 	button replaceBT "replace!"
 
-	button centerBT "center selection"
+-- 	button centerBT "center selection"
 	
-	button replaceV2BT "replaceV2!"
+	button replaceV2BT "replace!"
 	
 	-- connections
 	on addRefBT pressed do
