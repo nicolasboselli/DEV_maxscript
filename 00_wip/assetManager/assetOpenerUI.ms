@@ -1,5 +1,6 @@
 -- asset opener
-
+test =substituteString @"J:\_svn\zz_ressources3D\MentorsPlants\\plants_collection1\\max\\ash_tree_002\\wip\ash_tree_002_002_wip_2015_6_28_11_12_4_331_00.max"  "\\\\" "\\"
+test
 /*
 maj:
 	-- dev add tag system
@@ -8,6 +9,8 @@ maj:
 	-- dev thumbnail editing
 	-- dev status system
 	-- dev comments system
+	-- patch missing bitmap and missing vrmeshes  on editing and on merging
+	-- clean pathname
 	
 bug:
 	-- change path folders to relative path 
@@ -55,8 +58,7 @@ fn localTimeStr =
 	timeStr as string
 )
 
--- try(destroyDialog assetEditorRLT)catch()
-try(closeRolloutFloater  rof)catch()
+
 
 rollout assetEditorRLT "assets editor"
 (
@@ -67,13 +69,42 @@ rollout assetEditorRLT "assets editor"
 	struct assetClass
 	(
 		assetInfo,
-		assetFolder = getINISetting assetInfo "assetProperties" "path",
+-- 		assetFolder = getINISetting assetInfo "assetProperties" "path",
+		assetFolder =getFilenamePath assetInfo, 
 		name = getINISetting assetInfo "assetProperties" "name",
 		lastVersion = (getINISetting assetInfo "assetProperties" "version") as integer,
 		wipFolder =assetFolder +  "\wip",
 		
 		versionInfo = (assetFolder + "\\" +  (returnDigit lastVersion) + "\\" + "versionInfo.ini" ),
 		lastVersionFile = getINISetting versionInfo "assetProperties" "versionFile",
+	
+		fn setRelVersPath =
+		(
+			relPath = ""
+			if doesfileexist versionInfo == true then
+			(
+				relPath = getINISetting versionInfo "assetProperties" "relativeVersionFile"
+				
+				if relPath.count == 0 and lastVersionFile.count > 0 then
+				(
+					count = findString lastVersionFile "zz_ressources3D"
+					subTest = substring lastVersionFile count -1
+					relPath = substituteString  subTest "zz_ressources3D"  ""
+				)
+				else if  relPath.count == 0  and lastVersionFile.count == 0 then
+				(
+					relPath = "xxxx"
+				)
+			)
+			else
+			(
+				relPath = "???"
+			)
+			print("relative path: " + relPath)
+			relPath
+		),
+		
+		relVersPath = setRelVersPath(),
 		
 		fn createVersionFileInfo =
 		(
@@ -84,6 +115,7 @@ rollout assetEditorRLT "assets editor"
 			
 			setINISetting versionInfoIniFile "assetProperties" "name" name
 			setINISetting versionInfoIniFile "assetProperties" "versionFile" lastVersionFile
+			setINISetting versionInfoIniFile "assetProperties" "relativeVersionFile" relVersPath
 			setINISetting versionInfoIniFile "assetProperties" "lastVersion" (lastVersion as string)
 		),
 		
@@ -105,7 +137,13 @@ rollout assetEditorRLT "assets editor"
 	(
 		bitmap assetBMP "asset thumbnail" width: 256 height: 256 gamma:10
 		edittext curAssetNameET "name:" readonly: true
+		edittext absPathET "absolute path" readonly: true
+		edittext relVersionET "relative version" readonly: true
+		
 		edittext versionET "last version:" readonly: true
+
+		edittext editableET "asset editable" readonly: true
+ 		
 		edittext openStatusET "status:"  readonly: true
 		edittext  openTagsET "tags:" readonly: true
 		
@@ -141,23 +179,31 @@ rollout assetEditorRLT "assets editor"
 	
 	fn refreshEditGroup asset =
 	(
+-- 		refresh name
+		curAssetNameET.text = asset.name
+		
+-- 		refresh ini path
+		absPathET.text = asset.assetFolder
+
+-- 		relative path
+		
+-- 		last version file
+		relVersionET.text = asset.relVersPath
+		
+		if doesfileexist (root + asset.relVersPath) == true then editableET.text = "true"
+		else editableET.text = "false"
+		
+-- 		refresh thumbnail
 		thumbFile =  asset.assetFolder + "\\" + "assetThumb.jpg"
-		if doesfileexist thumbFile == true then
-		(
-			
--- 			test = openBitMap thumbFile
--- 			test.gamma = 4.4
--- 			display test
--- 			assetBMP.bitmap = test
-			assetBMP.filename = thumbFile
-		)
+		
+		if doesfileexist thumbFile == true then assetBMP.filename = thumbFile
 		else 
 		(
 			print "no thumbnail"
--- 			assetBMP.fileName = ""
 			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125) 
 		)
-			
+		
+-- 		refresh version number
 		if asset.lastVersion != undefined then versionET.text = returnDigit asset.lastVersion
 		else versionET.text = "???"
 	)
@@ -167,13 +213,20 @@ rollout assetEditorRLT "assets editor"
 	fn refreshPublishGroup asset =
 	(
 		-- test if asset folder ready
+		
 		-- check asset info file exists
 		nameOk = False
 		nextVersionPossible = False
 		
+		/*
 		res = getfiles (asset.assetFolder + "\\assetInfo.ini" )
-		if res.count != 1 then assetFileInfoExists = false else assetFileInfoExists = true
-
+				
+		if res.count != 1 then assetFileInfoExists = false 
+		else assetFileInfoExists = true
+		*/
+		
+		assetFileInfoExists = doesfileexist (asset.assetFolder + "\\assetInfo.ini" )
+		
 		-- find asset name from folder name
 		currentFile = maxFilePath
 		currentFileName = undefined
@@ -186,6 +239,7 @@ rollout assetEditorRLT "assets editor"
 		)
 			-- compare with asset info
 		assetName = asset.name
+		
 		if currentFileName == assetName then
 		(
 			nameET.text = assetName
@@ -200,6 +254,7 @@ rollout assetEditorRLT "assets editor"
 		lastVersion = 0
 		folderVersion = False
 		assetFolders = getDirectories (asset.assetFolder + "\*")
+		
 		for f in assetFolders do
 		(
 			pathAr = filterString  f "\\"
@@ -226,10 +281,9 @@ rollout assetEditorRLT "assets editor"
 		nextVersET.text = versionText
 		
 		
-		-- compare wip file wip last version file
 		
 		-- enable publishing
-		if 	nameOk == true  and nextVersionPossible == true then
+		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
 		(
 			publishVersionBT.enabled = true
 		)
@@ -237,6 +291,18 @@ rollout assetEditorRLT "assets editor"
 		(
 			publishVersionBT.enabled = false
 		)
+	)
+	
+	fn sortMergedElts elts =
+	(
+		mergedElts = #()
+		for o in elts do
+		(
+			if classof o == vraysun then delete o
+			else if classof o == vrayplane then delete o
+			else append mergedElts o
+		)
+		mergedElts
 	)
 	
 	on assetEditorRLT open do
@@ -261,7 +327,7 @@ rollout assetEditorRLT "assets editor"
 	(
 		sel = assetsBL.selection
 
-		assetFile =  assetsList[sel].lastVersionFile
+		assetFile =   root + assetsList[sel].relVersPath
 		print ("assetfile: " + assetFile)
 		
 		if assetFile.count>0 then
@@ -282,20 +348,21 @@ rollout assetEditorRLT "assets editor"
 				if test == true then
 				(
 					print "wip copy done"
+					
+		-- 			checkForSave() 
 					res = checkForSave() 
+					
+		-- 			loadMaxFile assetFile
 					loadMaxFile wipFile
+					
 -- 					if  res != 3 then
 -- 					(
 -- 						loadMaxFile wipFile
 -- 					)
 				)
 				else print "wip copy fail"
-					
-	-- 			checkForSave() 
-				
-				
-	-- 			loadMaxFile assetFile
 			)
+
 			else
 			(
 				print "can't find file"
@@ -352,30 +419,35 @@ rollout assetEditorRLT "assets editor"
 
 	on mergeBT pressed do
 	(
-		assetName = assetsList[assetsBL.selection].name
-		assetFilename =  assetsList[assetsBL.selection].lastVersionFile
-		objs = getMAXFileObjectNames assetFilename
-		objsToMergeAr = #()
-		for o in objs do
-		(
-			if (findString o "vraysun") != undefined then print o
-			else if (findString o "vr_ground") != undefined then print o
-			else if (findString o "vraysun") != undefined and (findString o "Target") != undefined then print o
-			else append objsToMergeAr o
-		)
-		res = mergeMAXFile assetFilename  objsToMergeAr #select #autoRenameDups #renameMtlDups 
+		asset = assetsList[assetsBL.selection]
+		assetName = asset.name
+-- 		assetFilename =  asset.lastVersionFile
+		relAssetFilename =  root + asset.relVersPath
+		
+		print assetFilename
+		print relAssetFilename
+		
+		res = mergeMAXFile relAssetFilename   #select #autoRenameDups #renameMtlDups
+		
 		if res == true then
 		(
 			sel = selection as array
 			assetCtrl = point name: (uniquename assetName)  size: 200
-			for s in sel do s.parent = assetCtrl
-			select assetCtrl
-		) 
+			
+			mergedElts = #()
+			for o in sel do
+			(
+				if classof o == vraysun then delete o
+				else if classof o == vrayplane then delete o
+				else o.parent = assetCtrl
+			)
+		)
 	)
 )
 
 
-
+-- try(destroyDialog assetEditorRLT)catch()
+try(closeRolloutFloater  rof)catch()
 rof= newrolloutfloater "Asset Editor" 400 400
 addrollout assetEditorRLT rof
 -- createdialog assetEditorRLT width: 200

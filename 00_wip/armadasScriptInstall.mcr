@@ -20,8 +20,8 @@ fn installAmadasScripts =
 
 installAmadasScripts()
 
-iconsFolder = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
-doscommand ("explorer "+ maxIni)
+-- iconsFolder = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
+-- doscommand ("explorer "+ maxIni)
 
 
 
@@ -60,7 +60,7 @@ macroScript ArmadasScriptExplorer
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	filein (root +"\\zz_mode_archi\\" + "scriptsExplorer.ms" )
+	filein (root +"\\" + "scriptsManager" + "\\" + "scriptsExplorer.ms" )
 )
 
 -- install macroscript for launcher with relative path from ini file
@@ -73,6 +73,6 @@ macroScript ArmadasScriptLauncher
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	filein (root +"\\zz_mode_archi\\" + "launcher.ms" )
+	filein (root +"\\" + "scriptsManager" + "\\" + "launcher.ms" )
 )
 
