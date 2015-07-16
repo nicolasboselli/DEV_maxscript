@@ -214,6 +214,16 @@ fn splitSmthGrpDef s =
 )
 -- splitSmthGrpDef $
 
+fn collectMatFromSel sel=
+(
+	matAr = #()
+	for s in sel where s.material != undefined do appendifunique matAr s.material 
+	for i = 1 to matAr.count do meditMaterials[i] = matAr[i]
+)
+
+
+try(destroyDialog deMultiMatRLT)catch()
+
 rollout deMultiMatRLT "Materials utilities"
 (
 	group "Multi-Materials:"
@@ -232,12 +242,25 @@ rollout deMultiMatRLT "Materials utilities"
 -- 		button publishSceneMat2BT "publish scene materials adv"
 	)
 	
+	
+	group "selection  material"
+	(
+		button collectSelMatBT "collect selection material"
+
+	)
+	
 	group "V-Ray:"
 	(
 		button convertToVrBT "convert to vray mat"
 	)
 	
 	on collectMultiBT pressed do collectMultiMatDef()
+	
+	on collectSelMatBT pressed do
+	(
+		sel = selection as array
+		collectMatFromSel sel
+	)
 	
 	on explodeBT pressed do 
 	(
@@ -290,3 +313,9 @@ rollout deMultiMatRLT "Materials utilities"
 	
 )
 createdialog deMultiMatRLT
+
+
+sel = selection as array
+withoutMatAr = for s in sel where s.material == undefined and superclassof s == GeometryClass collect s
+select withoutMatAr
+

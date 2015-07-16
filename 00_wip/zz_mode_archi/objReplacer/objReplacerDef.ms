@@ -191,15 +191,52 @@ fn replaceRefDef ref tgt =
 	return copyref
 	
 )
-/*
-print ref
-print targets
 
-
-objRef = checkReferenceDef ref
-for t in targets do
+fn replaceRefDef2 ref tgt =
 (
-	replaceRefDef objRef t
+	-- collect x,y and z max on target
+	vertNum = tgt.GetNumVertices ()
+	maxX = -1000
+	minX = 1000
+	maxY = -1000
+	minY = 1000
+	maxZ = -1000
+	minZ = 1000
+	
+	for i = 1 to vertNum do
+	(
+		posTmp = tgt.getvertex i
+		
+		if posTmp.x > maxX do maxX = posTmp.x
+		if posTmp.x < minX do minX = posTmp.x
+		if posTmp.y > maxY do maxY = posTmp.y
+		if posTmp.y < minY do minY = posTmp.y
+		if posTmp.z > maxZ do maxZ = posTmp.z
+		if posTmp.z < minZ do minZ = posTmp.z
+	)
+
+	xsize = maxX- minX
+	ySize = maxY - minY
+	zSize = maxZ - minZ
+	
+	tgtSizeStr = stringstream ""
+	format "target: \t%, %, %"  xsize ySize zSize to: tgtSizeStr
+	print(tgtSizeStr as string)
+
+	-- add group on source
+	-- open group
+	-- calculate size of the ref
+		-- bounding box of the group
+	-- calculate ratio
+	
+	-- duplicate group source
+	-- place copy
+	-- scale copy
+	-- close copy group
+	-- explode copy group
+	
+	-- close grp source
+	-- explode grp source
+	
 )
-*/
 

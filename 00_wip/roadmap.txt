@@ -165,14 +165,11 @@ x-- found vray version
 	
 ================================= RESSOURCE EXPLORER (asset manager)===============
 
-
-
-
 ASSETPUBLISHER
 -- export selection as asset
-	-- save as wip
+	-- maj: one dialog box for each creation
 -- save scene as asset
-	-- save as version
+	-- maj: one dialog box for each creation
 
 
 ASSETSCANNER
@@ -184,33 +181,35 @@ ASSETEDITOR
 	-- copy file in wip and open
 -- import(merge)
 	-- merge top scene + children
+	-- maj: add optionnal parent ctrl
+	
 -- update asset
 	-- check if update is possible
 	-- delete asset selected
-	-- import last version off asset
+	-- import last version of asset
 	
 -- publish new asset
 	-- versionning the assets
+	-- maj: one dialog box for each publishing
 
 TOOLS
 	-- topscene name = file name + ctrl
-
-	-- create info file with type of asset
-		-- name
-		-- superclass
-		-- class
-		-- status: wip, approved
 		
 	-- add texture in folder
 		-- collect ressource with network path in associate textures folder
 		
-	-- vrmeshes in folder
+	-- create and collect vrmeshes in folder
+	
 	-- create thumbnail
-
+	
+	-- create box ctrl: useful to rig
 
 -- object placer
+	-- debug: work whitout ffd and group on selection, create group on selection and delete it, include ctrl asset on group, find head of hierrarchy on selection
+
 -- auto selection script
-	-- when select on object of the asset automatic selection af the controller
+	-- select all hierarchy under selection
+	-- select head of hierarchy
 
 -- treeview to explore 3d ressource
 	-- button to add selection to ressource

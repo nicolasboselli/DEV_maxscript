@@ -17,32 +17,36 @@ fn installAmadasScripts =
 		print "armada script still exists"
 	)
 )
-
 installAmadasScripts()
 
 -- iconsFolder = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
 -- doscommand ("explorer "+ maxIni)
 
-
-
 fn copyBmpIcons =
 (
 	-- copy icon
--- get icon
+	-- get icon
 	
 	maxIni = getMAXIniFile()
 	armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	iconsArray = getfiles (scriptRoot + "\icons\*.bmp")
+	iconsArray = getfiles (scriptRoot + "icons\*.bmp")
 	
 	-- get icon root folder
 -- 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
-	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
-		
+	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "UI\usericons"
+
 	-- make copy
 	for icon in iconsArray do
 	(
-		copyFile  icon (iconsRoot + "\\"+ (filenameFromPath icon))
+		print icon
+		print  (iconsRoot + "\\"+ (filenameFromPath icon))
+		
+		res = copyFile  icon (iconsRoot + "\\"+ (filenameFromPath icon))
+		
+		if res == true then print "copy done"
+		else print "copy fail"
+		
 	-- 	copyFile  icon iconsRoot 
 	)
 )
@@ -60,6 +64,7 @@ macroScript ArmadasScriptExplorer
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
 	filein (root +"\\" + "scriptsManager" + "\\" + "scriptsExplorer.ms" )
 )
 
@@ -73,6 +78,21 @@ macroScript ArmadasScriptLauncher
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
 	filein (root +"\\" + "scriptsManager" + "\\" + "launcher.ms" )
 )
 
+
+-- install macroscript for asset opener with relative path from ini file
+macroScript ArmadasScriptAssetOpener
+	category:"ArmadasScripts"
+	buttonText: "assetOpener"
+	toolTip:""
+	icon: #("armadasScriptsAssetOpener",1)
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
+	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI.ms" )
+)

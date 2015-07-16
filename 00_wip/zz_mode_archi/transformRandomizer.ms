@@ -29,7 +29,7 @@ print "yo\rtoto"
 
 sel = selection as array
 undo on
-(e
+(
 	for s in sel do
 	(
 		refAngle = in coordsys local s.controller.rotation as eulerangles
@@ -38,3 +38,33 @@ undo on
 )
 
 
+sel = selection as array
+undo on
+(
+	for s in sel do
+	(
+		maxVal = 1.5
+		minVal = 0.7
+		scaleVar = s.controller.scale.y
+		s.controller.scale.x = random minVal maxVal
+-- 		scaleVar = in coordsys local s.controller.scale.y
+-- 		print scaleVar
+	)
+)
+
+
+
+s = $
+jump = 15
+
+copyAr = for i = 1 to 100 collect
+(
+	maxVal = 1.5
+	minVal = 0.7
+	c = copy s
+	in coordsys local c.position.x = jump
+	c.controller.scale.x = random minVal maxVal
+	jump +=  random 10 20
+	c
+)
+select copyAr

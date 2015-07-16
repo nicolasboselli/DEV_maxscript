@@ -137,6 +137,26 @@ fn cleancombine grp =
 	return master
 )
 
+
+fn cleancombine2 grp =
+(
+	undo on
+	(
+		master = grp[1]
+		converttopoly master
+		InstanceMgr.MakeObjectsUnique master #individual
+		
+		restGrp = deleteItem  grp 1
+		
+		for o in restGrp do
+		(
+			master.EditablePoly.attach o master
+		)
+		
+	)
+)
+
+
 -- transfert
 fn transfertModifiers sel =
 (

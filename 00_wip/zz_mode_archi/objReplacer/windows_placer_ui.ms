@@ -123,6 +123,7 @@ rollout objReplacerRLT "objects replacer"
 -- 	button centerBT "center selection"
 	
 	button replaceV2BT "replace!"
+	button replaceV3BT "replace! v3" enabled: false
 	
 	-- connections
 	on addRefBT pressed do
@@ -142,7 +143,7 @@ rollout objReplacerRLT "objects replacer"
 			"correct your selection"
 		)
 	)
-	
+	/*
 	on replaceBT pressed do
 	(
 		targetArr = checkTargetSelectionFN()
@@ -175,6 +176,7 @@ rollout objReplacerRLT "objects replacer"
 	(
 		centerizeGroupFN()
 	)
+	*/
 	
 	on replaceV2BT pressed do
 	(
@@ -204,5 +206,10 @@ rollout objReplacerRLT "objects replacer"
 		)
 	)
 	
+	
+	on replaceV3BT pressed do
+	(
+-- 		create group on selection
+	)
 )
 createdialog objReplacerRLT

@@ -34,8 +34,6 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local tmpRroot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	local	root = substituteString tmpRroot "\\" "/"
 
-	
-	
 	local favAr = #()
 	
 -- 	local root = getFilenamePath  (getThisScriptFilename() )
@@ -46,8 +44,6 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local allAr = #()
 	
 	local currentFolder
-
-
 	
 -- 	UI
 	edittext pathET "current folder:" readonly: true
@@ -230,9 +226,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			 edit (sel.path)
 		)
 	)
-		
-		
-	
+			
 	on copyPathBT pressed do
 	(
 		pathTmp =  (allAr[scriptsListLB.selection].path)

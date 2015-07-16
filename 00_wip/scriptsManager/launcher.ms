@@ -19,7 +19,7 @@ struct favFileClass
 rollout mxsLaunchRLT "maxscript launcher"
 (
 -- 	local var = checkIniFileFn()
-	local btnLine1 = 180
+	local btnLine1 = 450
 	
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
@@ -53,26 +53,27 @@ rollout mxsLaunchRLT "maxscript launcher"
 	button loadFavoritesBT "load favorites" across: 2
 	button loadHardCoresBT "load core"
 		
-	listbox scriptArrayLB "scripts list:" 
+	listbox scriptArrayLB "scripts list:"  height: 30
 	
 	button launchBT "launch"  pos:[10,btnLine1]
 	button editBT "edit"  pos:[70,btnLine1]
 	button openFolder "open scripts folder"  pos:[120,btnLine1]
 	
--- 	actions
-	on launchBT pressed do filein (fileClassArray[scriptArrayLB.selection].path)
--- 	on editBT pressed do edit (root + "\\zz_mode_archi\\"  + scriptArrayLB.selected)
-	on editBT pressed do edit (fileClassArray[scriptArrayLB.selection].path)
-		
-	on openFolder pressed do 
+--  ui functions relative
+	fn loadCore =
 	(
-		foldToOpen = substituteString root "/" "\\"
--- 		print root
-		doscommand ("explorer " + foldToOpen)
+		
+-- 		convert script selection 
+		fileClassArray = for script in scriptArray collect (favFileClass (root + "\\" + "zz_mode_archi" + "\\" +  script))
+		
+-- 		collect list box items
+		scriptArrayLB.items = for script in fileClassArray collect script.name
+		
 	)
 	
-	on loadFavoritesBT pressed do
+	fn loadFavorites =
 	(
+		
 		-- load favorite list from ini file
 		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
 		(
@@ -99,7 +100,6 @@ rollout mxsLaunchRLT "maxscript launcher"
 			print "favorites array init"
 		)
 		
-		
 		print favAr.count
 		if favAr.count >= 1 then
 		(
@@ -111,26 +111,28 @@ rollout mxsLaunchRLT "maxscript launcher"
 			print "no favorites to load"
 		)
 	)
+		
 	
-	on loadHardCoresBT pressed do
+-- 	actions
+
+	on mxsLaunchRLT open do loadFavorites()
+	
+	on loadFavoritesBT pressed do loadFavorites()
+	
+	on loadHardCoresBT pressed do loadCore()
+	
+	
+	on launchBT pressed do filein (fileClassArray[scriptArrayLB.selection].path)
+	on editBT pressed do edit (fileClassArray[scriptArrayLB.selection].path)
+		
+	on openFolder pressed do 
 	(
-		-- 		convert script selection 
-		
-		fileClassArray = for script in scriptArray collect (favFileClass (root + "\\zz_mode_archi\\" +  script))
--- 		collect list box items
-		scriptArrayLB.items = for script in fileClassArray collect script.name
-		
+		foldToOpen = substituteString root "/" "\\"
+-- 		print root
+		doscommand ("explorer " + foldToOpen)
 	)
 	
-	on mxsLaunchRLT open do
-	(
-		
--- 		convert script selection 
-		fileClassArray = for script in scriptArray collect (favFileClass (root + "\\zz_mode_archi\\" +  script))
-		
--- 		collect list box items
-		scriptArrayLB.items = for script in fileClassArray collect script.name
-	)
+	
 	
 	on mxsLaunchRLT resized size do
 	(

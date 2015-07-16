@@ -113,6 +113,7 @@ fn createRefSys =
 )
 
 
+
 rollout planResizerRLT "blueprint resizer" width: 250
 (
 -- 	vars
@@ -412,6 +413,8 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 )
 
+
+try(closeRolloutFloater theNewFloater)catch()
 theNewFloater = newRolloutFloater "Blueprint Tools" 300 500 
 -- addRollout opaRLT theNewFloater
 addRollout planResizerRLT theNewFloater

@@ -5,7 +5,7 @@ maj: select the root of the hierarchy
 -- relative to action scene
 fn testDef =
 (
-	return (selection as array)
+	selection as array
 )
 
 rollout testRLT "test callback"
