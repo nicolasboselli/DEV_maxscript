@@ -1,9 +1,21 @@
 -- filein (modeArchiScriptRoot + "bardageCreator\zinc_creator_bounding_box_fn.ms")
 
+fn returnScriptRoot =
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	root
+)
+
+returnScriptRoot()
+
 -- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 -- filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
-filein"J:/GitHub_repo/DEV_maxscript/00_wip/GF/FN_gestion_fenetres.ms"
-filein "J:/GitHub_repo/DEV_maxscript/00_wip/zz_mode_archi/XformInPlace.ms"
+filein (returnScriptRoot() + "GF/FN_gestion_fenetres.ms")
+filein (returnScriptRoot() + "zz_mode_archi/XformInPlace.ms")
+
+-- filein "J:/GitHub_repo/DEV_maxscript/00_wip/zz_mode_archi/XformInPlace.ms"
 /*##############################cubizator ########################"*/
 
 
@@ -27,50 +39,62 @@ fn GetAngleFromNormal theNormal =
 	)
 )
 
--- reset x form on selection!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-resetxform $ 
-ConvertTo $ Editable_Poly
 
--- detacher chaque element
-polyop.setFaceSelection  $ #all
-selArr = detach_elements_selected $
-
--- ## reorient each element
-
-for o in selArr do
+fn boxerize selAr =
 (
-	if (polyop.getNumFaces o)>0 do
+	undo on 
 	(
-		-- set selection
-		polyop.setfaceselection o 1
-		
-		-- get normal orientation
-		sel = polyop.getFaceSelection o
-		sel = sel as array
-		theNormal = polyop.getFaceNormal o sel[1]
-		
-		newAngle = GetAngleFromNormal theNormal
-		newAngle.z = newAngle.z*-1
-		
-		-- apply new orientation
-		in coordsys local o.rotation =newAngle
-		o.objectoffsetrot =newAngle
-		o.pivot = o.center
-		
-		-- select o
-		polyop.setfaceselection o #all
-		
-		-- config outline
-		select o
-		$.outlineAmount = 2
-		$.EditablePoly.Outline ()
-		
-		-- add shell on object
-		myShell = Shell innerAmount:0 outerAmount:28
-		addmodifier o myShell
-		
-		resetInPlaceFN o
-		o.material = undefined
+		for s in selAr do
+		(
+		-- reset x form on selection!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		resetxform s
+		ConvertTo s Editable_Poly
+
+		-- detacher chaque element
+		polyop.setFaceSelection  s #all
+		selArr = detach_elements_selected s
+
+		-- ## reorient each element
+
+			for o in selArr do
+			(
+				if (polyop.getNumFaces o)>0 do
+				(
+					-- set selection
+					polyop.setfaceselection o 1
+					
+					-- get normal orientation
+					sel = polyop.getFaceSelection o
+					sel = sel as array
+					theNormal = polyop.getFaceNormal o sel[1]
+					
+					newAngle = GetAngleFromNormal theNormal
+					newAngle.z = newAngle.z*-1
+					
+					-- apply new orientation
+					in coordsys local o.rotation =newAngle
+					o.objectoffsetrot =newAngle
+					o.pivot = o.center
+					
+					-- select o
+					polyop.setfaceselection o #all
+					
+					-- config outline
+					select o
+					$.outlineAmount = 2
+					$.EditablePoly.Outline ()
+					
+					-- add shell on object
+					myShell = Shell innerAmount:0 outerAmount:28
+					addmodifier o myShell
+					
+					resetInPlaceFN o
+					o.material = undefined
+				)
+			)
+		)
 	)
 )
 
+sel = selection as array
+if sel.count == 1 do boxerize sel
