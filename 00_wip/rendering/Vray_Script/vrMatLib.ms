@@ -18,7 +18,8 @@ maj:
 -- rollout
 rollout vrMatRlt "VRay mat Lib"
 (
-	local vrLibPath =  "G:\vrlib.mat"
+	--local vrLibPath =  "G:\vrlib.mat"
+	local vrLibPath =  "C:\vrlib.mat"
 	local matList = #("gc_grid_material", "enduit_blanc", "beton_blanc")
 	local openFileName
 	local vrLibAr = #()

@@ -1,5 +1,5 @@
 macroScript SupaSlice
-	category:"mode_archi"
+	category:"ArmadasScripts"
 	toolTip:"Supa Slice"
 -- v1	
 

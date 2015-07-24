@@ -34,7 +34,7 @@ fn copyBmpIcons =
 	
 	-- get icon root folder
 -- 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
-	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "UI\usericons"
+	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
 
 	-- make copy
 	for icon in iconsArray do

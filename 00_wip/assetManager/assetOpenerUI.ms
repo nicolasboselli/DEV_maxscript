@@ -85,8 +85,9 @@ rollout assetEditorRLT "assets editor"
 	local assetsList = #()
 	
 -- 	UI
-	edittext allAssetsFolderET "all assets folder:" text: allAssetsFolder readonly: true
-	edittext rootET "root:" text: root readonly: true
+	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
+	edittext rootET "root:" readonly: true
+	button findFolderBT "..." across: 2
 	button collectAssetBT "collect assets"
 	
 	group "assets list"
@@ -136,6 +137,7 @@ rollout assetEditorRLT "assets editor"
 	
 	fn refreshListBox =
 	(
+		rootET.text = root
 		assetPathsArr = walkDir  root "assetInfo.ini"
 		
 		assetsList = #()
@@ -287,6 +289,20 @@ rollout assetEditorRLT "assets editor"
 -- 		refreshPublishGroup assetsList[assetsBL.selection]
 	)
 	
+	on findFolderBT pressed do
+	(
+		res = getSavePath caption: "chose folder" 
+		if res != undefined then
+		(
+			print res
+			root = res
+			refreshListBox()
+		)
+		else
+		(
+			print "fail!"
+		)
+	)
 	
 	on collectAssetBT pressed do
 	(
