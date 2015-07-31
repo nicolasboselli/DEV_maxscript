@@ -274,6 +274,14 @@ rollout createAssetRLT "create asset from current scene"
 	
 	on initPathBT pressed do
 	(
+		root = @"J:\_svn\zz_ressources3D\"
+		
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		if rootIni.count > 0 then
+		(
+			if doesfileexist rootIni == true then root = rootIni + "\\"
+		)
+		
 		newAsset.basefolder = root
 		
 		completeParam newAsset

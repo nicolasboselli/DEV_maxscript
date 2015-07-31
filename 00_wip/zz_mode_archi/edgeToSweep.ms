@@ -158,6 +158,7 @@ rollout edgeToShapeRLT "edge to shape"
 			addExtrusionCB.state =  	(getINISetting armadasScriptsIni "edgeToSweep" "extrusionState") 	as booleanClass
 			removeEdgeCB.state = 	(getINISetting armadasScriptsIni "edgeToSweep" "removeState") 	as booleanClass
 			resetXformCB.state = 		(getINISetting armadasScriptsIni "edgeToSweep" "resetXformState")	as booleanClass
+			collapseXformCB.state = 	(getINISetting armadasScriptsIni "edgeToSweep" "collapseXformState") as booleanClass
 		)
 		catch
 		(
@@ -173,6 +174,7 @@ rollout edgeToShapeRLT "edge to shape"
 		setINISetting armadasScriptsIni "edgeToSweep" "extrusionState" 		(addExtrusionCB.state as string)
 		setINISetting armadasScriptsIni "edgeToSweep" "removeState" 		(removeEdgeCB.state as string)
 		setINISetting armadasScriptsIni "edgeToSweep" "resetXformState" 	(resetXformCB.state as string)
+		setINISetting armadasScriptsIni "edgeToSweep" "collapseXformState" (collapseXformCB.state as string)
 		print "maj ini done"
 	)
 	

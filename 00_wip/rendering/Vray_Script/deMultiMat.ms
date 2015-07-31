@@ -218,7 +218,14 @@ fn collectMatFromSel sel=
 (
 	matAr = #()
 	for s in sel where s.material != undefined do appendifunique matAr s.material 
-	for i = 1 to matAr.count do meditMaterials[i] = matAr[i]
+	if matAr.count < 25 then
+	(
+		for i = 1 to matAr.count do meditMaterials[i] = matAr[i]
+	)
+	else
+	(
+		for i = 1 to 24 do meditMaterials[i] = matAr[i]
+	)
 )
 
 

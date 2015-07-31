@@ -1,5 +1,5 @@
 macroScript Clean_Output
-	category:"Rendu"
+	category:"ArmadasScripts"
 	toolTip:""
 (
 	re = maxOps.GetCurRenderElementMgr ()
@@ -9,7 +9,7 @@ macroScript Clean_Output
 	clean_name = ""
 
 	for i = 0 to (num - 1) do
-	(
+	(.0
 	re.SetRenderElementFilename i clean_name
 	)
 )

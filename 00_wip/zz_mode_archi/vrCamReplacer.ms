@@ -2,11 +2,20 @@
 convert to vr cam
 */
 
-sel  = selection as array
 
-for s in sel do
+fn convertToVrCam s =
 (
-	vrCam = VRayPhysicalCamera rotation: s.rotation pos: s.position name: s.name
-)
+	if classof s == TargetCamera or classof s == FreeCamera then
+	(
+		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 350 
+		s.name = s.name + "_bak"
+		vrCam.specify_fov = false
+	)
+)	
 
+delVar = false
+sel  = selection as array
+for s in sel do convertToVrCam s
+if delVar == true do delete sel
 
+-- showproperties $

@@ -18,6 +18,10 @@ maj:
 -- rollout
 rollout vrMatRlt "VRay mat Lib"
 (
+	
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 	--local vrLibPath =  "G:\vrlib.mat"
 	local vrLibPath =  "C:\vrlib.mat"
 	local matList = #("gc_grid_material", "enduit_blanc", "beton_blanc")
@@ -54,9 +58,38 @@ rollout vrMatRlt "VRay mat Lib"
 -- 	actions
 	on vrMatRlt open do
 	(
-		vrLib = loadTempMaterialLibrary vrLibPath
-		libPthBT.text = vrLibPath
-		matLB.items = for mat in vrLib collect mat.name
+
+		if doesfileexist vrLibPath == true then
+		(
+			vrLib = loadTempMaterialLibrary vrLibPath
+			libPthBT.text = vrLibPath
+			matLB.items = for mat in vrLib collect mat.name
+		)
+		else
+		(
+			try
+			(
+				vrLibPath = getINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath"
+			)catch()
+			
+			if doesfileexist vrLibPath  == true then
+			(
+				vrLib = loadTempMaterialLibrary vrLibPath
+				libPthBT.text = vrLibPath
+				matLB.items = for mat in vrLib collect mat.name
+			)
+			else
+			(
+				vrLib = materialLibrary ()
+				vrLibPath = ""
+				libPthBT.text = "???"
+			)
+		)
+	)
+	
+	on vrMatRlt close do
+	(
+		setINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath" 	vrLibPath
 	)
 	
 	on openLibBT pressed do
@@ -71,6 +104,7 @@ rollout vrMatRlt "VRay mat Lib"
 			libPthBT.text = vrLibPath
 			matLB.items = for mat in vrLib collect mat.name
 		)
+		
 		print openFileName
 	)
 	

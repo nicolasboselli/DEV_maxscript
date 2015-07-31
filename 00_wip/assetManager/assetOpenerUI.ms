@@ -78,8 +78,11 @@ rollout externalToolsRLT "asset tools"
 
 rollout assetEditorRLT "assets editor"
 (
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 	local allAssetsFolder = "zz_ressources3D"
-	local root = @"J:\_svn\zz_ressources3D"
+	local root 
 	
 	local assetPathsArr = #()
 	local assetsList = #()
@@ -138,6 +141,7 @@ rollout assetEditorRLT "assets editor"
 	fn refreshListBox =
 	(
 		rootET.text = root
+		
 		assetPathsArr = walkDir  root "assetInfo.ini"
 		
 		assetsList = #()
@@ -148,6 +152,7 @@ rollout assetEditorRLT "assets editor"
 				newAsset = assetClass()
 				newAsset.initFromIni a allAssetsFolder
 				append assetsList newAsset
+				
 			)catch()
 		)
 		
@@ -284,9 +289,22 @@ rollout assetEditorRLT "assets editor"
 	
 	on assetEditorRLT open do
 	(
+		root = @"J:\_svn\zz_ressources3D"
+		
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		if rootIni.count > 0 then
+		(
+			if doesfileexist rootIni == true then root = rootIni
+		)
+		
 		refreshListBox()
 -- 		refreshEditGroup assetsList[assetsBL.selection]
 -- 		refreshPublishGroup assetsList[assetsBL.selection]
+	)
+	
+	on assetEditorRLT close do
+	(
+		setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
 	)
 	
 	on findFolderBT pressed do

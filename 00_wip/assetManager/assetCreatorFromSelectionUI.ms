@@ -136,9 +136,12 @@ try(destroyDialog createAssetFromSelRLT)catch()
 
 rollout createAssetFromSelRLT "create asset from selection"
 (
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 -- 	vars
 	local allAssetsFolder = "zz_ressources3D"
-	local root = @"J:\_svn\zz_ressources3D\"
+	local root 
 	
 	local newAsset
 	
@@ -307,6 +310,14 @@ rollout createAssetFromSelRLT "create asset from selection"
 	
 	on initPathBT pressed do
 	(
+		root = @"J:\_svn\zz_ressources3D\"
+		
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		if rootIni.count > 0 then
+		(
+			if doesfileexist rootIni == true then root = rootIni + "\\"
+		)
+		
 		newAsset.basefolder = root
 		
 		completeParam newAsset

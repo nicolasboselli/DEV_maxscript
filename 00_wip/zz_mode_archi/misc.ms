@@ -113,10 +113,10 @@ fn connectRingFN s loopNum: 1 =
 -- refresh scenematerial
 fn updateSceneMaterials =
  (
- saveNodes #() "c:/temp.max"
- deleteFile "c:/temp.max"
+	 saveNodes #() "c:/temp.max"
+	 deleteFile "c:/temp.max"
  )
-updateSceneMaterials()
+-- updateSceneMaterials()
 
 
 -- attach object select in the same object
@@ -183,6 +183,39 @@ fn transferColor sel =
 )
 
 
+fn createVrMtl =
+(
+	meditMaterials[activeMeditSlot] = vraymtl()
+)
+
+fn collectSelMtl =
+(
+	sel = selection as array
+	if sel.count > 0 then
+	(
+		meditMaterials[activeMeditSlot] = sel[1].material
+	)
+)
+
+fn createTile =
+(
+	meditMaterials[activeMeditSlot] = bricks()
+)
+
+
+fn extrudeFaces size =
+(
+	undo on
+	(
+		faceList = polyop.getFaceSelection $
+		polyop.extrudeFaces $ faceList size
+
+		faceListToDel = polyop.getFaceSelection $
+		polyop.deleteFaces $ faceListToDel
+	)
+)
+
+
 
 try(destroyDialog miscRLT)catch()
 
@@ -208,14 +241,24 @@ rollout miscRLT "misc"
 		button cleanCombineBT "combine"
 		
 		button converttopolyBT "convert to poly"
+		
+		button extrudeBT "extrusion 25"
 	)
 	
 	button centerPivotBT "center pivot"
 	
+	/*
 	group "transfert"
 	(
 		button transferModBT "transfer modifiers"
 		button transferMatBT "transfer material"
+	)
+	*/
+	group "material"
+	(
+		button createVrMtlBT "create vray material"
+		button collectVrMtlBT "collect material"
+		button createTileBT "create tile"
 	)
 	
 	on getInstBT pressed do
@@ -276,6 +319,18 @@ rollout miscRLT "misc"
 		)
 	)
 	
+	on extrudeBT pressed do
+	(
+		sel = selection as array
+		if sel.count == 1 then
+		(
+			if classof sel[1] == editable_poly then
+			(
+				extrudeFaces -25
+			)
+		)
+	)
+	
 	on transferModBT pressed do
 	(
 		sel = selection as array
@@ -287,6 +342,12 @@ rollout miscRLT "misc"
 		sel = selection as array
 		transferColor sel
 	)
+	
+	on createVrMtlBT pressed do createVrMtl()
+	
+	on collectVrMtlBT pressed do collectSelMtl()
+	
+	on createTileBT pressed do createTile()
 )
 createDialog miscRLT
 
