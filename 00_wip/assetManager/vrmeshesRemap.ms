@@ -1,3 +1,9 @@
+-- maj:
+	-- make multi selection on list
+	-- display only out of date assets
+		-- make two array
+	-- switch
+
 filein "assetManagerDef.ms"
 -- vraymeshes remapper
 
@@ -39,6 +45,7 @@ rollout vrmeshesRemapRLT "asset update tools"
 	local vrMeshesAr = #()
 	local assetAr = #()
 	local assetClassAr = #()
+	local assetClassArToShow = #()
 	
 -- 	ui
 	edittext allAssetsFolderET "all assets folder:" text: allAssetsFolder readonly: true
@@ -52,6 +59,7 @@ rollout vrmeshesRemapRLT "asset update tools"
 	
 	group "assets to update:"
 	(
+		checkbox outOfDateOnlyCB "display out of date assets only"
 		listbox assetsLB "assets:"
 		edittext assetET "asset version:" readonly: true
 		edittext currentVersionET "current version:" readonly: true
@@ -60,12 +68,11 @@ rollout vrmeshesRemapRLT "asset update tools"
 		button updateAssetBT "update asset" enabled: false
 	)
 	
--- 	actions
-	on vrmeshesRemapRLT open do
-	(
-		vrMeshesAr = collectVrmeshesInScene()
-		vrmeshesLB.items = for o in vrMeshesAr collect o.filename
-			
+	-- ui fonctions relatives
+		-- asset collect
+	fn updateAssetArray =
+	(	
+		assetClassAr = #()
 		assetAr = collectAssetInScene()
 		
 		for o in assetAr do
@@ -79,21 +86,59 @@ rollout vrmeshesRemapRLT "asset update tools"
 				print "asset creation done"
 			)catch(format "*** % ***\n" (getCurrentException()))
 		)
-		assetsLB.items = for o in assetClassAr collect o.name
+	)
+	
+	fn refreshAssetUI =
+	(
+		assetClassArToShow = #()
+		 
+		for o in assetClassAr do
+		(
+			if outOfDateOnlyCB.state == true then
+			(
+				if o.isLastVersion == false then
+				(
+					append assetClassArToShow o
+				)
+			)
+			else
+			(
+				append assetClassArToShow o
+			)
+			
+		)
+		assetsLB.items = for o in assetClassArToShow collect o.name
+	)
+	
+-- 	actions
+	on outOfDateOnlyCB changed state do
+	(
+		refreshAssetUI()
+	)
+	
+	on vrmeshesRemapRLT open do
+	(
+		-- vrmeshes collect
+		vrMeshesAr = collectVrmeshesInScene()
+		vrmeshesLB.items = for o in vrMeshesAr collect o.filename
+		
+		-- asset collect
+		updateAssetArray()
+		refreshAssetUI()
 	)
 	
 	on assetsLB selected sel do
 	(
-		select assetClassAr[sel].obj
+		select assetClassArToShow[sel].obj
 		
-		assetET.text = assetClassAr[sel].versionFile
-		currentVersionET.text =returnDigit (assetClassAr[sel].version as integer)
-		lastVersionET.text = assetClassAr[sel].islastVersion as string
+		assetET.text = assetClassArToShow[sel].versionFile
+		currentVersionET.text =returnDigit (assetClassArToShow[sel].version as integer)
+		lastVersionET.text = assetClassArToShow[sel].islastVersion as string
 		
-		if assetClassAr[sel].islastVersion == false then
+		if assetClassArToShow[sel].islastVersion == false then
 		(
 			updateAssetBT.enabled = true
-			nextVersionET.text = assetClassAr[sel].lastVersionFile
+			nextVersionET.text = assetClassArToShow[sel].lastVersionFile
 		)
 		else 
 		(
@@ -107,12 +152,15 @@ rollout vrmeshesRemapRLT "asset update tools"
 	(
 		oldCtrl = assetAr[assetsLB.selection]
 		
-		assetToUp = assetClassAr[assetsLB.selection]
+		assetToUp = assetClassArToShow[assetsLB.selection]
 		newAssetCtrl = assetToUp.updateAsset()
 
 		objToDel = returnAllHierarchyDown #(oldCtrl)
 		delete objToDel
 		select newAssetCtrl
+		
+		updateAssetArray()
+		refreshAssetUI()
 	)
 
 

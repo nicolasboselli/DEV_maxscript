@@ -9,16 +9,21 @@ numeric resize
 tz
 maj:
 
--- add deletion system
--- add root and target system selection
--- separate ui and function
-
 -- make distance interactive(event)
--- make ui interactive to scaler deletion
+-- make ui interactive to scaler deletion(event)
+-- condition "resize map" active to map to resize selected(event)
 
--- add tool to pick root position  and target position 
+-- add tool to pick root position  and target position (event with checkbutton)
+
 -- scale resizer with map
 -- calculate dimension on bounding box and do not use plane size anymore
+
+-- create scaler on opennig and delete on close?
+
+-- add deletion system?
+-- add root and target system selection?
+
+-- separate ui and function
 
 -- add plan opacity
 -- add scaler on each plan
@@ -124,6 +129,8 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	local scalerParent
 	local resizerParent
 	
+	local sourceObj
+	
 	local	startPt 
 	local	endPt 
 	local	scaler 
@@ -132,6 +139,106 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	local	endSize 
 
 -- 	fonctions
+	
+-- 	tools
+	
+	tool placeObjTool
+	(
+
+		on mousePoint clickno do
+		(
+-- 			print clickno
+			local myRay = mapScreenToWorldRay viewPoint
+-- 			print myRay
+			local arr = intersectRayScene myRay
+-- 			print "===="
+			print arr
+			
+			local viewMatrix =  Inverse(viewport.getTM())
+			local viewPos = viewMatrix.pos
+			local nearestDist = 1000000
+			local goodRes = undefined
+			
+			if arr.count>0 do	
+			(				
+				for obj in arr do
+				(
+					if obj[1] != sourceObj and obj[1].ishidden == false do
+					(
+						tmpDist = distance viewPos obj[2].pos
+						
+						if tmpDist < nearestDist do
+						(
+-- 							print  obj[1]
+-- 							print tmpDist
+							nearestDist = tmpDist
+							goodRes = obj
+						)
+					)
+				)
+			)			
+-- 			print "==== result"
+-- 			print goodRes
+			
+			if goodRes != undefined do
+			(
+				sourceObj.controller.pos.controller.value =  goodRes[2].pos
+				sourceObj.dir =  goodRes[2].dir
+			)
+		)
+
+		on mouseMove clickno do
+		(
+			if lButton == true do
+			(
+				local myRay = mapScreenToWorldRay viewPoint
+	-- 			print myRay
+				local arr = intersectRayScene myRay
+	-- 			print "===="
+				print arr
+				print "ploufe"
+				
+				local viewMatrix =  Inverse(viewport.getTM())
+				local viewPos = viewMatrix.pos
+				local nearestDist = 1000000
+				local goodRes = undefined
+				
+				if arr.count>0 do	
+				(				
+					for obj in arr do
+					(
+						if obj[1] != sourceObj  and obj[1].ishidden == false do
+						(
+							tmpDist = distance viewPos obj[2].pos
+							
+							if tmpDist < nearestDist do
+							(
+	-- 							print  obj[1]
+	-- 							print tmpDist
+								nearestDist = tmpDist
+								goodRes = obj
+							)
+						)
+					)
+				)			
+	-- 			print "==== result"
+	-- 			print goodRes
+				
+				if goodRes != undefined do
+				(
+					undo on
+					(
+						sourceObj.controller.pos.controller.value =  goodRes[2].pos
+						sourceObj.dir =  goodRes[2].dir
+					)
+				)
+			)
+		)
+	)
+	
+	
+	
+	
 -- 	UI
 
 	-- pick blueprint resizer
@@ -139,23 +246,33 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	group "Scaler:"
 	(
 		edittext scalerSpyET "scaler in scene :" readonly: true
-		button createScaler_bt "create scaler" across:2
+		
+		button createScaler_bt "create scaler" across:3
 		button selScaler_bt "select scaler"
-
-		button parentScaler_bt "parent map" across:2
 		button centerScaler_bt "center map" 
 		
-		button resetScaler "Reset Scaler"
+		checkbutton placeObjBT "snapping root" enabled: false across: 2
+		checkbutton placeTgtBT "snapping target" enabled: false
 		
-		spinner multiScaler "Scaler size x" range: [0,100,1] type:#float across:2
-		button resizeScaler "resize"
-
+-- 		spinner multiScaler "Scaler size x" range: [0,100,1] type:#float across:2
+		button resizeScaler "size x 10" across: 2
+		button resizeScalerBT2 "size x 0.1"
+-- 		button resetScaler "Reset Scaler"
+	)
+	
+	group "Map:"
+	(
+		button parentScaler_bt "parent map" 
 		edittext mapToResize_et "map to resize:" readOnly: true
+	)
+	
+	group "Distance in scene:"
+	(
 		edittext distResize_et "distance:" readOnly: true
-				
 		button refreshDistResize_pb "refresh distance"
 	)
 	
+	/*
 	group "Reference:"
 	(
 
@@ -186,6 +303,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		button refreshDistRef_pb "refresh distance"
 			
 	)
+	*/
 	
 	group "Numeric:"
 	(
@@ -198,16 +316,28 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	button rescale_bt "resize map"
 	
 -- 	UI functions
-	
-
--- 	actions
-	on planResizerRLT open do
+	fn refreshUI scalerArray =
 	(
-		scalerArray = checkScalerDef()
-		
-		if scalerArray == undefined then 
+		if scalerArray == undefined then
 		(
+
 			scalerSpyET.text = "no"
+			
+			createScaler_bt.enabled = true
+			selScaler_bt.enabled = false
+			centerScaler_bt.enabled = false
+			
+			placeObjBT.enabled = false
+			placeTgtBT.enabled = false
+			
+			resizeScaler.enabled = false
+			resizeScalerBT2.enabled = false
+			
+			parentScaler_bt.enabled = false
+			mapToResize_et.enabled = false
+
+			distResize_et.enabled = false
+			refreshDistResize_pb.enabled = false			
 		)
 		else 
 		(
@@ -216,34 +346,46 @@ rollout planResizerRLT "blueprint resizer" width: 250
 			startPt = scalerArray[1]
 			endPt = scalerArray[2]
 			scaler = scalerArray[3]
+			
+			createScaler_bt.enabled = false
+			selScaler_bt.enabled = true
+			centerScaler_bt.enabled = true
+			
+			placeObjBT.enabled = true
+			placeTgtBT.enabled = true
+			
+			resizeScaler.enabled = true
+			resizeScalerBT2.enabled = true
+			
+			parentScaler_bt.enabled = true
+			mapToResize_et.enabled = true
+
+			distResize_et.enabled = true
+			refreshDistResize_pb.enabled = true
 		)
 	)
-	
+
+-- 	actions
+	on planResizerRLT open do
+	(
+		scalerArray = checkScalerDef()
+		refreshUI scalerArray
+	)
 	
 	on createScaler_bt pressed do
 	(
 		createScalerSys()
 		
 		scalerArray = checkScalerDef()
-		
-		if scalerArray == undefined then scalerSpyET.text = "no"
-		else scalerSpyET.text = "yes"
-		
-		startPt = scalerArray[1]
-		endPt = scalerArray[2]
-		scaler = scalerArray[3]
-		print scalerArray
+		refreshUI scalerArray
 	)
 
-	on selScaler_bt pressed do
-	(
-		select scalerArray
-	)
+	on selScaler_bt pressed do select scalerArray
 	
 	on refreshDistResize_pb pressed do
 	(
 		reelDist = distance startPt endPt
-		distResize_et.text = reelDist as string
+		distResize_et.text = (reelDist as string) + "cm"
 	)
 	
 	on parentScaler_bt pressed do
@@ -253,9 +395,16 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		(
 			for s in sel do
 			(
+				if superclassof s == geometryclass then
+				(
 				scalerParent = s
 				startPt.parent = s
 				mapToResize_et.text = s.name
+				)
+				else
+				(
+					print "fail!"
+				)
 				
 			)
 		)
@@ -280,14 +429,65 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		
 	)
 	
-	on resizeScaler pressed do
+	on placeObjBT changed state do
 	(
-		startPt.size = startPt.size*multiScaler.value
-		endPt.size = endPt.size*multiScaler.value
-		scaler.size = scaler.size*multiScaler.value
-		multiScaler.value = 1.0 
+		bakParent = startPt.parent
+		bakChildParent = endPt.parent
+		
+		startPt.parent = undefined
+		endPt.parent = undefined
+		
+		sourceObj = startPt
+		
+		if state == true do
+		(
+			continueTool = true
+			while continueTool == true do
+			(
+				continueTool = starttool placeObjTool
+			)
+			placeObjBT.state = false
+		)
+		
+		startPt.parent = bakParent
+		endPt.parent = bakChildParent
 	)
 	
+	on placeTgtBT changed state do
+	(
+		
+		bakParent = endPt.parent
+		endPt.parent = undefined
+		sourceObj = endPt
+		
+		if state == true do
+		(
+			continueTool = true
+			while continueTool == true do
+			(
+				continueTool = starttool placeObjTool
+			)
+			placeTgtBT.state = false
+		)
+		
+		endPt.parent = bakParent
+		
+	)
+	
+	on resizeScaler pressed do
+	(
+		startPt.size = startPt.size*10
+		endPt.size = endPt.size*10
+		scaler.size = scaler.size*10
+-- 		multiScaler.value = 1.0 
+	)
+	
+	on resizeScalerBT2 pressed do
+	(
+		startPt.size = startPt.size*0.1
+		endPt.size = endPt.size*0.1
+		scaler.size = scaler.size*0.1
+	)
 -- 	
 -- 	-- resize with a dimension, resize with a size reference.
 
@@ -311,18 +511,26 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		print refDist
 		distRef_et.text =  refDist as string
 	)
+
 	
 	on parentRef_bt pressed do
 	(
 		sel = selection as array
 		if sel.count == 1 then
 		(
+			
 			for s in sel do
 			(
-				refParent = s
-				startSize.parent = s
-				mapAsRef_et.text = s.name
-				
+				if superclassof s == geometryclass then
+				(
+					refParent = s
+					startSize.parent = s
+					mapAsRef_et.text = s.name
+				)
+				else
+				(
+					print "fail"
+				)
 			)
 		)
 		else
@@ -349,14 +557,14 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		
 	)
 	
-		
+	/*	
 	on resizeResizer pressed do
 	(
 		startSize.size = startSize.size*multiResizer.value
 		endSize.size = endSize.size*multiResizer.value
 		multiResizer.value = 1.0 
 	)
-	
+	*/
 
 	
 -- 	-- resize!
@@ -364,6 +572,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	(
 		local aimedDist
 		
+		/*
 		if sizeRef_rb.state == 1 then
 		(
 			print "numeric reference"
@@ -388,7 +597,8 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		(
 			print "fail"
 		)
-		
+		*/
+		aimedDist = size_sp.value
 		print aimedDist
 		
 		if startPt != undefined and scalerParent != undefined then
@@ -415,7 +625,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 
 
 try(closeRolloutFloater theNewFloater)catch()
-theNewFloater = newRolloutFloater "Blueprint Tools" 300 500 
+theNewFloater = newRolloutFloater "Blueprint Tools" 300 400 
 -- addRollout opaRLT theNewFloater
 addRollout planResizerRLT theNewFloater
 
