@@ -60,7 +60,7 @@ rollout vrmeshesRemapRLT "asset update tools"
 	group "assets to update:"
 	(
 		checkbox outOfDateOnlyCB "display out of date assets only"
-		listbox assetsLB "assets:"
+		multiListBox  assetsLB "assets:"
 		edittext assetET "asset version:" readonly: true
 		edittext currentVersionET "current version:" readonly: true
 		edittext lastVersionET "is last version:" readonly: true
@@ -127,6 +127,7 @@ rollout vrmeshesRemapRLT "asset update tools"
 		refreshAssetUI()
 	)
 	
+	/*
 	on assetsLB selected sel do
 	(
 		select assetClassArToShow[sel].obj
@@ -146,18 +147,55 @@ rollout vrmeshesRemapRLT "asset update tools"
 			nextVersionET.text = "NONE"
 		)
 	)
+	*/
 	
+	on assetsLB selectionEnd do
+	(
+		selIdAr = assetsLB.selection as array
+		clearselection()
+		
+		for id in selIdAr do
+		(
+			
+			
+			selectmore assetClassArToShow[id].obj
+			
+			assetET.text = assetClassArToShow[id].versionFile
+			currentVersionET.text =returnDigit (assetClassArToShow[id].version as integer)
+			lastVersionET.text = assetClassArToShow[id].islastVersion as string
+			
+			if assetClassArToShow[id].islastVersion == false then
+			(
+				updateAssetBT.enabled = true
+				nextVersionET.text = assetClassArToShow[id].lastVersionFile
+			)
+			else 
+			(
+				updateAssetBT.enabled = false
+				nextVersionET.text = "NONE"
+			)
+		)
+		
+	)
 	
 	on updateAssetBT pressed do
 	(
-		oldCtrl = assetAr[assetsLB.selection]
+-- 		idAr = #(assetsLB.selection)
+		idAr = assetsLB.selection as array
 		
-		assetToUp = assetClassArToShow[assetsLB.selection]
-		newAssetCtrl = assetToUp.updateAsset()
-
-		objToDel = returnAllHierarchyDown #(oldCtrl)
-		delete objToDel
-		select newAssetCtrl
+		for id in idAr do
+		(
+			oldCtrl = assetAr[id]
+			
+			assetToUp = assetClassArToShow[id]
+			
+			newAssetCtrl = assetToUp.updateAsset()
+			
+			objToDel = returnAllHierarchyDown #(oldCtrl)
+			
+			delete objToDel
+			select newAssetCtrl
+		)
 		
 		updateAssetArray()
 		refreshAssetUI()
