@@ -210,7 +210,7 @@ struct assetClass
 	fn mergeAsset =
 	(
 		assetCtrl = undefined
-		res = mergeMAXFile lastVersionFile   #select #autoRenameDups #renameMtlDups
+		res = mergeMAXFile lastVersionFile   #select #autoRenameDups #useSceneMtlDups 
 		
 		if res == true then
 		(

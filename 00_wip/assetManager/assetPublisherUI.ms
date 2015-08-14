@@ -17,7 +17,6 @@ rollout createAssetRLT "create asset from current scene"
 (
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	
 -- 	vars
 	local allAssetsFolder = "zz_ressources3D"
 	local root = @"J:\_svn\zz_ressources3D\"
