@@ -28,7 +28,7 @@ fn collectAssetInScene =
 			append assetsAr o
 		)
 	)
-	print assetsAr
+-- 	print assetsAr
 	assetsAr
 )
 
@@ -79,11 +79,11 @@ rollout vrmeshesRemapRLT "asset update tools"
 		(
 			try
 			(
-				print "start asset creation"
+-- 				print "start asset creation"
 				newAsset = assetInScene()
 				newAsset.initFromCtrl o
 				append assetClassAr newAsset
-				print "asset creation done"
+-- 				print "asset creation done"
 			)catch(format "*** % ***\n" (getCurrentException()))
 		)
 	)
@@ -111,10 +111,7 @@ rollout vrmeshesRemapRLT "asset update tools"
 	)
 	
 -- 	actions
-	on outOfDateOnlyCB changed state do
-	(
-		refreshAssetUI()
-	)
+	on outOfDateOnlyCB changed state do refreshAssetUI()
 	
 	on vrmeshesRemapRLT open do
 	(
@@ -126,28 +123,6 @@ rollout vrmeshesRemapRLT "asset update tools"
 		updateAssetArray()
 		refreshAssetUI()
 	)
-	
-	/*
-	on assetsLB selected sel do
-	(
-		select assetClassArToShow[sel].obj
-		
-		assetET.text = assetClassArToShow[sel].versionFile
-		currentVersionET.text =returnDigit (assetClassArToShow[sel].version as integer)
-		lastVersionET.text = assetClassArToShow[sel].islastVersion as string
-		
-		if assetClassArToShow[sel].islastVersion == false then
-		(
-			updateAssetBT.enabled = true
-			nextVersionET.text = assetClassArToShow[sel].lastVersionFile
-		)
-		else 
-		(
-			updateAssetBT.enabled = false
-			nextVersionET.text = "NONE"
-		)
-	)
-	*/
 	
 	on assetsLB selectionEnd do
 	(
@@ -180,25 +155,38 @@ rollout vrmeshesRemapRLT "asset update tools"
 	
 	on updateAssetBT pressed do
 	(
+		print "start update"
 -- 		idAr = #(assetsLB.selection)
 		idAr = assetsLB.selection as array
 		
+		
 		for id in idAr do
 		(
-			oldCtrl = assetAr[id]
+-- 			print assetClassArToShow[id]
+			
+			oldCtrl = assetClassArToShow[id].obj
+-- 			print ( "oldctrl:" + oldCtrl.name)
+-- 			select oldCtrl
+			
 			
 			assetToUp = assetClassArToShow[id]
 			
 			newAssetCtrl = assetToUp.updateAsset()
 			
+-- 			print "objToDel"
 			objToDel = returnAllHierarchyDown #(oldCtrl)
 			
+			
+-- 			print "check2"
 			delete objToDel
+		
 			select newAssetCtrl
+			
 		)
 		
 		updateAssetArray()
 		refreshAssetUI()
+		print "end update"
 	)
 
 

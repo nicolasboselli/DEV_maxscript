@@ -50,8 +50,11 @@ fn returnAllHierarchyDown selArray=
 		)
 		
 	)
+-- 	print selArray
 	selArray
 )
+
+
 
 fn cleanFilename filename =
 (
@@ -280,20 +283,20 @@ struct assetInScene
 		
 		allAssetsRoot = getuserprop obj "allAssetsRoot"
 		allAssetsFolder = getuserprop obj "allAssetsFolder"
-		print allAssetsFolder
+-- 		print allAssetsFolder
 		relativeFolder = getuserprop obj "relativeFolder"
 		relativeFolder2 = getuserprop obj "relativeFolder2"
 		
 		-- obsolete root and relativePath
 		root = getuserprop obj "root"
 		versionFile = root + (getuserprop obj "relativePath")
-		print versionFile
+-- 		print versionFile
 		assetFolder = getupperfolder(getFilenamePath  versionFile)
 		assetIni = assetFolder + "assetInfo.ini"
-		print assetIni
+-- 		print assetIni
 		
 		lastVersion = (getINISetting assetIni "assetProperties" "version") as integer
-		print lastVersion
+-- 		print lastVersion
 		lastVersionFile = assetFolder + (returnDigit lastVersion) + "\\" + name + ".max"
 		
 		isLastVersion = true
