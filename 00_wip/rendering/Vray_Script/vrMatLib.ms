@@ -1,20 +1,22 @@
 /*
 maj:
-	-- synchronise material libray with scenematerial applied to objects
-		-- from library to editor, like replace(isntance)
-		-- from editor to library
-		-- check name
-		-- map when apply material edited to object
-		-- auto re-map on opening when compare lib map with scene mat
-		
-	-- in library
+	-- materials mapping
+		-- synchronise material libray with scenematerial applied to objects
+			-- from library to editor, like replace(isntance)
+			-- from editor to library
+			-- check name
+			-- map when apply material edited to object
+			-- auto re-map on opening when compare lib map with scene mat
+			
+	--  library cleaning
 		-- make same material with same property unique
 		-- auto change name on material with same name
-		
+			
 	-- versioning material file
+	-- add thumbnail
 */
 
-
+try(destroyDialog vrMatRlt)catch()
 -- rollout
 rollout vrMatRlt "VRay mat Lib"
 (
@@ -22,9 +24,7 @@ rollout vrMatRlt "VRay mat Lib"
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
-	--local vrLibPath =  "G:\vrlib.mat"
-	local vrLibPath =  "C:\vrlib.mat"
-	local matList = #("gc_grid_material", "enduit_blanc", "beton_blanc")
+	local vrLibPath
 	local openFileName
 	local vrLibAr = #()
 	local vrLib = materiallibrary()
@@ -42,23 +42,35 @@ rollout vrMatRlt "VRay mat Lib"
 	group "manage library:"
 	(
 		button addMatBT "add mat"
-		button delMatBT "delete mat" enabled: false
+		button delMatBT "delete mat" enabled: true
 		button upLibBT "refresh lib"
-		listbox matLB "materials list:" --items: matList	
-		button creatMatBT "edit material"
+		listbox matLB "materials list:"
+		button editMatBT "edit material"
+		button loadMatBT "copy material"
 -- 		button replaceMatBT "replace material" enabled: false
 	)
 	
+	/*
 	group "map material:"
 	(
 		button mapLibToEdBT "library => editor"  enabled: false
 		button mapEdToLibBT "editor => library"  enabled: false
 	)
+	*/
 	
 -- 	actions
 	on vrMatRlt open do
 	(
-
+		-- init material path
+		if vrLibPath == undefined then
+		(
+			try 
+			(
+				vrLibPath = getINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath"
+			)catch()
+		)
+		
+		-- load library
 		if doesfileexist vrLibPath == true then
 		(
 			vrLib = loadTempMaterialLibrary vrLibPath
@@ -67,23 +79,9 @@ rollout vrMatRlt "VRay mat Lib"
 		)
 		else
 		(
-			try
-			(
-				vrLibPath = getINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath"
-			)catch()
-			
-			if doesfileexist vrLibPath  == true then
-			(
-				vrLib = loadTempMaterialLibrary vrLibPath
-				libPthBT.text = vrLibPath
-				matLB.items = for mat in vrLib collect mat.name
-			)
-			else
-			(
-				vrLib = materialLibrary ()
-				vrLibPath = ""
-				libPthBT.text = "???"
-			)
+			vrLib = materialLibrary ()
+			vrLibPath = ""
+			libPthBT.text = "???"
 		)
 	)
 	
@@ -104,24 +102,31 @@ rollout vrMatRlt "VRay mat Lib"
 			libPthBT.text = vrLibPath
 			matLB.items = for mat in vrLib collect mat.name
 		)
-		
-		print openFileName
 	)
 	
-	on saveLibBT pressed do
-	(
-		saveTempMaterialLibrary  vrLib libPthBT.text
+	on saveLibBT vrLibPath do
+	( 
+		if doesfileexist vrLibPath then
+		(
+			saveTempMaterialLibrary  vrLib vrLibPath
+		)
+		else
+		(
+			print "path not valid"
+		)
 	)
 	
 	on saveAsLibBT pressed do
 	(
 		tmpPath = getSaveFileName caption: "save material library" types: "mat(*.mat)|*.mat|All Files|*.*"
-		saveTempMaterialLibrary  vrLib tmpPath
-	)
-	
-	on loadCoreBT pressed do
-	(
-		matLB.items = matList
+		if tmpPath != undefined then
+		(
+			saveTempMaterialLibrary  vrLib tmpPath
+		)
+		else
+		(
+			print "path not valid"
+		)
 	)
 
 	
@@ -138,27 +143,24 @@ rollout vrMatRlt "VRay mat Lib"
 		matLB.items = for mat in vrLib collect mat.name
 	)
 	
-	on creatMatBT pressed do
+	on delMatBT pressed do
+	(
+		matName = matLB.selection
+		deleteItem vrLib matName
+		matLB.items = for mat in vrLib collect mat.name
+	)
+	 
+	
+	on editMatBT pressed do
 	(
 		matName = matLB.selected
-		
-		tmpMat = vrlib[matName]
--- 		tmpMat = createVrayMatFN matName
-		
-		meditMaterials[activeMeditSlot] = tmpMat
-		/*
-		res = scenematerials[tmpMat.name]
-		
-		if res == undefined then
-		(
-			meditMaterials[activeMeditSlot] = tmpMat
-		)
-		else
-		(
-			
-			meditMaterials[activeMeditSlot] = res
-		)
-		*/
+		meditMaterials[activeMeditSlot] =  vrlib[matName]
+	)
+	
+	on loadMatBT pressed do
+	(
+		matName = matLB.selected
+		meditMaterials[activeMeditSlot] = copy vrlib[matName]
 	)
 	
 )

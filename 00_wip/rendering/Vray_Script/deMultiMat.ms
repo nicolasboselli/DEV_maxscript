@@ -65,6 +65,13 @@ fn collectMultiMatDef =
 	(meditMaterials[i] = multimatArray[i])
 )
 
+-- refresh scenematerial
+fn updateSceneMaterials =
+ (
+	 saveNodes #() "c:/temp.max"
+	 deleteFile "c:/temp.max"
+ )
+-- updateSceneMaterials()
 
 fn skinMultiMatdef s =
 (
@@ -244,6 +251,7 @@ rollout deMultiMatRLT "Materials utilities"
 	
 	group "scene Materials:"
 	(
+		button refreshBT "refresh scene materials"
 		checkbox vronlyCB "except vray materials"
 		button publishSceneMatBT "publish scene materials"
 -- 		button publishSceneMat2BT "publish scene materials adv"
@@ -311,10 +319,15 @@ rollout deMultiMatRLT "Materials utilities"
 	)
 	
 	on removeMatBT pressed do removeMatDef()
+	on  refreshBT pressed do updateSceneMaterials()
+
 	on publishSceneMatBT pressed do
 	(
 		publishSceneMatDef vronly: vronlyCB.state
 	)
+	
+
+	
 	on convertToVrBT pressed do convertToVrMatDef()
 	on publishSceneMat2BT pressed do publishSceneMatAdvDef()
 	

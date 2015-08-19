@@ -11,6 +11,8 @@ maj create thumbnail:
 -- collect vrmeshes
 fn collectOneVrMesh o=
 (
+	res = false 
+	
 	assetFolder = getUpperFolder maxFilePath
 	vrmeshesFolder = assetfolder + "vrmeshes"
 	
@@ -21,8 +23,18 @@ fn collectOneVrMesh o=
 	vrmeshName = getFilenameFile vrmeshFile
 	
 	newFile = vrmeshesFolder + "\\" + vrmeshName + ".vrmesh"
-
-	res = copyfile vrmeshFile newFile
+	
+	-- test if file already exist
+	fileExist = doesfileexist newFile
+	
+	-- copy file if it doesn't exists
+	if fileExist == false then 
+	(
+		res = copyfile vrmeshFile newFile
+	)
+	else res = true
+	
+	-- remap file
 	if res == true then
 	(
 		o.filename = newFile
@@ -78,19 +90,35 @@ fn createTexturesFolder =
 -- create vrmeshes
 -- collect map
 
+
 fn copyTextures textFolder =
 (
-	bitmapAr = getClassInstances  bitmaptex   processAllAnimatables:true
+	-- apply on scene material
+-- 	bitmapAr = getClassInstances  bitmaptex   processAllAnimatables:true
+	bitmapAr = getClassInstances  bitmaptex   target: scenematerials
 
-	for t in bitmapAr where doesfileexist t.filename ==  true do
+	for t in bitmapAr where t.filename !=  undefined do
 	(
-		f = t.filename 
-		newFile = textFolder + "\\"+  (filenameFromPath f)
-		res = copyfile f newFile
-		print res
-		if res == true then t.filename = newFile
+		if doesfileexist  t.filename == true then
+		(
+			f = t.filename 
+			newFile = textFolder + "\\"+  (filenameFromPath f)
+			
+			if doesfileexist newFile == true then
+			(
+				t.filename = newFile
+			)
+			else 
+			(
+				res = copyfile f newFile
+-- 				print res
+				if res == true then t.filename = newFile
+			)
+		)
 	)
 )
+
+
 
 -- create topnode
 
@@ -149,7 +177,10 @@ rollout assetsToolsRLT "asset tools"
 	
 	on collectVrayMeshesBT pressed do
 	(
-		vrProxies = for o in geometry where classof o == vrayproxy collect o
+		sel = geometry as array
+		vrProxies = for o in sel where classof o == vrayproxy collect o
+-- 		vrmeshes	
+-- 		vrProxies = for o in geometry where classof o == vrayproxy collect o
 		for vr in vrProxies do collectOneVrMesh vr
 	)	
 	

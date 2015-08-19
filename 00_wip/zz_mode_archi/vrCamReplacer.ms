@@ -13,9 +13,13 @@ fn convertToVrCam s =
 	)
 )	
 
+/*
 delVar = false
 sel  = selection as array
 for s in sel do convertToVrCam s
 if delVar == true do delete sel
+*/
+
+for c in cameras where classof c != VRayPhysicalCamera collect  convertToVrCam c
 
 -- showproperties $

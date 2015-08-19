@@ -1,8 +1,22 @@
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
+fn convertToVrCam s =
+(
+	if classof s == TargetCamera or classof s == FreeCamera then
+	(
+		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 350 
+		s.name = s.name + "_bak"
+		vrCam.specify_fov = false
+	)
+)
+
+try(destroyDialog Pt2vue_renderer_UI)catch()
 rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 (
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 	-- 	vars
 	local renderSize
 	
@@ -13,7 +27,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	local sceneCam = #()
 			
-
+	local camSel 
 	local oneCamSelected = undefined
 	
 	-- vars maquette materials
@@ -34,22 +48,19 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 -- 	extrait une seule camera à partir de la selection dans la mutibox
 	fn oneCamSelectedFN multiBoxVar =
 	(
+		oneCamSelected = undefined
 		multiCamSel = (multiBoxVar.selection as array)
-		print (multiCamSel as string)
-		if multiCamSel.count ==1 then oneCamSelected = multiCamSel[1] else oneCamSelected = undefined
-		return oneCamSelected
+-- 		print (multiCamSel as string)
+		if multiCamSel.count ==1 then oneCamSelected = multiCamSel[1] 
+		
+		oneCamSelected
 	)
+
 
 	fn collectCamFN =
 	(
-		local CamSel = #()
-		for o in ($* as array) do
-		(
-			if (classof o == freecamera ) do append CamSel o
-			if (classof o == targetcamera ) do append CamSel o
-			if (classof o == vrayphysicalcamera ) do append CamSel o
-		)
-		return CamSel
+		CamSel = for c in cameras where classof c != Targetobject collect c
+		CamSel
 	)
 	
 -- 	rafraichis les elements d'une listbox
@@ -97,13 +108,15 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	group "Gestion Cameras dans la Scene"
 	(
-		button selectCamBT "Selectionner" across: 4
+		button selectCamBT "Selectionner" across: 3
 		button CamViewBT "Camera View"
+		button vrCamBT "convert to vr cam" enabled: true
 
-		button duplicateCamSelBT "Dupliquer" 
+		button duplicateCamSelBT "Dupliquer" across:2
 		button deleteReelCamBT "Supprimer"
-		edittext RenameCamEdit "Renommer" 
 		
+		edittext RenameCamEdit "Renommer" 
+		button test
 	)
 	
 	group "chemin d'enregistrement"
@@ -115,14 +128,17 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		
 		button SelectPathFile "..."
 	)
-		
-	group "rendus"
+	
+	/*
+	group "render options:"
 	(
 		checkbox MaqRenderCB "Rendu Maquette" across: 3
 		checkbox NetRenderCB "Net Render" 
 		radiobuttons RenderSizeRB "Render Size:" labels: #("1350x750", "2700x1500")
 
 	)
+	*/
+	
 	button rendCamSelBT "Render Cameras Selectionnées"		
 -- 	button rendAllCamBT "Render All Cam v2" 
 	
@@ -138,29 +154,44 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		camArray = collectCamFN ()
 		refreshItemsFN Cam2Render camArray
 		
+		
+		savepath.text = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
+		print outputPathFolder
 -- 		application materiau maquette override
-		vr.options_overrideMtl_on = true
-		vr.options_overrideMtl_mtl = OverMatMaquette
+-- 		vr.options_overrideMtl_on = true
+-- 		vr.options_overrideMtl_mtl = OverMatMaquette
 		
-		addAtmospheric  AtmosVRtoon
-		setActive AtmosVRtoon true
+-- 		addAtmospheric  AtmosVRtoon
+-- 		setActive AtmosVRtoon true
 		
-		MaqRenderCB.state = true
+-- 		MaqRenderCB.state = true
 		
 -- 		taille du rendu
 		
-
-		
+	)
+	
+	on Pt2vue_renderer_UI close do
+	(
+		if savepath.text != undefined do
+		(
+			setINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder" 	savepath.text
+		)
 	)
 	
 	on Cam2Render selectionEnd do
 	(
-		print "toto"
-		oneCamSelected = (oneCamSelectedFN Cam2Render)
+		print "youhou"
+		oneCamSelected = oneCamSelectedFN Cam2Render
 		print oneCamSelected
+		
 		if oneCamSelected != undefined then	
 		(	
-		RenameCamEdit.text = camArray[oneCamSelected].name
+			camSel = camArray[oneCamSelected]
+			
+			RenameCamEdit.text = camSel.name
+			
+			if classof camSel != VRayPhysicalCamera then vrCamBT.enabled = true
+			else vrCamBT.enabled = false
 		)
 		else
 		(
@@ -174,7 +205,12 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		select  camArray[oneCamSelected]
 	)		
 
-
+	on vrCamBT pressed do
+	(
+-- 		print "youhou"
+-- 		print camSel
+		convertToVrCam camSel
+	)
 	
 -- 	gestion camera	
 
@@ -186,7 +222,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		refreshItemsFN Cam2Render camArray
 	)
 	
-		on RebootCamBT pressed do
+	on RebootCamBT pressed do
 	(
 		camArray = collectCamFN ()
 		refreshItemsFN Cam2Render camArray
@@ -195,7 +231,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	on addCamSelect pressed do 
 	(
-		CamTempSet = $selection as array
+		CamTempSet = selection as array
 		for o in CamTempSet do append camArray o
 		camArray = makeuniqueArray camArray
 		refreshItemsFN Cam2Render camArray
@@ -272,7 +308,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 	)
 	
-		on RenameCamEdit entered NewNameString do 
+	
+	on RenameCamEdit entered NewNameString do 
 	(
 		if oneCamSelected != undefined then
 		(		
@@ -311,8 +348,6 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		setActive AtmosVRtoon thestate
 	)
 	
-
-	
 -- 	render
 	on rendCamSelBT pressed do
 	(
@@ -330,18 +365,21 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 		else
 		(
+			/*
 			renderSize = case RenderSizeRB.state of
 			(
 				1: 750
 				2: 1500
 			)
+			*/
 			
+			camAr = (Cam2Render.selection) as array
 			
-			for i = 1 to ((Cam2Render.selection) as array).count do
+			for i = 1 to camAr.count do
 			(
 				renderSceneDialog.close ()	
 				
-				outputPathNameDef = (savepath.text + suffixNameEdit.text + "_" + CamArray[((Cam2Render.selection) as array)[i]].name + fileNameType.text)
+				outputPathNameDef = (savepath.text + suffixNameEdit.text + "_" + CamArray[camAr[i]].name + fileNameType.text)
 			
 				bakOutput = rendOutputFilename
 				bakWidth = renderWidth
@@ -349,17 +387,17 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 				 
 -- 				rendTimeType = 1
 				rendSaveFile = true
-				rendusenet = NetRenderCB.state
+-- 				rendusenet = NetRenderCB.state
 				rendOutputFilename =  outputPathNameDef
 				
-				renderWidth = renderSize*1.8
-				renderHeight = renderSize
+-- 				renderWidth = 1500
+-- 				renderHeight = 1000
 				
 				
 				re.setElementsActive false
 				
 -- 				CleanOutEltsFN ()
-				viewport.setCamera CamArray[((Cam2Render.selection) as array)[i]]
+				viewport.setCamera CamArray[camAr[i]]
 
 				renderSceneDialog.commit()
 				max quick render

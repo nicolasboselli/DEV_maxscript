@@ -110,6 +110,7 @@ fn connectRingFN s loopNum: 1 =
 	s.connectEdges()
 )
 
+
 -- refresh scenematerial
 fn updateSceneMaterials =
  (

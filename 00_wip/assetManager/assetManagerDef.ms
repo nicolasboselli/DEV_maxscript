@@ -237,6 +237,7 @@ struct assetClass
 			(
 				if classof o == vraysun then delete o
 				else if classof o == vrayplane then delete o
+				else if classof o == targetcamera then delete o
 				else if  o.parent == undefined then
 				(
 					o.parent = assetCtrl
