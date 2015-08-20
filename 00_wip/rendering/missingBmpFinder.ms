@@ -5,9 +5,13 @@ badMatAr = #()
 for mat in sceneMatAr do
 (
 	bitmapAr = getClassInstances  bitmaptex   target: mat
-	for f in bitmapAr where doesfileexist f.filename != true do
+	
+	for f in bitmapAr where f.filename != undefined do
 	(
-		appendifunique badMatAr mat
+		if doesfileexist f.filename != true then
+		(
+			appendifunique badMatAr mat
+		)
 	)		
 )
 

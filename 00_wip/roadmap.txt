@@ -1,4 +1,4 @@
-=============================== HELP TO MAXSCRIPT DEVELOPPEMENT
+=============================== SCRIPT MANAGEMENT
 -- scripts explorer
 	- bug: on "enter folder" on script, script opened
 	maj:
@@ -163,7 +163,29 @@ x-- found vray version
 	
 	-- render checker to avoid error: missing texture, uv, ref, proxy, setting, save path, net render, dr 
 	
-================================= RESSOURCE EXPLORER (asset manager)===============
+================================= ASSET MANAGEMENT===============
+todo:
+	-- use asset manager current path for all operation: asset creation, publishing... etc
+	-- ignore "zz_ressources3D"
+	-- function to clean wip folder
+	-- function to delete old increment
+	-- function to package assets(zip)
+	-- function to hide asset (.ini => .bak). tools to revert
+	-- bookmark for asset tools you work on
+	-- basket for selection to export
+	-- place all asset controller one ONE layer
+	-- dev: create an array for displayed assets to sort assets
+	
+	-- UI: clean asset creation popup, close it after creation, make publishing in popup
+	
+	-- import as xref
+	-- make controller addition toggle
+	-- options to add group on asset import
+	-- keep instance on import
+	-- options to ignore object on cache_layer
+	
+	-- send a selection to someone else
+	-- chat in 3dsmax
 
 ASSETPUBLISHER
 -- export selection as asset
