@@ -123,7 +123,7 @@ fn removeMatDef =
 )
 
 
-fn publishSceneMatDef vrOnly: true =
+fn publishSceneMatDef vrOnly: true  maxMatNum: 0 =
 (
 	local matToPubAr = #()
 
@@ -139,25 +139,37 @@ fn publishSceneMatDef vrOnly: true =
 	)
 	
 	-- publich materials in material editor
-	local maxMatNum = 24
-	if  matToPubAr.count  <= maxMatNum do
+	lastMatNum = maxMatNum + 24
+	print (format "min: %, max: %\n" maxMatNum lastMatNum)
+	
+	if  matToPubAr.count  <= lastMatNum do
 	(
-		maxMatNum = matToPubAr.count 
+		lastMatNum = matToPubAr.count 
 	)
 	
-	for i = 1 to maxMatNum do
+	for i =  1 to 24 do
 	(
-		meditMaterials[i] = matToPubAr[i]
+		if matToPubAr[i + maxMatNum] != undefined then
+		(
+			meditMaterials[i] = matToPubAr[i + maxMatNum]
+		)
+		else
+		(
+			meditMaterials[i] = standard()
+		)
 	)
+	
+	#(sceneMaterials.count, lastMatNum)
 )
 
 -- convert standard to vray
 fn convertToVrMatDef =
 (
-vrMat = VRayMtl diffuse: meditMaterials[activeMeditSlot].diffuse name: meditMaterials[activeMeditSlot].name
-replaceinstances meditMaterials[activeMeditSlot] vrMat
+	vrMat = VRayMtl diffuse: meditMaterials[activeMeditSlot].diffuse name: meditMaterials[activeMeditSlot].name
+	replaceinstances meditMaterials[activeMeditSlot] vrMat
 )
 
+/*
 fn publishSceneMatAdvDef =
 (
 	allMatAr = for mat in sceneMaterials collect mat
@@ -181,7 +193,7 @@ fn publishSceneMatAdvDef =
 	)
 	lastMatNum +=24
 )
-
+*/
 -- function to return good smooth grp id
 fn convertToSmoothGrpDef num =
 (
@@ -240,6 +252,8 @@ try(destroyDialog deMultiMatRLT)catch()
 
 rollout deMultiMatRLT "Materials utilities"
 (
+	local lastManNum = 0
+	
 	group "Multi-Materials:"
 	(
 		button collectMultiBT "collect multi-materials"
@@ -319,11 +333,21 @@ rollout deMultiMatRLT "Materials utilities"
 	)
 	
 	on removeMatBT pressed do removeMatDef()
-	on  refreshBT pressed do updateSceneMaterials()
+	on  refreshBT pressed do 
+	(
+		lastManNum = 0
+		updateSceneMaterials()
+	)
 
 	on publishSceneMatBT pressed do
 	(
-		publishSceneMatDef vronly: vronlyCB.state
+-- 		print "youhou"
+		compare = publishSceneMatDef vronly: vronlyCB.state maxMatNum: lastManNum
+		sceneCount = compare[1]
+		lastManNum = compare[2]
+		if  lastManNum >= sceneCount then lastManNum = 0
+		
+-- 		print (format "compare : %\n" compare)
 	)
 	
 

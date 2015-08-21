@@ -1,13 +1,124 @@
 filein "assetManagerDef.ms"
 
+
+
 /*
 maj create thumbnail:
 	x-- check if there are in an asset folder
 	-- add version on thumbnail
 	-- clean wip folder
+	
+	-- remove map from texture unwrapper
 */
 
+/*
+sceneMaps = usedMaps()
+for b in sceneMaps do print b
+sceneMaps.count
+retest = makeuniquearray sceneMaps
+retest.count
 
+objs = objects as array
+
+allBmps = #()
+for o in objs do
+(
+-- 	print (classof o)
+	if o.material != undefined then
+	(
+		maps =usedmaps o
+		for m in maps do
+		(
+			if findString m "S:" == 1 do print o
+-- 			print m
+			appendifunique allBmps m
+		)
+	)
+)
+allBmps.count
+
+mBitmaps = getClassInstances BitmapTexture target: scenematerials
+mBitmaps.count
+
+-- f = @"S:\Groupe Carrere\2015\Visite Oculus_0315\Appartement_Crealys\Modelisation\Textures\KnittedFabric_displace.jpg"
+-- findString f "S:" 
+
+select (getnodebyname "Chaise Jardin 006")
+
+maps =usedmaps $
+for m in maps do print m
+
+
+for m in sceneMaps do
+(	
+	index = findItem allBmps m
+	if index >0 then 
+	(
+		print ("used map : " + m)
+	)
+	 else
+	(	
+-- 		result=1
+		print ("garbage map : " + m)
+-- 			replaceInstances m  tmpTex
+		
+	)
+
+)
+*/
+fn hjRemoveGhostTex=
+(	
+	result=0
+	fn allUsedMaps =
+	
+	(
+	
+		sceneMaps = usedMaps()
+		
+		for m in meditmaterials do join sceneMaps (usedMaps m)
+		
+		sceneMaps
+	
+	)
+	
+	
+	local allUsedMaps = allUsedMaps ()
+	
+	mBitmaps = getClassInstances BitmapTexture
+	
+				
+	tmpTex = createInstance BitmapTexture
+	
+	for m in mBitmaps do
+	(	
+		index = findItem allUsedMaps m.fileName
+		if index >0 then 
+		(
+			print ("used map : " + m.fileName)
+		)
+		 else
+		(	
+			result=1
+			print ("garbage map : " + m.fileName)
+-- 			replaceInstances m  tmpTex
+			
+		)
+	
+	)
+	 
+ 
+result
+)
+
+-- test = @"S:\Groupe Carrere\2015\Visite Oculus_0315\Appartement_Crealys\Modelisation\Textures\mpm_vol.06_p20_03_Wallpaper_06_diff.JPG"
+
+
+
+
+
+-- hjRemoveGhostTex()
+-- sceneMaps = usedMaps()
+-- print sceneMaps
 -- collect vrmeshes
 fn collectOneVrMesh o=
 (
@@ -91,8 +202,10 @@ fn createTexturesFolder =
 -- collect map
 
 
+
 fn copyTextures textFolder =
 (
+	
 	-- apply on scene material
 -- 	bitmapAr = getClassInstances  bitmaptex   processAllAnimatables:true
 	bitmapAr = getClassInstances  bitmaptex   target: scenematerials
@@ -103,10 +216,12 @@ fn copyTextures textFolder =
 		(
 			f = t.filename 
 			newFile = textFolder + "\\"+  (filenameFromPath f)
+-- 			print (format "old: %\t\tnew:%\n" f newFile)
 			
 			if doesfileexist newFile == true then
 			(
 				t.filename = newFile
+				if t.filename != newFile then print t
 			)
 			else 
 			(
@@ -117,8 +232,6 @@ fn copyTextures textFolder =
 		)
 	)
 )
-
-
 
 -- create topnode
 
@@ -200,6 +313,7 @@ rollout assetsToolsRLT "asset tools"
 		textFolder = createTexturesFolder()
 		if textFolder != undefined then 
 		(
+			print "starting copy"
 			copyTextures textFolder
 		)
 	)
