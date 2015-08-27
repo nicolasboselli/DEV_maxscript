@@ -6,7 +6,7 @@ fn getInstancesFN sel =
 (
 	InstanceMgr.GetInstances sel &instances
 	if instances.count<=1 do print "no instances"
-	select instances
+	instances
 )
 
 fn randomColorFN sel =
@@ -265,10 +265,15 @@ rollout miscRLT "misc"
 	on getInstBT pressed do
 	(
 		sel = selection as array
-		if sel.count == 1 do
+		for s in sel do
 		(
-			getInstancesFN sel[1]
+			res = getInstancesFN s
+			selectmore res
 		)
+-- 		if sel.count == 1 do
+-- 		(
+-- 			getInstancesFN sel[1]
+-- 		)
 			
 	)
 	
