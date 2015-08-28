@@ -3,6 +3,38 @@
 	-- add split edge
 	-- 
 
+fn randomColorFN sel =
+(
+	randomColor = color (random 0 255) (random 0 255) (random 0 255)
+	sel.wirecolor =  randomColor
+)
+
+
+fn randomWireFN useFirstId: true =
+(
+	for mat in sceneMaterials do 
+	(
+		randomWire = color (random 0 255) (random 0 255) (random 0 255) 
+		sel = objects as array
+		for o in sel do 
+		(
+			if (superclassof o == GeometryClass) do 
+			(
+				if (classof o.material) == multimaterial and useFirstId == true then
+				(
+-- 					print mat 
+-- 					print o
+					if o.material[1] == mat  do o.wirecolor = randomWire
+				)
+				else if  o.material == mat then
+				(
+					o.wirecolor = randomWire
+				)
+			)
+		)
+	)
+)
+
 
 -- make unique instance material
 fn InstanceMatByName mat = (
@@ -116,11 +148,38 @@ fn skinMultiMatdef s =
 )
 				
 
+fn createVrMtl =
+(
+	meditMaterials[activeMeditSlot] = vraymtl()
+)
+
+fn collectSelMtl =
+(
+	sel = selection as array
+	if sel.count > 0 then
+	(
+		meditMaterials[activeMeditSlot] = sel[1].material
+	)
+)
+
+fn createTile =
+(
+	meditMaterials[activeMeditSlot] = bricks()
+)
+
 -- remove materiel
 fn removeMatDef =
 (
 	$.material = undefined
 )
+
+
+/*
+-- replace by instance
+sel = selection as array 
+instanceReplace sel (sphere())
+*/
+
 
 
 fn publishSceneMatDef vrOnly: true  maxMatNum: 0 =
@@ -254,6 +313,14 @@ rollout deMultiMatRLT "Materials utilities"
 (
 	local lastManNum = 0
 	
+	
+	group "wirecolor: "
+	(
+		button randColBT "random color"
+		checkbox multiMatIDCB "use first id for multimaterial" checked: true
+		button randomWireBT "wirecolor by material"
+	)
+	
 	group "Multi-Materials:"
 	(
 		button collectMultiBT "collect multi-materials"
@@ -271,6 +338,12 @@ rollout deMultiMatRLT "Materials utilities"
 -- 		button publishSceneMat2BT "publish scene materials adv"
 	)
 	
+	group "material"
+	(
+		button createVrMtlBT "create vray material"
+-- 		button collectVrMtlBT "collect material"
+-- 		button createTileBT "create tile"
+	)
 	
 	group "selection  material"
 	(
@@ -281,6 +354,17 @@ rollout deMultiMatRLT "Materials utilities"
 	group "V-Ray:"
 	(
 		button convertToVrBT "convert to vray mat"
+	)
+	
+	
+	on randColBT pressed do
+	(
+		for s in selection do randomColorFN s
+	)
+	
+	on randomWireBT pressed do
+	(
+		randomWireFN useFirstId: multiMatIDCB.state
 	)
 	
 	on collectMultiBT pressed do collectMultiMatDef()
@@ -333,6 +417,7 @@ rollout deMultiMatRLT "Materials utilities"
 	)
 	
 	on removeMatBT pressed do removeMatDef()
+	
 	on  refreshBT pressed do 
 	(
 		lastManNum = 0
@@ -349,11 +434,15 @@ rollout deMultiMatRLT "Materials utilities"
 		
 -- 		print (format "compare : %\n" compare)
 	)
-	
-
-	
+		
 	on convertToVrBT pressed do convertToVrMatDef()
 	on publishSceneMat2BT pressed do publishSceneMatAdvDef()
+	
+	on createVrMtlBT pressed do createVrMtl()
+	
+	on collectVrMtlBT pressed do collectSelMtl()
+	
+	on createTileBT pressed do createTile()
 	
 )
 createdialog deMultiMatRLT

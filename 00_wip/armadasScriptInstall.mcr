@@ -96,3 +96,32 @@ macroScript ArmadasScriptAssetOpener
 	
 	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI.ms" )
 )
+
+
+macroScript ArmadasScriptModelingUtilities
+	category:"ArmadasScripts"
+	buttonText: "modelingUtilities"
+	toolTip:""
+	icon: #("ArmadasScriptModelingUtilities",1)
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
+	filein (root +"\\" + "zz_mode_archi" + "\\" + "misc.ms" )
+)
+-- "C:/repo_github/DEV_maxscript/00_wip/zz_mode_archi/misc.ms"
+
+macroScript ArmadasScriptMaterialsUtilities
+	category:"ArmadasScripts"
+	buttonText: "materialsUtilities"
+	toolTip:""
+	icon: #("ArmadasScriptMaterialsUtilities",1)
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
+	filein (root +"\\" + "rendering" + "\\" + "Vray_Script" + "\\" + "deMultiMat.ms" )
+)
+-- "C:/repo_github/DEV_maxscript/00_wip/rendering/Vray_Script/deMultiMat.ms"

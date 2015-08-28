@@ -9,11 +9,13 @@ fn getInstancesFN sel =
 	instances
 )
 
+/*
 fn randomColorFN sel =
 (
 	randomColor = color (random 0 255) (random 0 255) (random 0 255)
 	sel.wirecolor =  randomColor
 )
+*/
 
 fn centerPivotDef sel = 
 (
@@ -22,7 +24,6 @@ fn centerPivotDef sel =
 		s.pivot = s.center
 	)
 )
-
 
 fn goutteDeauFN sel =
 (
@@ -42,12 +43,14 @@ fn debordFN sel =
 	polyop.bevelFaces sel #selection  -3 0
 )
 
+/*
 fn randomWireFN useFirstId: true =
 (
 	for mat in sceneMaterials do 
 	(
 		randomWire = color (random 0 255) (random 0 255) (random 0 255) 
-		for o in $* do 
+		sel = objects as array
+		for o in sel do 
 		(
 			if (superclassof o == GeometryClass) do 
 			(
@@ -66,6 +69,7 @@ fn randomWireFN useFirstId: true =
 	)
 )
 -- randomWireFN()
+*/
 
 --debug: make usabled on multiselection
 fn makeFloorFN currentSel =
@@ -183,7 +187,7 @@ fn transferColor sel =
 	)
 )
 
-
+/*
 fn createVrMtl =
 (
 	meditMaterials[activeMeditSlot] = vraymtl()
@@ -202,7 +206,7 @@ fn createTile =
 (
 	meditMaterials[activeMeditSlot] = bricks()
 )
-
+*/
 
 fn extrudeFaces size =
 (
@@ -218,18 +222,26 @@ fn extrudeFaces size =
 
 
 
+
+
+
 try(destroyDialog miscRLT)catch()
 
-rollout miscRLT "misc"
+rollout miscRLT "Modeling utilities"
 (
+-- 	vars
+	local sourceInstance
+	
 	button getInstBT "get instances"
 	
+	/*
 	group "wirecolor: "
 	(
 		button randColBT "random color"
 		checkbox multiMatIDCB "use first id for multimaterial" checked: true
 		button randomWireBT "wirecolor by material"
 	)
+	*/
 	
 	group "modeling"
 	(
@@ -248,20 +260,14 @@ rollout miscRLT "misc"
 	
 	button centerPivotBT "center pivot"
 	
-	/*
-	group "transfert"
+	group "instance replacer:"
 	(
-		button transferModBT "transfer modifiers"
-		button transferMatBT "transfer material"
-	)
-	*/
-	group "material"
-	(
-		button createVrMtlBT "create vray material"
-		button collectVrMtlBT "collect material"
-		button createTileBT "create tile"
+		button addSourceBT "add>>"
+		edittext sourceET "source:"
+		button replaceInstanceBT "replace by instance"
 	)
 	
+-- 	Actions
 	on getInstBT pressed do
 	(
 		sel = selection as array
@@ -270,25 +276,15 @@ rollout miscRLT "misc"
 			res = getInstancesFN s
 			selectmore res
 		)
--- 		if sel.count == 1 do
--- 		(
--- 			getInstancesFN sel[1]
--- 		)
-			
 	)
 	
-	on randColBT pressed do
-	(
-		for s in selection do randomColorFN s
-	)
 	
 	on goutteBT pressed do goutteDeauFN $	
 	on debordBT pressed do debordFN $
-	on randomWireBT pressed do
-	(
-		randomWireFN useFirstId: multiMatIDCB.state
-	)
+		
+
 	on makeFloorBT pressed do makeFloorFN (selection as array) 
+	
 	on connectRingBT pressed do 
 	(
 		sel = selection as array
@@ -349,11 +345,34 @@ rollout miscRLT "misc"
 		transferColor sel
 	)
 	
-	on createVrMtlBT pressed do createVrMtl()
+	--#### instance replacer actions ###
+	on addSourceBT pressed do
+	(
+		sel = selection as array
+		if sel.count == 1 then
+		(
+			testSource = sel[1]
+			if superclassof testSource == geometryClass then
+			(
+				sourceInstance = testSource
+				sourceET.text = sourceInstance.name
+			)
+			else
+			(
+				sourceInstance = undefined 
+				sourceET.text = "[NONE]"
+			)
+		)
+	)
 	
-	on collectVrMtlBT pressed do collectSelMtl()
-	
-	on createTileBT pressed do createTile()
+	on replaceInstanceBT pressed do
+	(
+		if sourceInstance != undefined then
+		(
+			sel = selection as array
+			instancereplace sel sourceInstance
+		)
+	)
 )
 createDialog miscRLT
 
