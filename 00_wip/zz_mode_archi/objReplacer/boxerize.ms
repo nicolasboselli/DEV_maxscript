@@ -8,7 +8,7 @@ fn returnScriptRoot =
 	root
 )
 
-returnScriptRoot()
+-- returnScriptRoot()
 
 -- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 -- filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
@@ -96,5 +96,13 @@ fn boxerize selAr =
 	)
 )
 
+
+
+
 sel = selection as array
 if sel.count == 1 do boxerize sel
+	
+for s in sel do
+(
+	resetInPlaceFN s
+)

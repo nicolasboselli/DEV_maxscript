@@ -153,14 +153,18 @@ fn createVrMtl =
 	meditMaterials[activeMeditSlot] = vraymtl()
 )
 
+/*
 fn collectSelMtl =
 (
 	sel = selection as array
-	if sel.count > 0 then
-	(
-		meditMaterials[activeMeditSlot] = sel[1].material
-	)
+	for s in sel do print s
+-- 	if sel.count > 0 then
+-- 	(
+-- 		meditMaterials[activeMeditSlot] = sel[1].material
+-- 	)
 )
+-- collectSelMtl()
+*/
 
 fn createTile =
 (
@@ -295,6 +299,7 @@ fn splitSmthGrpDef s =
 fn collectMatFromSel sel=
 (
 	matAr = #()
+-- 	for s in sel do print s
 	for s in sel where s.material != undefined do appendifunique matAr s.material 
 	if matAr.count < 25 then
 	(
@@ -371,6 +376,7 @@ rollout deMultiMatRLT "Materials utilities"
 	
 	on collectSelMatBT pressed do
 	(
+		print "youpi"
 		sel = selection as array
 		collectMatFromSel sel
 	)
@@ -439,8 +445,13 @@ rollout deMultiMatRLT "Materials utilities"
 	on publishSceneMat2BT pressed do publishSceneMatAdvDef()
 	
 	on createVrMtlBT pressed do createVrMtl()
-	
-	on collectVrMtlBT pressed do collectSelMtl()
+-- 	
+-- 	on collectVrMtlBT pressed do 
+-- 	(
+-- 		print "start collect"
+-- 		sel = selection as array
+-- 		collectMatFromSel sel
+-- 	)
 	
 	on createTileBT pressed do createTile()
 	
