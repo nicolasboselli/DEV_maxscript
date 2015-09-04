@@ -4,7 +4,7 @@ add param:  center pivot,  add uvwmap, add mat, setup sweep,
 */
 
 fn removeEdgeAndVerticesFN sel =
-(
+(tz
 	sel.EditablePoly.ConvertSelection #Edge #Vertex
 	sel.EditablePoly.Remove selLevel: #Edge
 		-- check vertex
