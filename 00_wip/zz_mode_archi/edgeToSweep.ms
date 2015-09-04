@@ -28,6 +28,9 @@ fn removeEdgeAndVerticesFN sel =
 	sel.EditablePoly.Remove selLevel: #Vertex
 )
 
+
+try(destroyDialog edgeToShapeRLT)catch()
+
 rollout edgeToShapeRLT "edge to shape"
 (
 -- 	vars
@@ -98,16 +101,17 @@ rollout edgeToShapeRLT "edge to shape"
 				if addSweepCB.state == true do
 				(
 					
-					mySweep = Sweep CurrentBuiltInShape: 2 PivotAlignment:8
+					mySweep = Sweep CurrentBuiltInShape: 2 PivotAlignment:8 SmoothPath: false
 					mySmooth = Smooth name: "my_Smooth" autosmooth: on
 					
 					addmodifier newShape mySweep
-					addmodifier newShape mySmooth
+
+					redrawViews()
 					
 					newSweep = getnodebyname newShape.name
 
-					newSweep.modifiers[#Sweep][#Bar_Section].length = 20
-					newSweep.modifiers[#Sweep][#Bar_Section].width = 20
+					newSweep.modifiers[#Sweep][4].length = 20
+					newSweep.modifiers[#Sweep][4].width = 20
 				)
 				
 				-- option keep selection

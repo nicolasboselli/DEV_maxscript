@@ -66,6 +66,7 @@ for m in sceneMaps do
 
 )
 */
+
 fn hjRemoveGhostTex=
 (	
 	result=0

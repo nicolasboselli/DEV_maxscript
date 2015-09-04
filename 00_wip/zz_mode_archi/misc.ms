@@ -188,20 +188,6 @@ fn transferColor sel =
 )
 
 /*
-fn createVrMtl =
-(
-	meditMaterials[activeMeditSlot] = vraymtl()
-)
-
-fn collectSelMtl =
-(
-	sel = selection as array
-	if sel.count > 0 then
-	(
-		meditMaterials[activeMeditSlot] = sel[1].material
-	)
-)
-
 fn createTile =
 (
 	meditMaterials[activeMeditSlot] = bricks()
@@ -219,10 +205,6 @@ fn extrudeFaces size =
 		polyop.deleteFaces $ faceListToDel
 	)
 )
-
-
-
-
 
 
 try(destroyDialog miscRLT)catch()

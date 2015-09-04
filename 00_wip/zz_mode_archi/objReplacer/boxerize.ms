@@ -102,7 +102,4 @@ fn boxerize selAr =
 sel = selection as array
 if sel.count == 1 do boxerize sel
 	
-for s in sel do
-(
-	resetInPlaceFN s
-)
+
