@@ -3,13 +3,6 @@ macroScript Clean_Output
 	toolTip:""
 (
 	re = maxOps.GetCurRenderElementMgr ()
-
 	num = re.numrenderelements ()
-
-	clean_name = ""
-
-	for i = 0 to (num - 1) do
-	(.0
-	re.SetRenderElementFilename i clean_name
-	)
+	for i = 0 to (num - 1) do re.SetRenderElementFilename i ""
 )

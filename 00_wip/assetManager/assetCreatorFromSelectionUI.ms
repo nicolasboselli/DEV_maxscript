@@ -20,10 +20,10 @@ struct assetFromSelClass
 	name,
 	version,
 	
-	fn initFromSel sel =
+	fn initFromSel sel assetRepo =
 	(
 		objs = sel
-		basefolder = getUpperFolder maxFilePath
+		basefolder = assetRepo
 		name = sel[1].name
 		version = 0
 	),
@@ -75,51 +75,34 @@ struct assetFromSelClass
 		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
 		
 	),
-	
-	fn createAsset useWipAsset=
-	(
-		res = createFolders()
-		if res == true then
-		(
-			newFile = getVersionFile()
-			print newFile
-			saveMaxFile newFile useNewFile: false
-			print "version created"
-			
-			wipFile = getWipFile()
-			saveMaxFile wipFile useNewFile: useWipAsset
-			print "wip created"
-			
-			createAssetFileInfo()
-			createVersionFileInfo()
-		)
-		else
-		(
-			print "folders are not existing"
-		)
-	),
-	
+
 	fn createAssetFromSel useWipAsset =
 	(
 		res = createFolders()
 		if res == true then
 		(
 			newFile = getVersionFile()
-			print newFile
-			saveNodes objs newFile
--- 			saveMaxFile newFile useNewFile: false
+-- 			print newFile
+			res = saveNodes objs newFile
 			print "version created"
+			createAssetFileInfo()
+			createVersionFileInfo()
 			
 			if useWipAsset == true then
 			(
 				wipFile = getWipFile()
-				saveNodes objs wipFile
-	-- 			saveMaxFile wipFile useNewFile: useWipAsset
-				print "wip created"
+				print wipFile
+				test = copyfile newFile wipFile
+				
+				if test == true then
+				(
+					if checkForSave()  == true do loadMaxFile wipFile
+				)
+				else
+				(
+					print "wip copy fail"
+				)
 			)
-			
-			createAssetFileInfo()
-			createVersionFileInfo()
 		)
 		else
 		(
@@ -128,9 +111,6 @@ struct assetFromSelClass
 	)
 	
 )
-	
-	
-
 
 try(destroyDialog createAssetFromSelRLT)catch()
 
@@ -140,7 +120,7 @@ rollout createAssetFromSelRLT "create asset from selection"
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
 -- 	vars
-	local allAssetsFolder = "zz_ressources3D"
+	local allAssetsFolder
 	local root 
 	
 	local newAsset
@@ -148,10 +128,10 @@ rollout createAssetFromSelRLT "create asset from selection"
 	
 	group "parameters"
 	(
-		button autocompleteBT "Auto-Complete"
+-- 		button autocompleteBT "Auto-Complete"
 		edittext pathET "base path:" readonly: true
-		button initPathBT "init path" across: 2
-		button openDialogBT "..."
+-- 		button initPathBT "init path" across: 2
+-- 		button openDialogBT "..."
 		
 		edittext nameET "name:" enabled: false across: 2
 		edittext versionET "version:" enabled: false readonly: true
@@ -257,7 +237,7 @@ rollout createAssetFromSelRLT "create asset from selection"
 	
 	fn completeParam asset =
 	(
-		pathET.text = asset.basefolder
+		pathET.text = root
 		pathET.enabled = true
 		
 		nameET.text = asset.name
@@ -269,61 +249,30 @@ rollout createAssetFromSelRLT "create asset from selection"
 	
 		
 -- 	actions
-	on openDialogBT pressed do
-	(
-		res = getSavePath caption: "chose folder" initialDir: newAsset.basefolder
-		if  res != undefined then
-		(
-			newAsset.basefolder = res + "\\"
-			
-			completeParam newAsset
-			checkCreationSanity newAsset
-		)
-	) 
-	
+
 	on createAssetFromSelRLT open do
 	(
 		sel = selection as array
-		if sel.count >0 then
-		(
-			newAsset = assetFromSelClass()
-			newAsset.initFromSel sel
-			print newAsset
-			
-			completeParam newAsset		
-			checkCreationSanity newAsset
-		)
-	)
-	
-	on autocompleteBT pressed do
-	(
-		sel = selection as array
-		if sel.count >0 then
-		(
-			newAsset = assetFromSelClass()
-			newAsset.initFromSel sel
-			
-			completeParam newAsset		
-			checkCreationSanity newAsset
-		)
-	)
-	
-	on initPathBT pressed do
-	(
-		root = @"J:\_svn\zz_ressources3D\"
+		rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
-		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
-		if rootIni.count > 0 then
+		if rootIni.count > 0 and sel.count > 0 then
 		(
+-- 			print "youpi!"
 			if doesfileexist rootIni == true then root = rootIni + "\\"
+			
+			newAsset = assetFromSelClass()
+			newAsset.initFromSel sel root
+-- 			print newAsset
+			
+			completeParam newAsset		
+			checkCreationSanity newAsset
 		)
-		
-		newAsset.basefolder = root
-		
-		completeParam newAsset
-		checkCreationSanity newAsset
+		else
+		(		
+			destroydialog createAssetFromSelRLT
+			print "make selection first"
+		)
 	)
-	
 	
 	on nameET entered str do
 	(
@@ -334,7 +283,6 @@ rollout createAssetFromSelRLT "create asset from selection"
 			completeParam newAsset
 			checkCreationSanity newAsset
 		)
-
 	)
 	
 	on checkCreationBT pressed do
@@ -350,22 +298,15 @@ rollout createAssetFromSelRLT "create asset from selection"
 		)
 		
 	)
-	
-	on createAssetBT pressed do
-	(
-		newAsset.createAsset useWipCB.state
 		
-		-- refresh ui
-		newAsset = assetCreationClass()
-		newAsset.initFromScene()
-		completeParam newAsset		
-		checkCreationSanity newAsset
-		print "asset creation done"
-	)
-	
 	on createAssetFromSelBT pressed do
 	(
 		newAsset.createAssetFromSel useWipCB.state
+				
+		try rof.rollouts[2].refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
+		destroydialog createAssetFromSelRLT
+		print "asset creation done"
+		
 	)
 	 
 )

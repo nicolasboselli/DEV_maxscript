@@ -22,6 +22,7 @@ installAmadasScripts()
 -- iconsFolder = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
 -- doscommand ("explorer "+ maxIni)
 
+
 fn copyBmpIcons =
 (
 	-- copy icon
@@ -34,8 +35,11 @@ fn copyBmpIcons =
 	
 	-- get icon root folder
 -- 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
-	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
-
+	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "ui\\usericons"
+	
+	existence = getdirectories iconsRoot
+	if existence.count == 0 then makedir iconsRoot all:true 
+	
 	-- make copy
 	for icon in iconsArray do
 	(

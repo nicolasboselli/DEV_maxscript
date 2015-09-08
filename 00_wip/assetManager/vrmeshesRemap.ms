@@ -54,14 +54,15 @@ fn collectAssetInScene =
 )
 
 
+
 try(destroyDialog vrmeshesRemapRLT)catch()
 
 rollout vrmeshesRemapRLT "asset update tools"
 (
 	
 -- 	vars
-	local allAssetsFolder = "zz_ressources3D"
-	local root = @"J:\_svn\zz_ressources3D"
+	local allAssetsFolder 
+	local root 
 	
 	local vrMeshesAr = #()
 	local assetAr = #()
@@ -69,9 +70,11 @@ rollout vrmeshesRemapRLT "asset update tools"
 	local assetClassArToShow = #()
 	
 -- 	ui
+	/*
 	edittext allAssetsFolderET "all assets folder:" text: allAssetsFolder readonly: true
 	edittext rootET "root:" text: root readonly: true
 	button collectAssetBT "collect assets"
+	*/
 	
 	group "vray proxies:"
 	(
@@ -80,61 +83,10 @@ rollout vrmeshesRemapRLT "asset update tools"
 		button delVrMeshBT "delete selection"
 	)
 	
-	group "assets to update:"
-	(
-		checkbox outOfDateOnlyCB "display out of date assets only"
-		multiListBox  assetsLB "assets:"
-		edittext assetET "asset version:" readonly: true
-		edittext currentVersionET "current version:" readonly: true
-		edittext lastVersionET "is last version:" readonly: true
-		edittext nextVersionET "next version file:" readonly: true
-		button updateAssetBT "update asset" enabled: false
-	)
-	
+
 	-- ui fonctions relatives
-		-- asset collect
-	fn updateAssetArray =
-	(	
-		assetClassAr = #()
-		assetAr = collectAssetInScene()
-		
-		for o in assetAr do
-		(
-			try
-			(
--- 				print "start asset creation"
-				newAsset = assetInScene()
-				newAsset.initFromCtrl o
-				append assetClassAr newAsset
--- 				print "asset creation done"
-			)catch(format "*** % ***\n" (getCurrentException()))
-		)
-	)
-	
-	fn refreshAssetUI =
-	(
-		assetClassArToShow = #()
-		 
-		for o in assetClassAr do
-		(
-			if outOfDateOnlyCB.state == true then
-			(
-				if o.isLastVersion == false then
-				(
-					append assetClassArToShow o
-				)
-			)
-			else
-			(
-				append assetClassArToShow o
-			)
-			
-		)
-		assetsLB.items = for o in assetClassArToShow collect o.name
-	)
 	
 -- 	actions
-	on outOfDateOnlyCB changed state do refreshAssetUI()
 	
 	on vrmeshesRemapRLT open do
 	(
@@ -142,9 +94,6 @@ rollout vrmeshesRemapRLT "asset update tools"
 		vrMeshesAr = collectVrmeshesInScene()
 		vrmeshesLB.items = for o in vrMeshesAr collect o.filename
 		
-		-- asset collect
-		updateAssetArray()
-		refreshAssetUI()
 	)
 	
 	on sortListBT pressed do
@@ -167,72 +116,6 @@ rollout vrmeshesRemapRLT "asset update tools"
 		vrMeshesAr = collectVrmeshesInScene()
 		vrmeshesLB.items = for o in vrMeshesAr collect o.filename
 	)
-	
-	on assetsLB selectionEnd do
-	(
-		selIdAr = assetsLB.selection as array
-		clearselection()
-		
-		for id in selIdAr do
-		(
-			
-			
-			selectmore assetClassArToShow[id].obj
-			
-			assetET.text = assetClassArToShow[id].versionFile
-			currentVersionET.text =returnDigit (assetClassArToShow[id].version as integer)
-			lastVersionET.text = assetClassArToShow[id].islastVersion as string
-			
-			if assetClassArToShow[id].islastVersion == false then
-			(
-				updateAssetBT.enabled = true
-				nextVersionET.text = assetClassArToShow[id].lastVersionFile
-			)
-			else 
-			(
-				updateAssetBT.enabled = false
-				nextVersionET.text = "NONE"
-			)
-		)
-		
-	)
-	
-	on updateAssetBT pressed do
-	(
-		print "start update"
--- 		idAr = #(assetsLB.selection)
-		idAr = assetsLB.selection as array
-		
-		
-		for id in idAr do
-		(
--- 			print assetClassArToShow[id]
-			
-			oldCtrl = assetClassArToShow[id].obj
--- 			print ( "oldctrl:" + oldCtrl.name)
--- 			select oldCtrl
-			
-			
-			assetToUp = assetClassArToShow[id]
-			
-			newAssetCtrl = assetToUp.updateAsset()
-			
--- 			print "objToDel"
-			objToDel = returnAllHierarchyDown #(oldCtrl)
-			
-			
--- 			print "check2"
-			delete objToDel
-		
-			select newAssetCtrl
-			
-		)
-		
-		updateAssetArray()
-		refreshAssetUI()
-		print "end update"
-	)
-
 
 )
 

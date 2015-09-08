@@ -56,7 +56,167 @@ fn walkDir dir pattern =
 
 
 
+struct assetClass
+(
+	assetInfo,
+	assetFolder, 
+	
+-- 	allAssetsRoot,
+-- 	allAssetsFolder,
+-- 	relativeFolder,
+-- 	relativeFolder2,
+	name,
+	lastVersion,
+	
+	root,
 
+	wipFolder,
+	
+	versionInfo,
+	lastVersionFile,
+	
+	relVersPath,
+	
+	fn returnRootPath onePath folderName=
+	(
+		oneRoot
+		count = findString onePath folderName
+		subTest = substring onePath 1 (count - 2)
+		rootTmp = subTest -- + folderName
+		
+		if (getDirectories rootTmp).count > 0 then oneRoot = (rootTmp + "\\") else oneRoot = undefined
+		oneRoot
+	),
+	
+	fn returnRelativeFolder onePath folderName  =
+	(
+		count = findString onePath folderName
+		subTest = substring onePath count -1
+		relPathTmp = substituteString  subTest folderName  ""
+		relPathTmp
+	),
+	
+	fn returnRelativeFolder2 onePath folderName oneName =
+	(		
+		count = findString onePath folderName
+		subTest = substring onePath count -1
+		relPathTmp = substituteString  subTest folderName  ""
+		relPath = cleanFilename(substituteString  relPathTmp oneName  "")
+		relPath
+	),
+	
+	fn returnLastVersionFile versionInfoFile =
+	(
+		oneLastVersionFile = undefined
+		if doesfileexist versionInfoFile == true then
+		(
+			versionFileTmp = (getFilenamePath versionInfo) + name + ".max"
+			if doesfileexist versionFileTmp == true then oneLastVersionFile = versionFileTmp
+		)
+		oneLastVersionFile
+	),
+	
+	fn returnLastVersionRelativeFile =
+	(
+		tmp = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
+		tmp
+	),
+	
+	fn initFromIni iniFile assetsTank =
+	(
+		print "start init"
+		
+		assetInfo = iniFile
+		name = getINISetting iniFile "assetProperties" "name"
+		lastVersion = (getINISetting iniFile "assetProperties" "version") as integer
+		versionInfo = assetsTank +  (returnDigit lastVersion) + "\\" + "versionInfo.ini" 
+		
+		assetFolder =cleanFilename(getFilenamePath assetInfo)
+		
+		lastVersionFile = assetFolder + "name"+ "\\" + (returnDigit lastVersion) +"\\" + name + ".max"
+		wipFolder = assetFolder +"\\"+  "wip" + "\\"
+		
+-- 		allAssetsFolder = assetsTank
+		
+-- 		assetFolder =cleanFilename(getFilenamePath assetInfo)
+		
+		root = assetsTank + "\\"
+-- 		assetFolder = root + name
+-- 		relativeFolder = returnRelativeFolder assetFolder assetsTank
+-- 		relativeFolder2 = returnRelativeFolder2 assetFolder assetsTank name
+		
+-- 		allAssetsRoot = returnRootPath assetFolder assetsTank
+
+-- 		lastVersionFile = returnLastVersionFile versionInfo
+-- 		lastVersionFile = assetsTank + (returnDigit lastVersion) +"\\" + name + ".max"
+-- 		relVersPath = returnLastVersionRelativeFile()
+		
+		print " init done"
+	),
+	
+	
+	fn updateAssetFileInfo =
+	(
+		setINIsetting assetInfo "assetProperties" "version" (lastVersion as string)
+	),
+	
+	fn createVersionFileInfo =
+	(
+		versionInfoIniFile = assetFolder + "\\" +(returnDigit lastVersion ) +"\\" + "versionInfo.ini"
+		versionInfoFileStream = createFile versionInfoIniFile
+		close versionInfoFileStream
+				
+		setINISetting versionInfoIniFile "assetProperties" "name" name
+-- 		setINISetting versionInfoIniFile "assetProperties" "versionFile" lastVersionFile
+-- 		setINISetting versionInfoIniFile "assetProperties" "relativeVersionFile" relVersPath
+		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (lastVersion as string)
+	),
+	
+	fn mergeAsset =
+	(
+		assetCtrl = undefined
+		res = mergeMAXFile lastVersionFile   #select #autoRenameDups #useSceneMtlDups 
+		
+		if res == true then
+		(
+			sel = selection as array
+			assetCtrl = point name: (uniquename( name + "_ctrl")) size: 200
+			setUserProp assetCtrl "asset" true
+			
+			setUserProp assetCtrl "root" root
+			setUserProp assetCtrl "relativePath" relVersPath
+			
+			setUserProp assetCtrl "allAssetsRoot" allAssetsRoot
+			setUserProp assetCtrl "allAssetsFolder" allAssetsFolder
+			setUserProp assetCtrl "relativeFolder" relativeFolder
+			setUserProp assetCtrl "relativeFolder2" relativeFolder2
+			
+			setUserProp assetCtrl "assetName"  name
+			setUserProp assetCtrl "assetVersion" lastVersion
+			
+			mergedElts = #()
+			for o in sel do
+			(
+				if classof o == vraysun then delete o
+				else if classof o == vrayplane then delete o
+				else if classof o == targetcamera then delete o
+				else if  o.parent == undefined then
+				(
+					o.parent = assetCtrl
+				)
+			)
+		)
+		
+		assetCtrl
+	),
+	
+	fn getLastVersionFile =
+	(
+		lastVersionFile = cleanFilename(assetFolder + "\\" + (returnDigit lastVersion) + "\\" + name + ".max")
+		lastVersionFile
+	)
+
+)
 
 
 rollout externalToolsRLT "asset tools"
@@ -68,12 +228,16 @@ rollout externalToolsRLT "asset tools"
 	)
 	button assetToolsBT "asset tools..." across:2
 	button updateToolsBT "update tools..."
-
 	
 	on createAssetBT pressed do filein "assetPublisherUI.ms"
-	on createAssetFromSelBT pressed do filein "assetCreatorFromSelectionUI.ms"
+	on createAssetFromSelBT pressed do 
+	(
+		sel = selection as array
+		if sel.count > 0 then filein "assetCreatorFromSelectionUI.ms"
+		else print "make selection first"
+	)
 	on assetToolsBT pressed do filein "assetManagerTools.ms"
-	on  updateToolsBT pressed do filein "vrmeshesRemap.ms"
+	on  updateToolsBT pressed do filein "updateAssetTool.ms"
 )
 
 rollout assetEditorRLT "assets editor"
@@ -81,32 +245,36 @@ rollout assetEditorRLT "assets editor"
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
-	local allAssetsFolder = "zz_ressources3D"
+-- 	local allAssetsFolder = "zz_ressources3D"
 	local root 
 	
 	local assetPathsArr = #()
 	local assetsList = #()
 	
 -- 	UI
-	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
-	edittext rootET "root:" readonly: true
-	button findFolderBT "..." across: 2
-	button collectAssetBT "collect assets"
-	
-	group "assets list"
+-- 	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
+	group "Assets Repository:"
+	(
+		edittext rootET "Path:" readonly: true
+		button findFolderBT "..."
+	)
+		
+	group "Assets List:"
 	(
 		edittext tagSearchET "search by tags:"
 		edittext nameSearchET "search by name:"
 		listbox assetsBL "Assets:"
+		button collectAssetBT "refresh"
 	)
+-- 	rof.rollouts[2].assetsList[1].name
 	
-	group "asset selected infos:"
+	group "Asset selected infos:"
 	(
 		bitmap assetBMP "asset thumbnail" width: 256 height: 256
 		
-		edittext curAssetRootET "assets root: " readonly: true
-		edittext curAllAssetsFolderET "all assets folder: " readonly: true
-		edittext assetRelativePathET "asset relative path: " readonly: true
+-- 		edittext curAssetRootET "assets root: " readonly: true
+-- 		edittext curAllAssetsFolderET "all assets folder: " readonly: true
+-- 		edittext assetRelativePathET "asset relative path: " readonly: true
 		edittext curAssetNameET "asset name:" readonly: true
 		edittext versionET "last version:" readonly: true
 		
@@ -137,38 +305,17 @@ rollout assetEditorRLT "assets editor"
 		
 		button publishVersionBT "publish" enabled: false
 	)
-	
-	fn refreshListBox =
-	(
-		rootET.text = root
 		
-		assetPathsArr = walkDir  root "assetInfo.ini"
-		
-		assetsList = #()
-		for a in assetPathsArr do
-		(
-			try
-			(
-				newAsset = assetClass()
-				newAsset.initFromIni a allAssetsFolder
-				append assetsList newAsset
-				
-			)catch()
-		)
-		
-		assetsBL.items = for o in assetsList collect o.name
-	)
-	
 	fn refreshEditGroup asset =
 	(
 -- 		refresh root
-		curAssetRootET.text = asset.allAssetsRoot
+-- 		curAssetRootET.text = asset.allAssetsRoot
 
 -- 		refresh assets folder
-		curAllAssetsFolderET.text = asset.allAssetsFolder
+-- 		curAllAssetsFolderET.text = asset.allAssetsFolder
 
 -- 		refresh relative path
-		assetRelativePathET.text = asset.relativeFolder
+-- 		assetRelativePathET.text = asset.relativeFolder
 		
 -- 		refresh name
 		if asset.name != undefined then curAssetNameET.text = asset.name else curAssetNameET.text = "UNDEFINED"
@@ -191,16 +338,13 @@ rollout assetEditorRLT "assets editor"
 		else 
 		(
 			print "no thumbnail"
-			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125) 
+			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
-
 	)
 	
 	fn refreshPublishGroup asset =
 	(
 		-- test if asset folder ready
-		
-
 		nameOk = False
 		nextVersionPossible = False
 		
@@ -217,7 +361,8 @@ rollout assetEditorRLT "assets editor"
 			pathAr = filterString  basefolder "\\"
 			currentFileName = pathAr[pathAr.count]
 		)
-			-- compare name with asset info
+		
+		-- compare name with asset info
 		assetName = asset.name
 		
 		if currentFileName == assetName then
@@ -246,7 +391,7 @@ rollout assetEditorRLT "assets editor"
 			)
 		)
 
-			-- compare with asset info
+		-- compare with asset info
 		assetVersion = asset.lastVersion
 		
 		versionText = "???"
@@ -261,7 +406,6 @@ rollout assetEditorRLT "assets editor"
 		)
 		nextVersET.text = versionText
 		
-		
 		-- enable publishing
 		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
 		(
@@ -270,6 +414,54 @@ rollout assetEditorRLT "assets editor"
 		else
 		(
 			publishVersionBT.enabled = false
+		)
+	)
+	
+	fn collectAssets root =
+	(
+		assetPathsArr = walkDir  root "assetInfo.ini"
+		tmpAssetsList = #()
+		for a in assetPathsArr do
+		(
+			try
+			(
+				newAsset = assetClass()
+				newAsset.initFromIni a root
+-- 				allAssetsFolder
+				append tmpAssetsList newAsset
+			)catch()
+		)
+		tmpAssetsList
+	)
+	
+	fn refreshListBox =
+	(
+		-- collect asset
+		assetPathsArr = walkDir  root "assetInfo.ini"
+
+		assetsList = #()
+		
+		for a in assetPathsArr do
+		(
+			try
+			(
+				newAsset = assetClass()
+				newAsset.initFromIni a root
+-- 				allAssetsFolder
+				append assetsList newAsset
+			)catch()
+		)
+		--	print assetsList
+		
+		-- refresh ui
+		rootET.text = root
+		
+		assetsBL.items = for o in assetsList collect o.name	
+		
+		if assetsList.count >0 then
+		(
+			refreshEditGroup assetsList[1]
+			refreshPublishGroup assetsList[1]
 		)
 	)
 	
@@ -286,10 +478,12 @@ rollout assetEditorRLT "assets editor"
 		mergedElts
 	)
 	*/
+
+	fn updateIni = setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
 	
 	on assetEditorRLT open do
 	(
-		root = @"J:\_svn\zz_ressources3D"
+-- 		root = @"J:\_svn\zz_ressources3D"
 		
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		if rootIni.count > 0 then
@@ -298,23 +492,21 @@ rollout assetEditorRLT "assets editor"
 		)
 		
 		refreshListBox()
--- 		refreshEditGroup assetsList[assetsBL.selection]
--- 		refreshPublishGroup assetsList[assetsBL.selection]
 	)
 	
-	on assetEditorRLT close do
-	(
-		setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
-	)
+	on assetEditorRLT close do updateIni()
 	
 	on findFolderBT pressed do
 	(
-		res = getSavePath caption: "chose folder" 
+		if root != undefined then res = getSavePath caption: "chose folder"  initialDir: root
+		else res = getSavePath caption: "chose folder" 
+
 		if res != undefined then
 		(
 			print res
 			root = res
 			refreshListBox()
+			updateIni()
 		)
 		else
 		(
@@ -322,12 +514,7 @@ rollout assetEditorRLT "assets editor"
 		)
 	)
 	
-	on collectAssetBT pressed do
-	(
-		refreshListBox()
-		refreshEditGroup assetsList[assetsBL.selection]
-		refreshPublishGroup assetsList[assetsBL.selection]
-	)
+	on collectAssetBT pressed do refreshListBox()
 	
 	on assetsBL selected obj do
 	(
@@ -357,6 +544,7 @@ rollout assetEditorRLT "assets editor"
 				vers = asset.lastVersion
 				assetName = asset.name
 				wipFolder = asset.wipFolder
+				print wipFolder
 				
 				wipFile = wipFolder + "\\" + assetName +"_" + returnDigit vers + "_" + "wip" + "_" + (localTimeStr()) + "_00.max"
 
@@ -426,7 +614,7 @@ rollout assetEditorRLT "assets editor"
 
 -- try(destroyDialog assetEditorRLT)catch()
 try(closeRolloutFloater  rof)catch()
-rof= newrolloutfloater "Asset Editor" 600 700
+rof= newrolloutfloater "Asset Editor" 600 900
 addrollout externalToolsRLT rof
 addrollout assetEditorRLT rof
 

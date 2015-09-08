@@ -11,6 +11,102 @@ bug:
 	-- confond filename with folder name
 */
 
+-- 	structure
+struct assetCreationClass
+(
+	basefolder,
+	name,
+	version,
+	
+	fn initFromScene =
+	(
+		basefolder = getUpperFolder maxFilePath
+		name = getFilenameFile maxFileName
+		version = 0
+	),
+-- 		assetFolder = basefolder + "\\" + name,
+-- 		versionFolder = basefolder + "\\" + name +"\\" + (returnDigit version),
+	
+	fn getAssetFolder = basefolder +  name,
+	
+	fn getVersionFolder = getAssetFolder() + "\\" + (returnDigit version),
+	
+	fn getWipFolder = getAssetFolder() + "\\" + "wip",
+	
+	fn getVersionFile = getVersionFolder() + "\\" + name + ".max",
+	
+-- 		fn getWipFile = getWipFolder() + "\\" + name + "_wip_" + ".max",
+
+	fn getWipFile = getWipFolder() + "\\" + name +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_00.max",
+		
+	fn createFolders =
+	(
+		versionFolder = makedir (getVersionFolder()) all: true
+		print ("version folder: " + (versionFolder as string))
+			
+		folderCreated = makedir (getWipFolder())
+		print ("wip folder: " + (folderCreated as string))
+			
+		folderCreated
+	),
+	
+	fn createAssetFileInfo =
+	(
+		assetInfoIniFile = getAssetFolder() + "\\assetInfo.ini"
+		assetInfoFileStream = createFile assetInfoIniFile
+		close assetInfoFileStream
+		
+		setINISetting assetInfoIniFile "assetProperties" "name" name
+-- 			setINISetting assetInfoIniFile "assetProperties" "path" (getAssetFolder())
+-- 			setINISetting assetInfoIniFile "assetProperties" "lastVersion" (version as string)
+		setINISetting assetInfoIniFile "assetProperties" "version" (version as string)
+		
+	),
+	
+	fn createVersionFileInfo =
+	(
+		versionInfoIniFile = getVersionFolder() + "\\versionInfo.ini"
+		versionInfoFileStream = createFile versionInfoIniFile
+		close versionInfoFileStream
+		
+		setINISetting versionInfoIniFile "assetProperties" "name" name
+-- 			setINISetting versionInfoIniFile "assetProperties" "versionFile" (getVersionFile())
+		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
+		
+	),
+	
+	fn createAsset useWipAsset=
+	(
+		res = createFolders()
+		if res == true then
+		(
+			newFile = getVersionFile()
+			print newFile
+			saveMaxFile newFile useNewFile: false
+			createAssetFileInfo()
+			createVersionFileInfo()
+			print "version created"
+			
+			if useWipAsset == true then
+			(
+				wipFile = getWipFile()
+				saveMaxFile wipFile useNewFile: useWipAsset
+				
+				
+				
+				print "wip created"
+			)
+			
+
+		)
+		else
+		(
+			print "folders are not existing"
+		)
+	)
+	
+)
+	
 try(destroyDialog createAssetRLT)catch()
 
 rollout createAssetRLT "create asset from current scene"
@@ -18,119 +114,26 @@ rollout createAssetRLT "create asset from current scene"
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 -- 	vars
-	local allAssetsFolder = "zz_ressources3D"
-	local root = @"J:\_svn\zz_ressources3D\"
+	local allAssetsFolder
+	local root
 	
 -- 	local assetPath = @"\\ELVIS\_svn\zz_ressources3D"
 	local newAsset
 	
--- 	structure
-	struct assetCreationClass
-	(
-		basefolder,
-		name,
-		version,
-		
-		fn initFromScene =
-		(
-			basefolder = getUpperFolder maxFilePath
-			name = getFilenameFile maxFileName
-			version = 0
-		),
--- 		assetFolder = basefolder + "\\" + name,
--- 		versionFolder = basefolder + "\\" + name +"\\" + (returnDigit version),
-		
-		fn getAssetFolder = basefolder +  name,
-		
-		fn getVersionFolder = getAssetFolder() + "\\" + (returnDigit version),
-		
-		fn getWipFolder = getAssetFolder() + "\\" + "wip",
-		
-		fn getVersionFile = getVersionFolder() + "\\" + name + ".max",
-		
--- 		fn getWipFile = getWipFolder() + "\\" + name + "_wip_" + ".max",
-
-		fn getWipFile = getWipFolder() + "\\" + name +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_00.max",
-			
-		fn createFolders =
-		(
-			versionFolder = makedir (getVersionFolder()) all: true
-			print ("version folder: " + (versionFolder as string))
-				
-			folderCreated = makedir (getWipFolder())
-			print ("wip folder: " + (folderCreated as string))
-				
-			folderCreated
-		),
-		
-		fn createAssetFileInfo =
-		(
-			assetInfoIniFile = getAssetFolder() + "\\assetInfo.ini"
-			assetInfoFileStream = createFile assetInfoIniFile
-			close assetInfoFileStream
-			
-			setINISetting assetInfoIniFile "assetProperties" "name" name
--- 			setINISetting assetInfoIniFile "assetProperties" "path" (getAssetFolder())
--- 			setINISetting assetInfoIniFile "assetProperties" "lastVersion" (version as string)
-			setINISetting assetInfoIniFile "assetProperties" "version" (version as string)
-			
-		),
-		
-		fn createVersionFileInfo =
-		(
-			versionInfoIniFile = getVersionFolder() + "\\versionInfo.ini"
-			versionInfoFileStream = createFile versionInfoIniFile
-			close versionInfoFileStream
-			
-			setINISetting versionInfoIniFile "assetProperties" "name" name
--- 			setINISetting versionInfoIniFile "assetProperties" "versionFile" (getVersionFile())
-			setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
-			
-		),
-		
-		fn createAsset useWipAsset=
-		(
-			res = createFolders()
-			if res == true then
-			(
-				newFile = getVersionFile()
-				print newFile
-				saveMaxFile newFile useNewFile: false
-				print "version created"
-				
-				if useWipAsset == true then
-				(
-					wipFile = getWipFile()
-					saveMaxFile wipFile useNewFile: useWipAsset
-					print "wip created"
-				)
-				
-				createAssetFileInfo()
-				createVersionFileInfo()
-			)
-			else
-			(
-				print "folders are not existing"
-			)
-		)
-		
-	)
-	
-	
 	
 	group "parameters"
 	(
-		button autocompleteBT "Auto-Complete"
+-- 		button autocompleteBT "Auto-Complete"
 		edittext pathET "base path:" readonly: true
-		button initPathBT "init path" across: 2
-		button openDialogBT "..."
+-- 		button initPathBT "init path" across: 2
+-- 		button openDialogBT "..."
 		
 		edittext nameET "name:" enabled: false across: 2
 		edittext versionET "version:" enabled: false readonly: true
 		
 		edittext statusET "status:" enabled: false
-		edittext superclassET "superclass:" enabled: false
-		edittext classET "class:"  enabled: false
+-- 		edittext superclassET "superclass:" enabled: false
+-- 		edittext classET "class:"  enabled: false
 		edittext commentET "comment:"  enabled: false
 	)
 	
@@ -159,7 +162,7 @@ rollout createAssetRLT "create asset from current scene"
 	(
 		checkbox useWipCB "use wip asset created" state: false across: 3 enabled: false
 		button createAssetBT "create asset with scene" enabled: false 
-		button createAssetFromSelBT "create asset from selection" enabled: false
+-- 		button createAssetFromSelBT "create asset from selection" enabled: false
 	)
 	
 	
@@ -217,7 +220,6 @@ rollout createAssetRLT "create asset from current scene"
 		if creationSanity == true then
 		(
 			createAssetBT.enabled = true
-			createAssetFromSelBT.enabled = true
 			useWipCB.enabled = true
 		)
 		else
@@ -244,6 +246,7 @@ rollout createAssetRLT "create asset from current scene"
 	
 		
 -- 	actions
+	/*
 	on openDialogBT pressed do
 	(
 		res = getSavePath caption: "chose folder" initialDir: newAsset.basefolder
@@ -255,16 +258,30 @@ rollout createAssetRLT "create asset from current scene"
 			checkCreationSanity newAsset
 		)
 	) 
+	*/
 	
 	on createAssetRLT open do
 	(
-		newAsset = assetCreationClass()
-		newAsset.initFromScene()
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
-		completeParam newAsset		
-		checkCreationSanity newAsset
+		if rootIni.count > 0 then
+		(
+			if doesfileexist rootIni == true then root = rootIni + "\\"
+				
+			newAsset = assetCreationClass()
+			newAsset.initFromScene()
+-- 			print newAsset
+			
+			newAsset.basefolder = root
+-- 			print newAsset
+			
+			completeParam newAsset		
+			checkCreationSanity newAsset
+				
+		)
 	)
 	
+	/*
 	on autocompleteBT pressed do
 	(
 		newAsset = assetCreationClass()
@@ -273,12 +290,14 @@ rollout createAssetRLT "create asset from current scene"
 		completeParam newAsset		
 		checkCreationSanity newAsset
 	)
-	
+	*/
+	/*
 	on initPathBT pressed do
 	(
-		root = @"J:\_svn\zz_ressources3D\"
+-- 		root = @"J:\_svn\zz_ressources3D\"
 		
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		
 		if rootIni.count > 0 then
 		(
 			if doesfileexist rootIni == true then root = rootIni + "\\"
@@ -289,7 +308,7 @@ rollout createAssetRLT "create asset from current scene"
 		completeParam newAsset
 		checkCreationSanity newAsset
 	)
-	
+	*/
 	
 	on nameET entered str do
 	(
@@ -322,18 +341,15 @@ rollout createAssetRLT "create asset from current scene"
 		newAsset.createAsset useWipCB.state
 		
 		-- refresh ui
-		newAsset = assetCreationClass()
-		newAsset.initFromScene()
-		completeParam newAsset		
-		checkCreationSanity newAsset
+-- 		newAsset = assetCreationClass()
+-- 		newAsset.initFromScene()
+-- 		completeParam newAsset		
+-- 		checkCreationSanity newAsset
+		try rof.rollouts[2].refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
+		destroydialog createAssetRLT
 		print "asset creation done"
 	)
-	
-	on createAssetFromSelBT pressed do
-	(
-		
-	)
-	 
+
 )
 createdialog createAssetRLT width: 800
 

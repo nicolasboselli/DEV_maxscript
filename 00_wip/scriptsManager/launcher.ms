@@ -10,7 +10,6 @@
 
 -- with printAllElements on propArVal as string
 
-
 fn sortbyname v1 v2 =
 (
 	-- qsort <array> sortbyname
@@ -51,7 +50,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 	local tmpRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	local root = substituteString tmpRoot "\\" "/"
 	
-	local favAr = #()
+-- 	local favAr = #()
 	
 -- 	local root = modeArchiScriptRoot
 -- 	local scriptArray = #()
@@ -78,6 +77,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 	fn loadFavorites =
 	(
 		local favScriptArray = #()
+		local favAr = #()
 		
 		-- load favorite list from ini file
 		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
@@ -97,19 +97,20 @@ rollout mxsLaunchRLT "maxscript launcher"
 			
 			-- correct file string
 -- 			print favAr.count
-			print "load favorites done"
+			print "favorites list loaded."
 		)
 		else
 		(
 			favAr = #()
 			print "favorites array init"
 		)
+-- 		
+-- 		print favAr.count
 		
-		print favAr.count
-		
-		-- collect good scripts
+		-- collect good scripts as favFileClass instance
 		if favAr.count >= 1 then
 		(
+			
 			favScriptArray = for script in favAr collect (favFileClass script)
 		)
 		else 
@@ -131,7 +132,14 @@ rollout mxsLaunchRLT "maxscript launcher"
 	
 	fn writeFavorite =
 	(
-		print "bye, favorites writting soon!"
+-- 		print "bye, favorites writting soon!"
+		scriptsPathesAr  = for script in fileClassArray collect script.path
+-- 		print scriptsPathesAr
+		-- for each fav instance collect path
+		-- write pathes in array
+		data = with printAllElements on scriptsPathesAr as string
+		test = setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" data
+		print "favorites list updated."
 	)
 	
 -- 	UI
@@ -200,10 +208,21 @@ rollout mxsLaunchRLT "maxscript launcher"
 	
 	on deleteBT pressed do
 	(
+		id = scriptArrayLB.selection
 		-- find selection in original array
+		res = finditem fileClassArray displayAr[id] 
+		
 		-- delete selection
+		test = deleteItem fileClassArray res
 		-- write array list in ini
+		
+		writeFavorite()
+		
 		-- reload list
+		
+		fileClassArray = loadFavorites()
+		displayAr = fileClassArray
+		refreshList()
 	)
 	
 	/*
