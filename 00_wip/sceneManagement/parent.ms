@@ -12,11 +12,14 @@ fn mayaGrpFN sel =
 
 fn parentFN sel =
 (
-	daddy = sel[sel.count]
-	
-	for i = 1 to (sel.count - 1) do
+	undo on
 	(
-		sel[i].parent = daddy
+		daddy = sel[sel.count]
+		
+		for i = 1 to (sel.count - 1) do
+		(
+			sel[i].parent = daddy
+		)
 	)
 )
 
@@ -33,6 +36,20 @@ fn selectAllChildren sel=
 	)
 )
 
+fn unParent sel=
+(
+	for s in sel do s.parent = undefined
+)
+
+fn addUpperPoint obj =
+(
+	upPt = point name: (obj.name + "_zero") axis_tripod: false
+	upPt.transform = obj.transform
+	obj.parent = upPt
+)
+
+
+try(destroyDialog hierarchyRLT)catch()
 
 rollout hierarchyRLT "hierarchy"
 (
@@ -41,10 +58,11 @@ rollout hierarchyRLT "hierarchy"
 	button unParentBT "unparent"
 	button selectChidrenBT "select children"
 	
-	on mayaGrpBT pressed do mayaGrpFN selection
+	on mayaGrpBT pressed do mayaGrpFN (selection as array)
 	on parentBT pressed do parentFN (selection as array)
 	
-	on selectChidrenBT pressed do selectAllChildren selection
+	on selectChidrenBT pressed do selectAllChildren (selection as array)
+	on unParentBT pressed do unParent (selection as array)
 )
 
 createdialog hierarchyRLT

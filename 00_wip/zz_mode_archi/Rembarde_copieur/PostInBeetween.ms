@@ -76,7 +76,7 @@ rollout potoCornerRLT "posts inbeetween"
 -- 	pickbutton  poteauRefCB "ref"
 	button addRefBT "ref>>"
 	edittext refNameET "ref:" readonly: true
-	spinner postNumSP "post number:" type: #integer range:[1,1000,5]
+	spinner postNumSP "post number max:" type: #integer range:[1,1000,5]
 	spinner postTresholdSP "dist treshold:" type: #worldunits range:[0.1,1000,15]
 	button multiplyBT "Multiply!"
 	

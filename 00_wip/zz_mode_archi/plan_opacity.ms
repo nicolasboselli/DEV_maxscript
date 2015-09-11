@@ -2,6 +2,7 @@
 -- add uvwMapAutoFit on panel
 -- create plane
 
+
 try(destroyDialog opaRLT)catch()
 rollout opaRLT "plan manipulator"
 (

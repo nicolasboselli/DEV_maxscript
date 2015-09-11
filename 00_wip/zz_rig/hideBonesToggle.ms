@@ -1,16 +1,20 @@
-
- macroScript sc_toggleBoneDisplay 
-category:"scrimskiUI" 
+macroScript sc_toggleBoneDisplay 
+category:"ArmadasScripts" 
 Buttontext:"Toggle Bone Display" 
 tooltip:"Toggle Bone Display" 
 
+(
+	on execute do
+	(
+		fn hideBoneToggle =
+		(
+			bakSel = selection as array
+			select geometry
+			hideByCategory.bones = NOT ( hideByCategory.bones )
+			if bakSel.count > 0 then select bakSel
+			else clearselection()
+		)
+		hideBoneToggle()
+	)
+)
 
-(     
-    on execute do 
-    ( 
-		bakSel = $selection as array 
-		hideByCategory.bones = NOT ( hideByCategory.bones )
-		select ($* as array)
-		select bakSel                     
-    )     
-) 

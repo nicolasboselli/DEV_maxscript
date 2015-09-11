@@ -15,6 +15,7 @@ fn resetInPlaceFN sel=
 	sel.position = bakPos
 )
 
+try(destroydialog XformRlt) catch()
 rollout XformRlt "Xform in place"
 (
 	-- backup de la rotation

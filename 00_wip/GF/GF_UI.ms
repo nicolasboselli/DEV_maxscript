@@ -14,7 +14,7 @@ rollout fenetresRLT "fenetres"
 		(
 			spinner cadreSizeSP "cadre size:" type: #worldunits range:[0,1000,cadreSize]
 			spinner dormantSizeSP "dormant size:" type: #worldunits range:[0,1000,dormantSize]
-			spinner battantSizeSP "cadre size :" type: #worldunits range:[0,1000,battantSize]
+			spinner battantSizeSP "battant size :" type: #worldunits range:[0,1000,battantSize]
 			button btn_fenetre_fixes "Create fake windows"
 		)
 		button btn_clean_base "Return to Faces"
