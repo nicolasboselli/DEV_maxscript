@@ -243,6 +243,8 @@ x-- found vray version
 		
 		-- send a selection to someone else
 		-- chat in 3dsmax
+		
+		-- when publishing do update wip
 
 	external:
 		-- ASSETSCANNER: 
@@ -305,6 +307,7 @@ x-- found vray version
 		
 ================================= SCENE MANAGEMENT
 x-- createCtrl
+	-- debug: crash on group
 	--add control on bouding box selection
 
 -- auto selection script
@@ -326,7 +329,8 @@ x-- parent
 	-- create box on one selection set
 	-- create box on one group, make recursive
 	-- toggle selection orientation or world orient
-	
+
+-- REORIENTATOR
 	-- reorient pivot
 	
 -- OBJECT REPLACER(windows_placer_ui)
