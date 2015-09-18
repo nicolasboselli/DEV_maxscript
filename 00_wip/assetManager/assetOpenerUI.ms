@@ -2,29 +2,47 @@
 
 /*
 maj:
-	-- dev add tag system
-	-- merge asset
-	-- update asset system
-		-- list
-	-- dev thumbnail editing
-	-- dev status system
-	-- dev comments system
-	-- dev proxy system
-	-- patch missing bitmap and missing vrmeshes  on editing and on merging
-	-- clean pathname
+	/- filter by name
+		-- add * add begining and end of search	
+		
+	x-- filter by status (all, approved, wip, retake, archived)
+		-- add ignore achive
 	
-	-- create asset on list item selected
-	-- create one display asset list to sort asset
-	
-bug:
-	-- change path folders to relative path 
-	-- ecrire un patch pour conformer tous les assets incorrect (virer les version inexistante, marquer le bon nombre de version...)
-	-- on save file when editing and cancel do stop editiing
-	
+	-- update wip name after publishing
+		-- deplace publish method in asset structure
+		-- deplace edit method in asset structure
+
+	-- clean wip folder
+	-- clean old version (work only with first and last version)
+	-- add comments
+		
 */
 
 
 filein "assetManagerDef.ms"
+
+rof
+
+fn sortAssestbyname v1 v2 =
+(
+	-- qsort <array> sortbyname
+-- 	vars
+	local d
+	
+	if ( (toLower v1.name) < (toLower v2.name)) then
+		d=-1
+	else
+		d=1
+	
+--compare les numeros entre eux et les classe	
+	case of
+	(
+		(d < 0.): -1
+		(d > 0.): 1
+		default: 0
+	)
+)
+
 
 -- scan asset folder to collect asset
 fn walkDir dir pattern =
@@ -77,6 +95,9 @@ struct assetClass
 	
 	relVersPath,
 	
+	status,
+	
+	/*
 	fn returnRootPath onePath folderName=
 	(
 		oneRoot
@@ -121,37 +142,28 @@ struct assetClass
 		tmp = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
 		tmp
 	),
-	
+	*/
 	fn initFromIni iniFile assetsTank =
 	(
-		print "start init"
+-- 		print "start init"
 		
 		assetInfo = iniFile
+		assetFolder =cleanFilename(getFilenamePath assetInfo)
+		--
 		name = getINISetting iniFile "assetProperties" "name"
 		lastVersion = (getINISetting iniFile "assetProperties" "version") as integer
-		versionInfo = assetsTank +  (returnDigit lastVersion) + "\\" + "versionInfo.ini" 
+		--
+		versionInfo = cleanFilename(assetFolder + "\\" + (returnDigit lastVersion) + "\\" + "versionInfo.ini" )
+		--
+		statusTmp = getINISetting versionInfo "assetProperties" "status"
+		if statusTmp.count > 0 then status = statusTmp else status = "none" 
+		--
+		lastVersionFile = cleanFilename(assetFolder + "\\" + (returnDigit lastVersion) +"\\" + name + ".max")
+		wipFolder = cleanFilename(assetFolder +"\\"+  "wip" + "\\")
 		
-		assetFolder =cleanFilename(getFilenamePath assetInfo)
+		root = cleanFilename(assetsTank + "\\")
 		
-		lastVersionFile = assetFolder + "name"+ "\\" + (returnDigit lastVersion) +"\\" + name + ".max"
-		wipFolder = assetFolder +"\\"+  "wip" + "\\"
-		
--- 		allAssetsFolder = assetsTank
-		
--- 		assetFolder =cleanFilename(getFilenamePath assetInfo)
-		
-		root = assetsTank + "\\"
--- 		assetFolder = root + name
--- 		relativeFolder = returnRelativeFolder assetFolder assetsTank
--- 		relativeFolder2 = returnRelativeFolder2 assetFolder assetsTank name
-		
--- 		allAssetsRoot = returnRootPath assetFolder assetsTank
-
--- 		lastVersionFile = returnLastVersionFile versionInfo
--- 		lastVersionFile = assetsTank + (returnDigit lastVersion) +"\\" + name + ".max"
--- 		relVersPath = returnLastVersionRelativeFile()
-		
-		print " init done"
+		print ("asset created: " + name)
 	),
 	
 	
@@ -170,6 +182,7 @@ struct assetClass
 -- 		setINISetting versionInfoIniFile "assetProperties" "versionFile" lastVersionFile
 -- 		setINISetting versionInfoIniFile "assetProperties" "relativeVersionFile" relVersPath
 		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (lastVersion as string)
+		setINISetting versionInfoIniFile "assetProperties" "status" status
 	),
 	
 	fn mergeAsset =
@@ -218,14 +231,168 @@ struct assetClass
 
 )
 
+rollout publishVersionRLT "publish asset" width: 400
+(
+	local currentAsset
+	local statusAr = #("none","approved","wip","retake", "archive" )
+	
+	edittext assetNameET "asset name:" readonly: true
+	editText nextVersionET "next version:" readonly: true
+	dropdownlist statusDL "status:" 
+	button publishBT "publish version"
+	
+	fn refreshPublishRlt asset =
+	(
+		-- test if asset folder ready
+		nameOk = False
+		nextVersionPossible = False
+		
+		-- check asset info file exists
+		assetFileInfoExists = doesfileexist (asset.assetInfo)
+		
+		-- find asset name from folder name
+		currentFile = maxFilePath
+		currentFileName = undefined
+		
+		if currentFile.count >0 then
+		(
+			basefolder = getUpperFolder currentFile
+			pathAr = filterString  basefolder "\\"
+			currentFileName = pathAr[pathAr.count]
+		)
+		
+		-- compare name with asset info
+		assetName = asset.name
+		
+		if currentFileName == assetName then
+		(
+			assetNameET.text = assetName
+			nameOk = true
+		)
+		else
+		(
+			assetNameET.text = "???"
+		)
+		
+		-- find next version by count folders
+		lastVersion = 0
+		folderVersion = False
+		assetFolders = getDirectories (asset.assetFolder + "\*")
+		
+		for f in assetFolders do
+		(
+			pathAr = filterString  f "\\"
+			version = (pathAr[pathAr.count] as integer)
+			if  version != undefined  then 
+			(
+				folderVersion = True
+				if version> lastVersion then lastVersion = version
+			)
+		)
+
+		-- compare with asset info
+		assetVersion = asset.lastVersion
+		
+		versionText = "???"
+		
+		if folderVersion == true do
+		(
+			if assetVersion == lastVersion then
+			(
+				versionText = returnDigit (lastVersion + 1)
+				nextVersionPossible = true
+			)
+		)
+		nextVersionET.text = versionText
+		
+		-- set status
+		id = finditem statusDL.items asset.status
+		statusDL.selection = id
+		
+		-- enable publishing
+		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
+		(
+			publishBT.enabled = true
+		)
+		else
+		(
+			publishBT.enabled = false
+		)
+	)
+	
+	on publishVersionRLT open do
+	(
+		-- init rollout
+		currentAsset = rof.rollouts[1].currentAsset
+		statusDL.items = statusAr
+		
+		-- set rollout
+		if currentAsset != undefined do refreshPublishRlt currentAsset
+	)
+	
+	on statusDL selected arg do
+	(
+		currentAsset.status = statusAr[arg]
+	)
+	
+	on publishBT pressed do
+	(
+		print "publishing started"
+		
+		-- create new version folder
+		newFolder = currentAsset.assetFolder +"\\" +  (returnDigit(currentAsset.lastVersion + 1))
+		folderCreated = makedir newFolder all: true
+		
+		-- save new version file
+		local newFile
+			
+		if folderCreated == true then
+		(
+			newFile =  newFolder + "\\" + currentAsset.name + ".max" 
+			newfileCreated = saveMaxFile newFile useNewFile: false
+			print newfileCreated
+		)
+		
+		if newfileCreated == true then
+		(
+			currentAsset.lastVersion = currentAsset.lastVersion + 1
+			currentAsset.lastVersionFile = newFile
+			
+			-- update asset info file
+			currentAsset.updateAssetFileInfo()
+			
+			-- create version info file
+			currentAsset.createVersionFileInfo()
+		)
+		else
+		(
+-- 			delete folder
+		)
+
+		-- collect assets list
+		rof.rollouts[2].refreshFromOutside()
+		
+		print "publishing done"
+		
+		destroyDialog publishVersionRLT
+	)
+)
+
 
 rollout externalToolsRLT "asset tools"
 (
+	local currentAsset
+	
 	group "create asset:"
 	(
 		button createAssetBT "from scene..." across:2
 		button createAssetFromSelBT "from selection..." 
 	)
+	group "publishing:"
+	(
+		button publishRolloutBT "publish asset..."
+	)
+	
 	button assetToolsBT "asset tools..." across:2
 	button updateToolsBT "update tools..."
 	
@@ -236,9 +403,28 @@ rollout externalToolsRLT "asset tools"
 		if sel.count > 0 then filein "assetCreatorFromSelectionUI.ms"
 		else print "make selection first"
 	)
+	
+	on publishRolloutBT pressed do
+	(
+		-- check if we are in asset
+		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
+			-- find assetInfo.ini file
+		res = doesfileexist infoTest 
+		
+		if res then
+		(
+			root = rof.rollouts[2].root
+			currentAsset = assetClass()
+			currentAsset.initFromIni infoTest root
+			createdialog publishVersionRLT
+		)
+		else (print "this is not an asset")
+	)
+	
 	on assetToolsBT pressed do filein "assetManagerTools.ms"
 	on  updateToolsBT pressed do filein "updateAssetTool.ms"
 )
+
 
 rollout assetEditorRLT "assets editor"
 (
@@ -250,7 +436,9 @@ rollout assetEditorRLT "assets editor"
 	
 	local assetPathsArr = #()
 	local assetsList = #()
+	local assetsToDisplay = #()
 	
+	local statusAr = #("all","none","approved","wip","retake", "archive" )
 -- 	UI
 -- 	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
 	group "Assets Repository:"
@@ -258,11 +446,15 @@ rollout assetEditorRLT "assets editor"
 		edittext rootET "Path:" readonly: true
 		button findFolderBT "..."
 	)
-		
+	
+	group "filters:"
+	(
+		edittext nameSearchET "search by name:"
+		dropdownlist  statusDL "status:"  items: statusAr
+	)
+	
 	group "Assets List:"
 	(
-		edittext tagSearchET "search by tags:"
-		edittext nameSearchET "search by name:"
 		listbox assetsBL "Assets:"
 		button collectAssetBT "refresh"
 	)
@@ -280,7 +472,8 @@ rollout assetEditorRLT "assets editor"
 		
 		edittext absPathET "absolute path" readonly: true
 -- 		edittext relVersionET "relative version" readonly: true
-
+		
+		edittext statusET "status" readonly: true
 		edittext editableET "asset editable" readonly: true
  		
 -- 		edittext openStatusET "status:"  readonly: true
@@ -293,19 +486,7 @@ rollout assetEditorRLT "assets editor"
 -- 		button updateBT "update"
 	)
 	
-	group "publishing parameters:"
-	(
-		edittext nameET "name:" readonly: true		
-		edittext nextVersET "next version:" readonly: true
-		edittext publishStatusET "status:"  readonly: true
-		
--- 		edittext commentET "comments:" height:150
-		edittext publishTagsET "tags:" readonly: true
-		button addTagsBT "add tags"
-		
-		button publishVersionBT "publish" enabled: false
-	)
-		
+
 	fn refreshEditGroup asset =
 	(
 -- 		refresh root
@@ -340,81 +521,9 @@ rollout assetEditorRLT "assets editor"
 			print "no thumbnail"
 			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
-	)
-	
-	fn refreshPublishGroup asset =
-	(
-		-- test if asset folder ready
-		nameOk = False
-		nextVersionPossible = False
 		
-		-- check asset info file exists
-		assetFileInfoExists = doesfileexist (asset.assetInfo)
-		
-		-- find asset name from folder name
-		currentFile = maxFilePath
-		currentFileName = undefined
-		
-		if currentFile.count >0 then
-		(
-			basefolder = getUpperFolder currentFile
-			pathAr = filterString  basefolder "\\"
-			currentFileName = pathAr[pathAr.count]
-		)
-		
-		-- compare name with asset info
-		assetName = asset.name
-		
-		if currentFileName == assetName then
-		(
-			nameET.text = assetName
-			nameOk = true
-		)
-		else
-		(
-			nameET.text = "???"
-		)
-		
-		-- find next version by count folders
-		lastVersion = 0
-		folderVersion = False
-		assetFolders = getDirectories (asset.assetFolder + "\*")
-		
-		for f in assetFolders do
-		(
-			pathAr = filterString  f "\\"
-			version = (pathAr[pathAr.count] as integer)
-			if  version != undefined  then 
-			(
-				folderVersion = True
-				if version> lastVersion then lastVersion = version
-			)
-		)
-
-		-- compare with asset info
-		assetVersion = asset.lastVersion
-		
-		versionText = "???"
-		
-		if folderVersion == true do
-		(
-			if assetVersion == lastVersion then
-			(
-				versionText = returnDigit (lastVersion + 1)
-				nextVersionPossible = true
-			)
-		)
-		nextVersET.text = versionText
-		
-		-- enable publishing
-		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
-		(
-			publishVersionBT.enabled = true
-		)
-		else
-		(
-			publishVersionBT.enabled = false
-		)
+-- 		refresh status
+		if asset.status != undefined then statusET.text = asset.status
 	)
 	
 	fn collectAssets root =
@@ -434,35 +543,59 @@ rollout assetEditorRLT "assets editor"
 		tmpAssetsList
 	)
 	
-	fn refreshListBox =
+	fn refreshListBoxNew assetsAr =
 	(
-		-- collect asset
-		assetPathsArr = walkDir  root "assetInfo.ini"
-
-		assetsList = #()
-		
-		for a in assetPathsArr do
-		(
-			try
-			(
-				newAsset = assetClass()
-				newAsset.initFromIni a root
--- 				allAssetsFolder
-				append assetsList newAsset
-			)catch()
-		)
-		--	print assetsList
-		
-		-- refresh ui
 		rootET.text = root
 		
-		assetsBL.items = for o in assetsList collect o.name	
+		assetsBL.items = for o in assetsAr collect o.name	
 		
-		if assetsList.count >0 then
+		if assetsAr.count >0 then
 		(
-			refreshEditGroup assetsList[1]
-			refreshPublishGroup assetsList[1]
+			refreshEditGroup assetsAr[1]
+-- 			refreshPublishGroup assetsAr[1]
 		)
+	)
+	
+	fn filterAssetsList assetsAr nameSearch:"" statusSearch: 1 =
+	(
+		tmpAsset = #()
+		
+		-- filter by name
+		if nameSearch.count> 0 then
+		(
+			for a in assetsAr do
+			(
+				res = findString a.name nameSearch
+				if res != undefined then appendifunique tmpAsset a
+			)
+		)
+		else
+		(
+			tmpAsset = assetsAr
+		)
+		
+		-- filter by status
+		assetsToFilter = tmpAsset
+		assetFilterred = #()
+		if statusSearch>1 then
+		(
+			statusName = statusAr[statusDL.selection]
+			
+			for a in assetsToFilter where a.status == statusName do
+			(
+				append assetFilterred a
+			)
+		)
+		else
+		(
+			assetFilterred = tmpAsset 
+		)
+		tmpAsset = assetFilterred
+		
+		-- sort by name
+		qsort tmpAsset sortAssestbyname
+		
+		tmpAsset
 	)
 	
 	/*
@@ -481,17 +614,37 @@ rollout assetEditorRLT "assets editor"
 
 	fn updateIni = setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
 	
+	fn refreshFromOutside =
+	(
+		assetsList = collectAssets root
+		-- collect list to display
+		assetsToDisplay = filterAssetsList assetsList nameSearch: nameSearchET.text statusSearch: statusDL.selection
+		-- display list
+		refreshListBoxNew assetsToDisplay
+		
+		if assetsToDisplay.count > 0 do	refreshEditGroup assetsToDisplay[assetsBL.selection]
+	)
+	
+	
+-- 	Actions
 	on assetEditorRLT open do
 	(
 -- 		root = @"J:\_svn\zz_ressources3D"
 		
+		-- collect root
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		if rootIni.count > 0 then
 		(
 			if doesfileexist rootIni == true then root = rootIni
 		)
 		
-		refreshListBox()
+		
+		-- collect assets list
+		assetsList = collectAssets root
+		-- collect list to display
+		assetsToDisplay = filterAssetsList assetsList
+		-- display list
+		refreshListBoxNew assetsToDisplay
 	)
 	
 	on assetEditorRLT close do updateIni()
@@ -505,7 +658,14 @@ rollout assetEditorRLT "assets editor"
 		(
 			print res
 			root = res
-			refreshListBox()
+			
+			-- collect assets list
+			assetsList = collectAssets root
+			-- collect list to display
+			assetsToDisplay = filterAssetsList assetsList
+			-- display list
+			refreshListBoxNew assetsToDisplay
+			
 			updateIni()
 		)
 		else
@@ -514,24 +674,45 @@ rollout assetEditorRLT "assets editor"
 		)
 	)
 	
-	on collectAssetBT pressed do refreshListBox()
+	on collectAssetBT pressed do
+	(
+		-- collect assets list
+		assetsList = collectAssets root
+		-- collect list to display
+		assetsToDisplay = filterAssetsList assetsList
+		-- display list
+		refreshListBoxNew assetsToDisplay
+	)
+	
+	on nameSearchET changed val do
+	(
+		assetsToDisplay = filterAssetsList assetsList nameSearch: val
+		-- display list
+		refreshListBoxNew assetsToDisplay
+	)
+	
+	on statusDL selected val do
+	(
+		assetsToDisplay = filterAssetsList assetsList statusSearch: val
+		refreshListBoxNew assetsToDisplay
+	)
 	
 	on assetsBL selected obj do
 	(
-		refreshEditGroup assetsList[obj]
-		refreshPublishGroup assetsList[obj]
+		refreshEditGroup assetsToDisplay[obj]
+-- 		refreshPublishGroup assetsToDisplay[obj]
 	)
 	
 	on openBT pressed do
 	(
-		asset = assetsList[assetsBL.selection]
+		asset = assetsToDisplay[assetsBL.selection]
 		print asset.assetFolder
 		doscommand ("explorer " + asset.assetFolder)
 	)
 	
 	on editBT pressed do
 	(
-		asset = assetsList[assetsBL.selection]
+		asset = assetsToDisplay[assetsBL.selection]
 
 		assetFile =  asset.getLastVersionFile()
 		
@@ -560,14 +741,15 @@ rollout assetEditorRLT "assets editor"
 		else print "uncorrect filename"
 
 		
-		refreshEditGroup assetsList[assetsBL.selection]
-		refreshPublishGroup assetsList[assetsBL.selection]
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+-- 		refreshPublishGroup assetsToDisplay[assetsBL.selection]
 	)
 	
+	/*
 	on publishVersionBT pressed do
 	(
 		print "publish"
-		currentAsset = assetsList[assetsBL.selection]
+		currentAsset = assetsToDisplay[assetsBL.selection]
 		newFolder = currentAsset.assetFolder +"\\" +  (returnDigit(currentAsset.lastVersion + 1))
 				
 		-- create folder
@@ -596,16 +778,21 @@ rollout assetEditorRLT "assets editor"
 -- 			delete folder
 		)
 
-		refreshListBox()
+		-- collect assets list
+		assetsList = collectAssets root
+		-- collect list to display
+		assetsToDisplay = filterAssetsList assetsList
+		-- display list
+		refreshListBoxNew assetsToDisplay
 		
-		refreshEditGroup assetsList[assetsBL.selection]
-		refreshPublishGroup assetsList[assetsBL.selection]
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+		refreshPublishGroup assetsToDisplay[assetsBL.selection]
 		
 	)
-
+	*/
 	on mergeBT pressed do
 	(
-		asset = assetsList[assetsBL.selection]
+		asset = assetsToDisplay[assetsBL.selection]
 		ctrl = asset.mergeAsset()
 		select ctrl
 	)
@@ -615,8 +802,9 @@ rollout assetEditorRLT "assets editor"
 -- try(destroyDialog assetEditorRLT)catch()
 try(closeRolloutFloater  rof)catch()
 rof= newrolloutfloater "Asset Editor" 600 900
+
 addrollout externalToolsRLT rof
 addrollout assetEditorRLT rof
 
+-- rof.rollouts[2].assetslist
 -- createdialog assetEditorRLT width: 200
-

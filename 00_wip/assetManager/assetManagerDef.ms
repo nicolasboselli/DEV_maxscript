@@ -55,14 +55,11 @@ fn returnAllHierarchyDown selArray=
 	selArray
 )
 
-
-
 fn cleanFilename filename =
 (
 	test =substituteString filename "\\\\" "\\"
 	test
 )
-
 
 fn returnDigit num =
 (

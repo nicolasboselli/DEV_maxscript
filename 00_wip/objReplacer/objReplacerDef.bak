@@ -2,69 +2,9 @@
 
 -- targets = selection as array
 
-fn checkReferenceDef sel =
 /*
-function to sheck the selection. the selection must be unique with one ffd box modifer.
-param: none
-return: node
+bug: why local modffd doesn't work
 */
-(
-	if (sel.count == 1) then
-	(
-		local correctFFD = False
-		for modTmp in sel[1].modifiers do
-		(
-			if classof modTmp == FFD_2x2x2 do
-			(
-				correctFFD = true
-				break
-			)
-		)
-		if correctFFD == true then
-		(
-			return sel[1]
-			print "selection conform"
-		)
-		else
-		(
-			print "your selection neeeds one ffd box"
-			return undefined
-		)
-
-	)
-	else if (sel.count > 1) then
-	(
-		local isgroup = False
-		local tmpDummy
-		
-		for s in sel do 
-			if (classof s == dummy) do 
-			(
-				tmpDummy = s
-				isgroup = true
-				break
-			)
-		
-		if isgroup == true then
-		(
-			print "selection is a group" 
-			return tmpDummy
-		)
-		else
-		(
-			return undefined
-		)
-	)
-	
-	else
-	(
-		print "select one object only."
-		return undefined
-	)
-)
-
-
-
 
 fn replaceRefDef ref tgt =
 (
@@ -240,3 +180,36 @@ fn replaceRefDef2 ref tgt =
 	
 )
 
+
+
+-- get size of ref:
+
+-- create group
+head = findHeadsOfHierarchy ref
+grp = createOrientedGroup sel head 
+setGroupOpen grp true
+
+-- get bounding box size
+tea = nodeGetBoundingBox grp grp.transform
+
+xSize = distance [tea[1].x, 0, 0] [tea[2].x, 0, 0]
+ySize = distance [0, tea[1].y, 0] [0, tea[2].y, 0]
+zSize = distance [0, 0, tea[1].z] [0, 0, tea[2].z]
+	-- add group on selection with orientation of selection
+	-- hide ctrl
+	-- open group
+	-- get group bounding box
+	-- calculate size of ref
+	-- delete tmp grp
+
+-- get target size:
+	-- get bounding box 
+	-- calculate size from bounding box
+
+-- copy ref
+
+-- create point at center of ref 
+-- align point on box ref center
+-- calculate ratio ref/target
+-- rescale point
+-- delete point

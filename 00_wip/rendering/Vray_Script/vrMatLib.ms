@@ -1,20 +1,68 @@
 /*
 maj:
-	-- materials mapping
+	-- debug:
+		x- save doens't work
+		-- open max file crash
+	
+	-- maj: 
+		-- save matlib after addition or deletion
+		-- mark material edited
+		-- sort material by name
+		
+		-- versioning material library file
+		-- add thumbnail
+		-- collect texture
+	
+	-- dev: 
+		-- mat structure
+			-- mat
+			-- name
+			
+		-- collect material from libray to array of structure on openning
+		-- rebuilt libray from array on save
+		-- separate materials collected  from materials displayed
+
+	(-- materials mapping
 		-- synchronise material libray with scenematerial applied to objects
 			-- from library to editor, like replace(isntance)
 			-- from editor to library
 			-- check name
 			-- map when apply material edited to object
-			-- auto re-map on opening when compare lib map with scene mat
+			-- auto re-map on opening when compare lib map with scene mat)
 			
 	--  library cleaning
-		-- make same material with same property unique
-		-- auto change name on material with same name
+		(-- make same material with same property unique)
+		(-- auto change name on material with same name)
 			
-	-- versioning material file
-	-- add thumbnail
+
 */
+
+
+fn sortMatbyname v1 v2 =
+(
+	-- qsort <array> sortbyname
+-- 	vars
+	local d
+	
+	if ( (toLower v1.name) < (toLower v2.name)) then
+		d=-1
+	else
+		d=1
+	
+--compare les numeros entre eux et les classe	
+	case of
+	(
+		(d < 0.): -1
+		(d > 0.): 1
+		default: 0
+	)
+)
+
+struct matStruct 
+(
+	mat,
+	name = mat.name
+)
 
 try(destroyDialog vrMatRlt)catch()
 -- rollout
@@ -26,7 +74,10 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	local vrLibPath
 	local openFileName
-	local vrLibAr = #()
+	
+	local matColAr = #()
+	local matDispAr = #()
+	
 	local vrLib = materiallibrary()
 	
 -- 	UI
@@ -61,28 +112,52 @@ rollout vrMatRlt "VRay mat Lib"
 -- 	actions
 	on vrMatRlt open do
 	(
-		-- init material path
+		matLibLoaded = false
+		
+		-- init lobrary path
 		if vrLibPath == undefined then
 		(
 			try 
 			(
 				vrLibPath = getINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath"
-			)catch()
+			)
+			catch()
 		)
 		
 		-- load library
-		if doesfileexist vrLibPath == true then
+		if doesfileexist vrLibPath then
 		(
 			vrLib = loadTempMaterialLibrary vrLibPath
-			libPthBT.text = vrLibPath
-			matLB.items = for mat in vrLib collect mat.name
+			matLibLoaded = true
 		)
 		else
 		(
 			vrLib = materialLibrary ()
-			vrLibPath = ""
-			libPthBT.text = "???"
 		)
+		
+		/*
+		-- collect material 
+		for m in vrLib do
+		(
+			mTmp = matStruct mat: m
+			append matColAr mTmp
+		)
+		
+		-- collect material to display
+		matDispAr = matColAr
+		
+		-- sort by name  material array to display
+		qsort matColAr sortMatbyname
+		*/
+		
+		-- refresh ui
+		if matLibLoaded then
+		(
+			libPthBT.text = vrLibPath
+			matLB.items = for mat in vrLib collect mat.name
+		)
+		else (libPthBT.text = "???")
+		
 	)
 	
 	on vrMatRlt close do
@@ -104,11 +179,12 @@ rollout vrMatRlt "VRay mat Lib"
 		)
 	)
 	
-	on saveLibBT vrLibPath do
+	on saveLibBT pressed do
 	( 
 		if doesfileexist vrLibPath then
 		(
-			saveTempMaterialLibrary  vrLib vrLibPath
+			res = saveTempMaterialLibrary  vrLib vrLibPath
+			if res do print "library saved"
 		)
 		else
 		(
@@ -165,6 +241,7 @@ rollout vrMatRlt "VRay mat Lib"
 	
 )
 createdialog vrMatRlt
+
 
 /*
 -- base material grid

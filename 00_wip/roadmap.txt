@@ -204,15 +204,22 @@ x-- found vray version
 
 ================================= ASSET MANAGEMENT===============
 
+-- IDEA:
+	-- when publishing or creating asset do create temporary file and use it to create version with unified asset publishing method
+		-- where is temporary file?
+		-- use temporary as clipboard
+	-- create production  manager
+
+
 -- ASSETEDITOR / assetOpenerUI.ms
 	todo:
 		/- use asset manager current path for all operation:
 				x-- asset creation from scene
 				x-- asset creation from selection
-				-- asset publishing
+				x-- asset publishing
 				/-- asset updating
 				
-		/- ignore "zz_ressources3D", use folder.
+		x- ignore "zz_ressources3D", use folder.
 			-- create folder explorer
 		
 		/- UI: 
@@ -220,12 +227,18 @@ x-- found vray version
 			x- close popup after creation, 
 			-- make publishing in popup
 			
-		-- dev: create an array for displayed assets to sort assets
+		x- dev: create an array for displayed assets to sort assets
+		
+		/- filter by name
+			-- add * add begining and end of search	
+			
+		x-- filter by status (all, approved, wip, retake, archived)
+			-- add ignore achive
 			
 		-- function to clean wip folder
 		-- function to delete old increment
 		-- function to package assets(zip)
-		-- function to hide asset (.ini => .bak). tools to revert
+		(-- function to hide asset (.ini => .bak). tools to revert) replace by archive status
 		-- bookmark for asset tools you work on?
 		-- basket for selection to export(selection set)
 		-- bookmark for assets to import
@@ -250,6 +263,7 @@ x-- found vray version
 		-- ASSETSCANNER: 
 			-- scan folders and return only asset with info file and available arbo under gender classement
 			-- generate html with thumbnail
+			-- manage status, wip folder cleaner, old version cleaning
 		
 		-- AUTO-GENERATE asset on folder path
 

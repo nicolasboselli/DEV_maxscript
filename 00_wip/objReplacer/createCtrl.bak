@@ -4,7 +4,8 @@ bug:
 -- group or clone crash heads of parent
 */
 
-sel = selection as array
+-- sel = selection as array
+-- create group with first selected object orientation
 
 
 fn findHeadsOfHierarchy sel =
@@ -38,23 +39,40 @@ fn findHeadsOfHierarchy sel =
 	headsOfHierarchy
 )
 
--- create group with first selected object orientation
-fn createOrientedGroup sel headsOfHierarchy =
+fn createOrientedGroup sel headsOfHierarchy resetScale:false =
 (
-	
 
-			-- find parent of head of hierarchy
+	-- find parent of head of hierarchy
+	format "heads : %\n" headsOfHierarchy
+	format "sel : %\n" sel
+	
 	rootParent = #()
+	
 	for head in headsOfHierarchy do
 	(
 		appendifunique rootParent head.parent
 	)
-
+-- 	print rootParent.count
+	
 	if rootParent.count == 1 then
 	(
-			-- create helper with first selection orientation
-		selMatrix = sel[1].transform
-		orientHlpTmp = point name: "orientHlpTmp" transform: selMatrix
+		-- create helper with first selection orientation
+-- 		lead = sel[1]
+		lead = headsOfHierarchy[1]
+		
+		selMatrix = lead.transform
+		orientHlpTmp = point name: "orientHlpTmp"  --transform: selMatrix
+		
+		if not resetScale then
+		(
+			orientHlpTmp.transform = selMatrix
+		)
+		else
+		(
+			orientHlpTmp.rotation = lead.rotation
+			orientHlpTmp.position = lead.position
+		)
+		
 		orientHlpTmp.parent = rootParent[1]
 			
 			-- parent heads of hierarchy on helper
@@ -64,7 +82,9 @@ fn createOrientedGroup sel headsOfHierarchy =
 		)
 			
 			-- create group on selection
-		tmpGrp= group sel name: "tmpGrp"
+		tmpGrp = group sel
+		
+		format "tmpGrp:%\n" tmpGrp
 			-- reroot group root parent
 		tmpGrp.parent = rootParent[1]
 			-- delete helper
@@ -75,36 +95,9 @@ fn createOrientedGroup sel headsOfHierarchy =
 	else
 	(
 		print "selection uncorrect"
+		undefined
 	)
 )
-
-
-
-/* create controller function */
-fn createCtrl num posList tmpGrp = 
-(
-	tmpPt = point pos: posList[num ] name: ("repere_" + (num  as string)) size: 400 wirecolor: green
-	-- point matrix
-	ptMatrix = tmpPt.transform.controller.value
-	-- group matrix
-	grpMatrix = tmpGrp.transform
-		
-	resMatrix = ptMatrix*grpMatrix
-	tmpPt.transform.controller.value = resMatrix
--- 	in coordsys tmpGrp tmpPt.position = posList[num ]
-	tmpPt
-)
-
-/*
--- parent ref
-grpMatrix = $.transform.controller.value
--- world ref
-grpMatrix = $.transform
-
-in coordsys world $.position
-	
-in coordsys parent $.transform
-*/
 
 fn collectCtrlPosition tmpGrp =
 (
@@ -129,46 +122,80 @@ fn collectCtrlPosition tmpGrp =
 	posList
 )
 
-rollout addCtrlRLT "Add Controller Utility"
+/* create controller function */
+fn createCtrl num posList tmpGrp hlpSize: 400 = 
 (
+	tmpPt = point pos: posList[num ] name: ("repere_" + (num  as string)) size: hlpSize wirecolor: green
+		
+	-- point matrix
+	ptMatrix = tmpPt.transform.controller.value
+	-- group matrix
+	grpMatrix = tmpGrp.transform
+		
+	resMatrix = ptMatrix*grpMatrix
+	tmpPt.transform.controller.value = resMatrix
+-- 	in coordsys tmpGrp tmpPt.position = posList[num ]
+	tmpPt
+)
 
 -- 	vars
 -- 	rollout relative functions
-	fn createOneCtrl num sel state=
+fn createOneCtrl num sel state=
+(
+	local ctrlTmp
+	local tmpGrp = undefined
+	undo on
 	(
-		local tmpGrp = undefined
-		undo on
-		(
-					-- find head of hierarchy of selection
-			headsOfHierarchy = findHeadsOfHierarchy sel
-			
-			
-			if state == true then
-			(
-				tmpGrp = createOrientedGroup sel headsOfHierarchy
-			)
-			else
-			(
-				tmpGrp= group sel name: "tmpGrp"
-			)
-			
-			posList = collectCtrlPosition tmpGrp
-
-			-- create up controller
-			ctrlTmp = createCtrl num posList tmpGrp
-
-			-- delete group
-			root = tmpGrp.parent
-			setGroupOpen  tmpGrp false		
-			explodeGroup tmpGrp
-
-			-- parent selection to point
-			for h in headsOfHierarchy do h.parent = ctrlTmp
-			ctrlTmp.parent = root
-		)
-		ctrlTmp
-	)
+		format
+		-- find head of hierarchy of selection
+		headsOfHierarchy = findHeadsOfHierarchy sel
+		format "head: %\n" headsOfHierarchy
 		
+		-- create group over the selection
+		if state == true then
+		(
+			
+			print "check 05"
+			tmpGrp = createOrientedGroup sel headsOfHierarchy
+-- 				format "head: %\n" headsOfHierarchy
+		)
+		else
+		(
+			tmpGrp = group sel
+		)
+		
+		format "tmpGrp: %\n" tmpGrp
+		
+		-- collect positions for control
+		posList = collectCtrlPosition tmpGrp
+-- 			print posList
+		
+		-- create up controller
+		ctrlTmp = createCtrl num posList tmpGrp
+		
+		-- delete group
+		root = tmpGrp.parent
+-- 			format "root: %\n" root
+		format "head: %\n" headsOfHierarchy
+		
+		setGroupOpen tmpGrp true
+		
+-- 			explodeGroup tmpGrp
+		-- parent selection to point
+		for h in headsOfHierarchy do h.parent = ctrlTmp
+		ctrlTmp.parent = root
+		
+-- 		copy tmpGrp
+		delete tmpGrp
+	)
+	ctrlTmp
+)
+
+
+try(destroydialog addCtrlRLT)catch()
+rollout addCtrlRLT "Add Controller Utility"
+(
+
 	
 -- 	UI
 	checkbox useOrientationCB "keep selection orientation"
@@ -240,3 +267,4 @@ rollout addCtrlRLT "Add Controller Utility"
 )
 
 createdialog addCtrlRLT
+

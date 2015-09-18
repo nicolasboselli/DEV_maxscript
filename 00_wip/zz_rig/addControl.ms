@@ -18,3 +18,7 @@ for s in sel do
 $.objectoffsetpos
 $.objectoffsetrot = (eulerangles 0 90 0) as quat
 $.objectoffsetscale = [2,2,2]
+
+
+
+

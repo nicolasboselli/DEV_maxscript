@@ -1,6 +1,5 @@
-filein "windows_placer_fn.ms"
 filein "objReplacerDef.ms"
-
+/*
 fn centerizeGroupFN =
 (
 	print "start"
@@ -36,9 +35,9 @@ fn centerizeGroupFN =
 	)
 	print "done"
 )
+*/
 
-
-
+try(destroydialog objReplacerRLT)catch()
 rollout objReplacerRLT "objects replacer"
 (
 	--vars
@@ -48,16 +47,13 @@ rollout objReplacerRLT "objects replacer"
 	-- function
 	
 	fn checkReferenceFn =
-	/*
-	function to sheck the selection. the selection must be unique with one ffd box modifer.
-	param: none
-	return: node
-	*/
 	(
 		sel = selection as array
+		
 		if (sel.count == 1) then
 		(
-			local correctFFD = False
+			local correctFFD = truew
+			/*
 			for modTmp in sel[1].modifiers do
 			(
 				if classof modTmp == FFD_2x2x2 do
@@ -66,15 +62,16 @@ rollout objReplacerRLT "objects replacer"
 					break
 				)
 			)
+			*/
 			if correctFFD == true then
 			(
-				return sel[1]
+				sel[1]
 				print "selection conform"
 			)
 			else
 			(
 				print "your selection neeeds one ffd box"
-				return undefined
+				undefined
 			)
 	
 		)
@@ -131,52 +128,14 @@ rollout objReplacerRLT "objects replacer"
 		refObj = checkReferenceFn()
 		if refObj != undefined then 
 		(
-			infoStr = stringStream ""
-			format "reference selected : %"  refObj.name to: infoStr
-			print(infoStr as string)
-			
+			format "reference selected : %\n"  refObj
 			refnameET.text = refObj.name
-			
 		)
 		else 
 		(
 			"correct your selection"
 		)
 	)
-	/*
-	on replaceBT pressed do
-	(
-		targetArr = checkTargetSelectionFN()
-		if refObj !=undefined and targetArr != undefined then
-		(
-			for s in targetArr do
-			(
-				if (s != refObj) then
-				(
-					print refObj
-					print s
-					res = replaceRefFN refObj s
-					print ("result:" + res.name)
-					
-					res.center = s.center
-				)
-				else
-				(
-					print "reference and target are the same object"
-				)
-			)
-		)
-		else
-		(
-			print "check your selections."
-		)
-	)
-	
-	on centerBT pressed do
-	(
-		centerizeGroupFN()
-	)
-	*/
 	
 	on replaceV2BT pressed do
 	(

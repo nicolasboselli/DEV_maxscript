@@ -4,16 +4,18 @@
 
 sel = selection as array
 -- create group
-grp = createOrientedGroup sel sel
-setGroupOpen  grp true
+head = findHeadsOfHierarchy sel
+grp = createOrientedGroup sel head 
+setGroupOpen grp true
 
--- create box
+-- get bounding box size
 tea = nodeGetBoundingBox grp grp.transform
 
 xSize = distance [tea[1].x, 0, 0] [tea[2].x, 0, 0]
 ySize = distance [0, tea[1].y, 0] [0, tea[2].y, 0]
 zSize = distance [0, 0, tea[1].z] [0, 0, tea[2].z]
 
+-- create box
 test = box  width: xSize  length: ySize height: zSize
 test.transform
 test.pivot = test.center
@@ -26,13 +28,13 @@ test.transform
 polyop.setEdgeSelection test #all
 
 -- create shape from edges
-newName = "test"
+newName = uniquename "test"
 test.createShape  newName  false test
 delete test
 
 ctrBox = getNodebyname newName
 
-
+-- orient ctrl box
 ctrBox.transform = grp.transform
 ctrBox.position = grp.center
 

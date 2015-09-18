@@ -87,6 +87,7 @@ fn boxerize selAr =
 					-- add shell on object
 					myShell = Shell innerAmount:0 outerAmount:28
 					addmodifier o myShell
+					o.pivot = o.center
 					
 					resetInPlaceFN o
 					o.material = undefined
