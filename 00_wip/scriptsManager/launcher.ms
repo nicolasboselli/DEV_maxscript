@@ -35,7 +35,19 @@ try(destroyDialog mxsLaunchRLT)catch()
 struct favFileClass
 (
 	path,
-	name = getFilenameFile path
+	name = getFilenameFile path,
+	
+	fn launch =
+	(
+		if doesfileexist path then
+		(
+		filein path
+		)
+		else
+		(
+			print "no script"
+		)
+	)
 )
 
 
@@ -197,6 +209,12 @@ rollout mxsLaunchRLT "maxscript launcher"
 	)
 	
 	on launchBT pressed do filein (fileClassArray[scriptArrayLB.selection].path)
+	
+	on scriptArrayLB doubleClicked  arg do
+	(
+		displayAr[arg].launch()
+	)
+	
 	on editBT pressed do edit (fileClassArray[scriptArrayLB.selection].path)
 		
 	on openFolder pressed do 

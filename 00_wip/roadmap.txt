@@ -41,9 +41,8 @@
 -- TODO:
 	-- add transform tool
 	-- group all tools in one rollout
-	-- make tool to clone plane on selection
 
--- create_plane_ui:
+-- create_plane_ui
 
 -- plan_opacity
 
@@ -59,6 +58,9 @@
 	x-- add tool to pick root position  and target position 
 	-- scale resizer with map
 	-- calculate dimension on bounding box and do not use plane size anymore
+	
+-- transfer uvw map
+	-- tool to clone plane on selection
 
 
 
@@ -356,7 +358,6 @@ x-- parent
 		x- scale the object instead of use ffd
 		
 		-- map xyz pivot orientation
-
 
 
 ================================== RIG ===========================

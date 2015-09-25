@@ -15,6 +15,13 @@ maj:
 	-- clean wip folder
 	-- clean old version (work only with first and last version)
 	-- add comments
+	-- add history in repository
+
+debug:
+	-- parent hidden object
+	
+prob:
+	-- when merging list merged objects?
 		
 */
 
@@ -185,19 +192,30 @@ struct assetClass
 		setINISetting versionInfoIniFile "assetProperties" "status" status
 	),
 	
-	fn mergeAsset =
+	fn mergeAsset ignoreCache: false=
 	(
 		assetCtrl = undefined
 		res = mergeMAXFile lastVersionFile   #select #autoRenameDups #useSceneMtlDups 
 		
 		if res == true then
 		(
+			LM = layermanager
+			
 			sel = selection as array
 			assetCtrl = point name: (uniquename( name + "_ctrl")) size: 200
+			clearselection()
+			
+			-- set asset ctrl on layer manager
+			assetsLayer = LM.getLayerFromName "assets_layer"
+			if assetsLayer == undefined do assetsLayer = LM.newLayerFromName "assets_layer"
+
+			assetsLayer.addnode assetCtrl
+			
 			setUserProp assetCtrl "asset" true
 			
 			setUserProp assetCtrl "root" root
 			setUserProp assetCtrl "relativePath" relVersPath
+			setUserProp assetCtrl "assetfolder" assetFolder
 			
 			setUserProp assetCtrl "allAssetsRoot" allAssetsRoot
 			setUserProp assetCtrl "allAssetsFolder" allAssetsFolder
@@ -208,6 +226,8 @@ struct assetClass
 			setUserProp assetCtrl "assetVersion" lastVersion
 			
 			mergedElts = #()
+			
+			-- ignore vray set
 			for o in sel do
 			(
 				if classof o == vraysun then delete o
@@ -217,6 +237,14 @@ struct assetClass
 				(
 					o.parent = assetCtrl
 				)
+			)
+			
+			-- ignore cache layer
+			cacheLayer = LM.getLayerFromName "cache_layer"
+			if cacheLayer != undefined and ignoreCache do
+			(
+				cacheLayer.select true
+				delete selection
 			)
 		)
 		
@@ -459,6 +487,13 @@ rollout assetEditorRLT "assets editor"
 		button collectAssetBT "refresh"
 	)
 -- 	rof.rollouts[2].assetsList[1].name
+	group "Merging:"
+	(
+		checkbox ignoreCacheCB "ignore cache_layer" across: 3
+		checkbox ignoreVrCB "ignore sun, camera and vrayplane" enabled: false
+		checkbox createAsAssetCB "create as asset" enabled: false
+		button mergeBT "merge"
+	)
 	
 	group "Asset selected infos:"
 	(
@@ -480,12 +515,13 @@ rollout assetEditorRLT "assets editor"
 -- 		edittext  openTagsET "tags:" readonly: true
 		
 -- 		checkbox instanceCB "new max instance"
-		button openBT "open" across:3
+		button openBT "open" across:2
 		button editBT "edit" 
-		button mergeBT "merge"
+		
 -- 		button updateBT "update"
 	)
 	
+
 
 	fn refreshEditGroup asset =
 	(
@@ -637,6 +673,10 @@ rollout assetEditorRLT "assets editor"
 		(
 			if doesfileexist rootIni == true then root = rootIni
 		)
+		else
+		(
+			root = ""
+		)
 		
 		
 		-- collect assets list
@@ -745,55 +785,10 @@ rollout assetEditorRLT "assets editor"
 -- 		refreshPublishGroup assetsToDisplay[assetsBL.selection]
 	)
 	
-	/*
-	on publishVersionBT pressed do
-	(
-		print "publish"
-		currentAsset = assetsToDisplay[assetsBL.selection]
-		newFolder = currentAsset.assetFolder +"\\" +  (returnDigit(currentAsset.lastVersion + 1))
-				
-		-- create folder
-		folderCreated = makedir newFolder all: true
-		
-		-- save file
-		local newFile
-		if folderCreated == true then
-		(
-			newFile =  newFolder + "\\" + currentAsset.name + ".max" 
-			newfileCreated = saveMaxFile newFile useNewFile: false
-			print newfileCreated
-		)
-		
-		if newfileCreated == true then
-		(
-			currentAsset.lastVersion = currentAsset.lastVersion + 1
-			currentAsset.lastVersionFile = newFile
-			-- update asset info file
-			currentAsset.updateAssetFileInfo()
-			-- create version info file
-			currentAsset.createVersionFileInfo()
-		)
-		else
-		(
--- 			delete folder
-		)
-
-		-- collect assets list
-		assetsList = collectAssets root
-		-- collect list to display
-		assetsToDisplay = filterAssetsList assetsList
-		-- display list
-		refreshListBoxNew assetsToDisplay
-		
-		refreshEditGroup assetsToDisplay[assetsBL.selection]
-		refreshPublishGroup assetsToDisplay[assetsBL.selection]
-		
-	)
-	*/
 	on mergeBT pressed do
 	(
 		asset = assetsToDisplay[assetsBL.selection]
-		ctrl = asset.mergeAsset()
+		ctrl = asset.mergeAsset ignoreCache: ignoreCacheCB.state
 		select ctrl
 	)
 )

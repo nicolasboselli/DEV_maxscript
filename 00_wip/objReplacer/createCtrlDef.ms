@@ -1,12 +1,7 @@
 /*
 bug:
 -- find parent of the selection before 
--- group or clone crash heads of parent
 */
-
--- sel = selection as array
--- create group with first selected object orientation
-
 
 fn findHeadsOfHierarchy sel =
 (
@@ -43,8 +38,8 @@ fn createOrientedGroup sel headsOfHierarchy resetScale:false =
 (
 
 	-- find parent of head of hierarchy
--- 	format "heads : %\n" headsOfHierarchy
--- 	format "sel : %\n" sel
+	format "heads : %\n" headsOfHierarchy
+	format "sel : %\n" sel
 	
 	rootParent = #()
 	
@@ -84,7 +79,7 @@ fn createOrientedGroup sel headsOfHierarchy resetScale:false =
 			-- create group on selection
 		tmpGrp = group sel
 		
--- 		format "tmpGrp:%\n" tmpGrp
+		format "tmpGrp:%\n" tmpGrp
 			-- reroot group root parent
 		tmpGrp.parent = rootParent[1]
 			-- delete helper
@@ -140,53 +135,58 @@ fn createCtrl num posList tmpGrp hlpSize: 400 =
 
 -- 	vars
 -- 	rollout relative functions
-fn createOneCtrl num sel state=
+fn createOneCtrl num sel state hlpSize: 400 =
 (
 	local ctrlTmp
 	local tmpGrp = undefined
+	
 	undo on
 	(
-		format
+		
 		-- find head of hierarchy of selection
 		headsOfHierarchy = findHeadsOfHierarchy sel
 -- 		format "head: %\n" headsOfHierarchy
-		
+-- 		format "sel: %\n" sel
+
 		-- create group over the selection
 		if state == true then
 		(
-			
--- 			print "check 05"
 			tmpGrp = createOrientedGroup sel headsOfHierarchy
--- 				format "head: %\n" headsOfHierarchy
 		)
 		else
 		(
 			tmpGrp = group sel
 		)
 		
--- 		format "tmpGrp: %\n" tmpGrp
+		format "tmpGrp: %\n" tmpGrp
 		
-		-- collect positions for control
-		posList = collectCtrlPosition tmpGrp
--- 			print posList
-		
-		-- create up controller
-		ctrlTmp = createCtrl num posList tmpGrp
-		
-		-- delete group
-		root = tmpGrp.parent
--- 			format "root: %\n" root
--- 		format "head: %\n" headsOfHierarchy
-		
-		setGroupOpen tmpGrp true
-		
--- 			explodeGroup tmpGrp
-		-- parent selection to point
-		for h in headsOfHierarchy do h.parent = ctrlTmp
-		ctrlTmp.parent = root
-		
--- 		copy tmpGrp
-		delete tmpGrp
+		if classof tmpGrp != dummy then
+		(
+			print "debug your selection"
+		)
+		else
+		(
+			-- collect positions for control
+			posList = collectCtrlPosition tmpGrp
+	-- 			print posList
+			
+			-- create up controller
+			ctrlTmp = createCtrl num posList tmpGrp hlpSize: hlpSize
+			
+-- 			format "ctrlTmp: %\n" ctrlTmp
+			root = tmpGrp.parent
+	-- 		format "root: %\n" root
+	-- 		format "head: %\n" headsOfHierarchy
+			
+			-- delete temporary group
+			setGroupOpen tmpGrp false
+			ungroup  tmpGrp
+			
+			-- parent selection to point
+			for h in headsOfHierarchy do h.parent = ctrlTmp
+			
+			ctrlTmp.parent = root
+		)
 	)
 	ctrlTmp
 )

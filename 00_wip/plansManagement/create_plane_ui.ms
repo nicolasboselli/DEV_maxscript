@@ -19,6 +19,66 @@ function to extract part of a plan
 */
 
 
+fn createPlansLayer =
+(
+	LM = layermanager
+	planLayer
+	
+	if (LM.getLayerFromName "plans") == undefined then planLayer = LM.newLayerFromName "plans"
+	else planLayer = LM.getLayerFromName "plans"
+
+	planLayer
+)	
+
+
+
+fn copyPlan sel =
+(
+	map1
+	obj1 = sel[1]
+	for modif in  obj1.modifiers where classof modif == UVWmap do map1 = modif
+		
+	format "obj1: %\n" obj1
+	format "map1: %\n" map1
+
+	for i = 2 to sel.count do
+	(
+		obj2 = sel[i]
+		format "obj: %\n" obj2
+		-- add on plans layer
+		lay = createPlansLayer()
+		lay.addnode obj2
+		
+		obj2.renderable = off
+		obj2.backfacecull = on
+		
+		obj2.name = uniquename obj1.name
+		
+		obj2.material = obj1.material
+		
+		map2 = uvwmap()
+		
+		
+		addmodifier   obj2 map2
+		classof obj2 --hack to force stack update
+		
+		map2.maptype = map1.maptype 
+		
+		map2.uflip = map1.uflip
+		map2.vflip = map1.vflip
+		map2.wflip = map1.wflip
+		
+		map2.width = map1.width 
+		map2.length = map1.length
+		map2.height = map1.height 
+		
+		map2.gizmo.transform = (map1.gizmo.transform * obj1.objecttransform) * inverse obj2.objecttransform
+	)
+)
+
+-- sel = selection as array
+-- copyPlan sel
+
 struct planClass
 (
 	path,
@@ -95,22 +155,21 @@ rollout createPlaneRLT "create plane"
 	button createPlaneBT "create"  pos:[ 50 , lastLine]
 	button injectMapBT "inject" pos:[150,lastLine]
 	button changeMapBT "change map" pos:[250,lastLine]
+	button transferMapBT "transfer map" pos:[350,lastLine]
 	
+-- 	functions
+	/*
 	fn createPlansLayerFN =
 	(
-		local LM = layermanager
-		local planLayer
-		if (LM.getLayerFromName "plans") == undefined then
-		(
-			planLayer = LM.newLayerFromName "plans"
-		)
-		else
-		(
-			planLayer = LM.getLayerFromName "plans"
-		)
-		return planLayer
+		LM = layermanager
+		planLayer
+		
+		if (LM.getLayerFromName "plans") == undefined then planLayer = LM.newLayerFromName "plans"
+		else planLayer = LM.getLayerFromName "plans"
+		
+		planLayer
 	)
-	
+	*/
 	
 	fn returnJpgList oneJpg =
 	(
@@ -223,7 +282,7 @@ rollout createPlaneRLT "create plane"
 		mapPlane = createMappedPlane jpgSel.path
 		ajustUVWmap mapPlane
 		
-		lay = createPlansLayerFN()
+		lay = createPlansLayer()
 		lay.addnode mapPlane
 		
 		-- update listbox
@@ -305,6 +364,12 @@ rollout createPlaneRLT "create plane"
 		createPlaneBT.pos = [ 50, createPlaneRLT.height - sub]
 		injectMapBT.pos = [150, createPlaneRLT.height - sub]
 		changeMapBT.pos = [250, createPlaneRLT.height - sub]
+	)
+	
+	on transferMapBT pressed do
+	(
+		sel = selection as array
+		copyPlan sel
 	)
 )
 

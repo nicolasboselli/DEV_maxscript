@@ -35,26 +35,6 @@ fn collectVrmeshesInScene =
 	vrmeshes	
 )
 
-fn collectAssetInScene =
-( 
-	assetsAr = #()
-	pointsAr = for h in helpers where classof h == point collect h
--- 	print pointsAr
-	for o in pointsAr do
-	(
-		test = getUserProp o "asset"
--- 		print(getUserProp o "asset")
-		if test == true do 
-		(
-			append assetsAr o
-		)
-	)
--- 	print assetsAr
-	assetsAr
-)
-
-
-
 try(destroyDialog vrmeshesRemapRLT)catch()
 
 rollout vrmeshesRemapRLT "asset update tools"

@@ -1,5 +1,5 @@
--- load createOrientedGroup from createCtrl.ms 
--- load  findHeadsOfHierarchy from   createCtrl.ms 
+-- load createOrientedGroup from createCtrlDef.ms 
+-- load  findHeadsOfHierarchy from   createCtrlDef.ms 
 
 
 sel = selection as array

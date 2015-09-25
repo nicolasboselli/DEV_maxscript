@@ -1,6 +1,26 @@
 
 filein "assetManagerDef.ms"
 
+
+fn collectAssetInScene =
+( 
+	assetsAr = #()
+	pointsAr = for h in helpers where classof h == point collect h
+-- 	print pointsAr
+	for o in pointsAr do
+	(
+		test = getUserProp o "asset"
+-- 		print(getUserProp o "asset")
+		if test == true do 
+		(
+			append assetsAr o
+		)
+	)
+-- 	print assetsAr
+	assetsAr
+)
+
+
 struct assetInScene
 (
 	obj,
@@ -27,23 +47,33 @@ struct assetInScene
 		name = getuserprop obj "assetName"
 		version = getuserprop obj "assetVersion"
 		
+		assetFolder = getuserprop obj "assetfolder"
+		format "assetFolder: %\n" assetFolder
+		
 		allAssetsRoot = getuserprop obj "allAssetsRoot"
+		
 		allAssetsFolder = getuserprop obj "allAssetsFolder"
+
+
+		
 -- 		print allAssetsFolder
 		relativeFolder = getuserprop obj "relativeFolder"
 		relativeFolder2 = getuserprop obj "relativeFolder2"
 		
 		-- obsolete root and relativePath
 		root = getuserprop obj "root"
-		versionFile = root + (getuserprop obj "relativePath")
+-- 		versionFile = root + (getuserprop obj "relativePath")
+		versionFile = cleanFilename(assetFolder + "\\" + (returnDigit version) + "\\" + name + ".max")
+		
 -- 		print versionFile
-		assetFolder = getupperfolder(getFilenamePath  versionFile)
+		if assetFolder.count == 0 then assetFolder = getupperfolder(getFilenamePath  versionFile)
+		
 		assetIni = assetFolder + "assetInfo.ini"
 -- 		print assetIni
 		
 		lastVersion = (getINISetting assetIni "assetProperties" "version") as integer
 -- 		print lastVersion
-		lastVersionFile = assetFolder + (returnDigit lastVersion) + "\\" + name + ".max"
+		lastVersionFile = cleanFilename(assetFolder + "\\" +(returnDigit lastVersion) + "\\" + name + ".max")
 		
 		isLastVersion = true
 		if lastVersion > version and doesfileexist lastVersionFile ==  true then isLastVersion = false
@@ -55,7 +85,7 @@ struct assetInScene
 	(
 		newAsset = assetClass()
 		newAsset.initFromIni assetIni allAssetsFolder
-		newAssetCtrl = newAsset.mergeAsset()
+		newAssetCtrl = newAsset.mergeAsset ignoreCache: true
 		newAssetCtrl.transform = obj.transform
 		newAssetCtrl
 	)
@@ -110,6 +140,7 @@ rollout updateAssetsToolRLT "update assets tool"
 -- 				print "start asset creation"
 				newAsset = assetInScene()
 				newAsset.initFromCtrl o
+				format "asset: %\n" newAsset
 				append assetClassAr newAsset
 -- 				print "asset creation done"
 			)catch(format "*** % ***\n" (getCurrentException()))
