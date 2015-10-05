@@ -23,23 +23,30 @@ fn collectGridFN =
 	return gridAr
 )
 
+try(destroydialog gridRLT)catch()
 rollout gridRLT "Grids Manager"
 (
 	--vars
 	local gridList = #()
+	local gridListToDisp = #()
 	-- ui
 	listbox gridsLB "Grids List :"
 	button refrListBT "refresh list"
 	button gridViewBT "grid view"
 	
 -- 	fn
+
+	
 	fn refreshUIFN =
 	(
 		gridList = collectGridFN()
-		gridsLB.items = for oneGrid in gridList collect oneGrid.name
+		gridListToDisp = gridList
+		gridsLB.items = for oneGrid in gridListToDisp collect oneGrid.name
 	)
 	
 	-- actions
+	on gridRLT open  do refreshUIFN()
+	
 	on gridViewBT pressed do
 	(
 		num = gridsLB.selection		
@@ -50,8 +57,16 @@ rollout gridRLT "Grids Manager"
 		viewport.setType #view_iso_user
 	)
 	
+	on gridsLB doubleclicked arg do
+	(
+		activeGrid = gridList[arg].obj
+
+		viewport.setType #view_grid
+		viewport.setType #view_iso_user
+	)		
+	
 	on refrListBT pressed do refreshUIFN()
-	on gridRLT open  do refreshUIFN()
+	
 	
 )
 
