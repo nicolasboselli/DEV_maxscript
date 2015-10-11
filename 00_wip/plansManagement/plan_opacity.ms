@@ -3,43 +3,82 @@
 -- create plane
 
 
+
+-- $.material.opacity.controller = bezier_float ()
+
+
 try(destroyDialog opaRLT)catch()
 rollout opaRLT "plan manipulator"
 (
 	struct planClass 
 	(
 		obj,
-		difmap = obj.material.diffusemap.filename
 		
+		fn getName = obj.material.diffusemap.filename,
+		fn getMtlOp = obj.material.opacity,
+			
+		bmpName = getName(),
+		mtlOpa = getMtlOp(),
+		
+		fn setMtlOp val = 
+		(
+			obj.material.opacity = val
+		)
 	)
 	
-	fn returnBitmapDef s =
-	(
-		return s.material.diffusemap.filename
-	)
+
 -- vars
 	local opaVal = 60
 	local sel = selection as array
 	local bitmapVar
+	local stPlan
 -- fn
 -- UI
 	group "map info:" 
 	(
-		editText mapName_et "map name:" readOnly: true fieldWidth: 200 
-		button refreshMap_bt "refresh" across:2
-		button openFolder_bt "open folder"
+		button refreshMap_bt "ref>>" 
+		editText mapName_et "map name:" readOnly: true fieldWidth: 200 text: "[NONE]"
+		
+		button openFolder_bt "open folder" enabled: false
 	)
 	
 	group "opacity:"
 	(
-		spinner opaVarSP "opacity: "  range: [0,100,opaVal]  across: 3
-		button opa60BT "opa 60"  
-		button opa100BT "opa 100" 
+		spinner opaVarSP "opacity: "  range: [0,100,opaVal]  enabled: false
+-- 		spinner opaVarSP2 "opacity: "  range: [0,100,opaVal]  controller: $.material.opacity.controller
+		button opa40BT "40"   enabled: false across:  3
+		button opa60BT "60"   enabled: false
+		button opa100BT "100"  enabled: false
 	)
 	
-	group "transform:"
+	group "rotate:"
 	(
 		-- import rotater
+	)
+	
+	fn refreshUI PlanInst = 
+	(
+		if PlanInst != undefined then
+		(
+			mapName_et.text = PlanInst.getName()
+			openFolder_bt.enabled = true
+			opaVarSP.enabled = true
+			opa40BT.enabled = true
+			opa60BT.enabled = true
+			opa100BT.enabled = true
+			opaVarSP.value = PlanInst.getMtlOp()
+
+		)
+		else
+		(
+			mapName_et.text = "[NONE]"
+			openFolder_bt.enabled = false
+			opaVarSP.enabled = false
+			opa40BT.enabled = false
+			opa60BT.enabled = false
+			opa100BT.enabled = false
+			
+		)
 	)
 	
 -- actions
@@ -48,11 +87,22 @@ rollout opaRLT "plan manipulator"
 		sel = selection as array
 		if sel.count == 1 then
 		(
-			for s in sel do
+			print "start init"
+			
+			try
 			(
-				bitmapVar = returnBitmapDef s
-				mapName_et.text = bitmapVar
+				stPlan = planClass sel[1]
+				print "done"
 			)
+			catch
+			(
+				stPlan = undefined
+				print "fail"
+			)
+			
+			format "stPlan:  %\n" stPlan
+			
+			refreshUI stPlan
 		)
 		else
 		(
@@ -62,8 +112,10 @@ rollout opaRLT "plan manipulator"
 	
 	on openFolder_bt pressed do
 	(
+		bitmapVar = stPlan.getName()
 		if bitmapVar != undefined do
 		(
+			
 			foldToOpen = getFileNamePath bitmapVar
 			print foldToOpen
 			doscommand ("explorer " + foldToOpen)
@@ -71,29 +123,24 @@ rollout opaRLT "plan manipulator"
 
 	)
 		
-	on opaVarSP changed val do
-	(
-		opaVal = val
-	)
-	
+	on opaVarSP changed val do stPlan.setMtlOp val
+		
+	 on opa40BT pressed do 
+	 (
+		 stPlan.setMtlOp 40
+		 opaVarSP.value = 40
+	 )
+	 
 	on opa60BT pressed do
 	(
-		sel = selection as array
-		for s in sel do
-		(
-			s.material.opacity = opaVal
-		)
+		stPlan.setMtlOp 60
+		opaVarSP.value = 60
 	)
-	
-	
-	on opa100BT pressed do
+
+	on opa100BT pressed do 
 	(
-		sel = selection as array
-		for s in sel do
-		(
-			
-			s.material.opacity = 100
-		)
+		stPlan.setMtlOp 100
+		opaVarSP.value = 100
 	)
 	
 	on opaRLT resized size do

@@ -4,10 +4,6 @@
 -- proposer d'activer le gamma de max
 
 
-
-
-
-
 fn findVray  =
 (
 	for r in rendererClass.classes do
@@ -58,7 +54,8 @@ rollout VrayRenderRLT "Vray Options"
 		)
 		return vrGround
 	)
-	
+
+
 
 	fn createVraySun =
 	(
@@ -80,7 +77,8 @@ rollout VrayRenderRLT "Vray Options"
 		if vraySunExist == false do
 		(
 		-- vray sun
-			dummy_target = dummy name: "vraysuntarget" 
+-- 			dummy_target = dummy name: "vraysuntarget" 
+			dummy_target = Targetobject wirecolor: yellow
 			vraySunVar = VRaySun name:"VRaySun001" pos:[val,val,val] isSelected:on enabled:on turbidity: 2.0 ozone: 0 sky_model: 1 target: dummy_target
 			-- enviraonnement
 		)

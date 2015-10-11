@@ -19,6 +19,7 @@ maj:
 
 debug:
 	-- parent hidden object
+	-- error when change status on lastselection
 	
 prob:
 	-- when merging list merged objects?

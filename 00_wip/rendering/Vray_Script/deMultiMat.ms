@@ -100,8 +100,8 @@ fn collectMultiMatDef =
 -- refresh scenematerial
 fn updateSceneMaterials =
  (
-	 saveNodes #() "c:/temp.max"
-	 deleteFile "c:/temp.max"
+	 saveNodes #() "j:/temp.max"
+	 deleteFile "j:/temp.max"
  )
 -- updateSceneMaterials()
 
