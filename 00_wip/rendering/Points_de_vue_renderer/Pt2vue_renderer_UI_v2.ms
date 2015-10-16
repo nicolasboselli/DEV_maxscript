@@ -1,9 +1,11 @@
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
+VRayPhysicalCamera()
+
 fn convertToVrCam s =
 (
-	if classof s == TargetCamera or classof s == FreeCamera then
+	if classof s == TargetCamera or classof s == FreeCamera or classof s == Physical then
 	(
 		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 350 
 		s.name = s.name + "_bak"

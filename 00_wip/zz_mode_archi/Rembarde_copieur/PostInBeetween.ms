@@ -67,18 +67,76 @@ fn postInbeetweenDef boxref postNum: 5 distTreshold: 15 =
 )
 
 
-
+try(destroydialog potoCornerRLT)catch()
 rollout potoCornerRLT "posts inbeetween"
 (
+	-- 	vars
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 	local boxRef = undefined
 	local postNum
 	
 -- 	pickbutton  poteauRefCB "ref"
-	button addRefBT "ref>>"
-	edittext refNameET "ref:" readonly: true
+	button addRefBT "ref>>"  across: 2
+	button clearBT "clear"
+	edittext refNameET "ref:" readonly: true text: "[NONE]"
 	spinner postNumSP "post number max:" type: #integer range:[1,1000,5]
 	spinner postTresholdSP "dist treshold:" type: #worldunits range:[0.1,1000,15]
-	button multiplyBT "Multiply!"
+	button multiplyBT "Multiply!" 
+	
+	fn checkBoxRef =
+	(
+		-- test if boxref exists
+		if  boxRef != undefined do
+		(
+			try
+			(
+				classof boxRef
+				boxRef
+			)			
+			catch
+			(
+				boxRef = undefined
+				format "*** % ***\n" (getCurrentException())
+			)
+		)
+		
+		-- if boxref doesn t exists create it
+		if boxRef == undefined do 
+		(
+			boxOrigin =  box  length: 3 width: 3 height: 80 name: "post_inb_base"
+			refNameET.text = boxOrigin.name
+			boxRef = boxOrigin
+		)
+		
+		boxRef
+
+	)
+	
+	on potoCornerRLT open do
+	(
+		-- load ini file
+		try
+		(
+			postNumSP.value =  		(getINISetting armadasScriptsIni "postsInBeetween" "postNum") 		as integer
+			postTresholdSP.value = 			(getINISetting armadasScriptsIni "postsInBeetween" "postTresh") 	as float
+		)
+		catch
+		( 	
+			postNumSP.value = 5
+			postTresholdSP.value = 15
+			format "*** % ***\n" (getCurrentException())
+		)
+	)
+	
+	on potoCornerRLT close do
+	(
+		-- maj ini file
+		setINISetting armadasScriptsIni "postsInBeetween" "postNum" 			(postNumSP.value as string)
+		setINISetting armadasScriptsIni "postsInBeetween" "postTresh" 		(postTresholdSP.value as string)
+		print "maj ini done"
+	)
 	
 	on addRefBT pressed do
 	(
@@ -93,17 +151,25 @@ rollout potoCornerRLT "posts inbeetween"
 		)
 	)
 	
+	on clearBT pressed do
+	(
+		boxRef = undefined
+		refNameET.text = "[NONE]"
+	)
 	
 	on multiplyBT pressed do
 	(
 		local boxOrigin = undefined
 		
+		/*
 		if boxRef == undefined do 
 		(
 			boxOrigin =  box  length: 3 width: 3 height: 80 name: "post_inb_base"
 			refNameET.text = boxOrigin.name
 			boxRef = boxOrigin
 		)
+		*/
+		boxRef = checkBoxRef()
 		
 		local boxCopy = copy boxRef
 		undo on
@@ -117,3 +183,6 @@ rollout potoCornerRLT "posts inbeetween"
 )
 
 createdialog potoCornerRLT
+
+test = $
+classof test

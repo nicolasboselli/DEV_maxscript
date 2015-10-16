@@ -33,7 +33,7 @@ undo on
 	for s in sel do
 	(
 		refAngle = in coordsys local s.controller.rotation as eulerangles
-		in coordsys local s.controller.rotation = eulerangles refAngle.x (random -5.0 5.0) refAngle.z
+		in coordsys local s.controller.rotation = eulerangles refAngle.y (random -5.0 5.0) refAngle.z
 	)
 )
 

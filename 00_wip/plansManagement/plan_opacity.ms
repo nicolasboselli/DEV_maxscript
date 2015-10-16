@@ -37,6 +37,7 @@ rollout opaRLT "plan manipulator"
 	group "map info:" 
 	(
 		button refreshMap_bt "ref>>" 
+		editText objName_et "obj name:" readOnly: true fieldWidth: 200 text: "[NONE]"
 		editText mapName_et "map name:" readOnly: true fieldWidth: 200 text: "[NONE]"
 		
 		button openFolder_bt "open folder" enabled: false
@@ -60,6 +61,7 @@ rollout opaRLT "plan manipulator"
 	(
 		if PlanInst != undefined then
 		(
+			objName_et.text = PlanInst.obj.name
 			mapName_et.text = PlanInst.getName()
 			openFolder_bt.enabled = true
 			opaVarSP.enabled = true
@@ -71,6 +73,7 @@ rollout opaRLT "plan manipulator"
 		)
 		else
 		(
+			objName_et.text = "[NONE]"
 			mapName_et.text = "[NONE]"
 			openFolder_bt.enabled = false
 			opaVarSP.enabled = false

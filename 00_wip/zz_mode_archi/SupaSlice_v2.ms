@@ -159,7 +159,8 @@ rollout suplasliceRLT "supaslice"
 										snapmode.setOSnapItemActive i j false
 								)
 								--activer le snap aux points de la grille
-								snapMode.setOSnapItemActive 3 1 true
+								snapMode.setOSnapItemActive 4 1 true
+								
 								$.EditablePoly.resetSlicePlane ()
 							)
 							else
