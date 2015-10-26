@@ -1,5 +1,5 @@
 macroScript Clean_Output
-	category:"Rendu"
+	category:"ArmadasScripts"
 	toolTip:""
 (
 	re = maxOps.GetCurRenderElementMgr ()

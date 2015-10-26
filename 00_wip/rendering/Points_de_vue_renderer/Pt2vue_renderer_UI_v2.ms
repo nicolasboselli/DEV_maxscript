@@ -1,7 +1,7 @@
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
-VRayPhysicalCamera()
+
 
 fn convertToVrCam s =
 (
