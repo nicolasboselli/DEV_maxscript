@@ -19,16 +19,3 @@ for s in sel do
 	inst.transform = ref
 )
 
-multi = $.material
-
-multi = meditmaterials[activeMeditSlot]
-
-for i = 1 to multi.count do
-(
-	if classof multi[i] == standard then
-	(
-		colref = multi[i].diffuse
-		newMat = VRayMtl diffuse: colref
-		multi[i] = newMat
-	)
-)

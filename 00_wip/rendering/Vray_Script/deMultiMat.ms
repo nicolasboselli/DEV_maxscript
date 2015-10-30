@@ -2,6 +2,32 @@
 	-- 	add refresh scene materials
 	-- add split edge
 	-- 
+fn convertMultiMat =
+(
+	multi = meditmaterials[activeMeditSlot]
+
+	for i = 1 to multi.count do
+	(
+		if classof multi[i] == standard then
+		(
+			colref = multi[i].diffuse
+			newMat = VRayMtl diffuse: colref name: multi[i].name
+			multi[i] = newMat
+		)
+	)
+)
+-- convertMultiMat()
+
+fn tagMtlName tag=
+(
+	for m in scenematerials do
+	(
+		format "mat: %\n" m.name
+		m.name =  tag + m.name
+		format "mat: %\n" m.name
+	)
+)
+-- tagMtlName "MATLOT_"
 
 fn randomColorFN sel =
 (
@@ -100,8 +126,10 @@ fn collectMultiMatDef =
 -- refresh scenematerial
 fn updateSceneMaterials =
  (
-	 saveNodes #() "d:/temp.max"
-	 deleteFile "d:/temp.max"
+-- 	 saveNodes #() "d:/temp.max"
+-- 	 deleteFile "d:/temp.max"
+	saveNodes #() "j:/temp.max"
+	 deleteFile "j:/temp.max"
  )
 -- updateSceneMaterials()
 

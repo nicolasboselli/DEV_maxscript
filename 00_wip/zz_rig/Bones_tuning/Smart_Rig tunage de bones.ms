@@ -32,6 +32,7 @@ undo on
 	)
 
 	-- contrainte des bones aux helpers
+	-- positions constraints
 	for i= 1 to os.count do
 	(
 		os[i].pos.controller = position_list ()
@@ -39,7 +40,8 @@ undo on
 		os[i].controller.pos.controller.Position_Constraint.constraints.appendTarget bn_tune_hlps[i] 100
 -- 		os[i].pos.controller.constraints.appendTarget bn_tune_hlps[i] 100
 	)
-
+	
+	-- look at constraints
 	for i= 1 to os.count-1 do
 	(
 		os[i].rotation.controller = rotation_list ()
@@ -50,6 +52,8 @@ undo on
 		os[i].rotation.controller.LookAt_Constraint.controller.upnode_ctrl = 1
 		os[i].rotation.controller.LookAt_Constraint.controller.viewline_length_abs = off
 	)
+	
+	-- scale constraints
 )
 
 -- $.controller.pos.controller = position_list ()
