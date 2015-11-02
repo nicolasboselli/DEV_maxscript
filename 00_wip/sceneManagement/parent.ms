@@ -3,7 +3,24 @@
 fn mayaGrpFN sel =
 (
 	daddy = point name: (sel[1].name + "_null")
+	
+	objsToGrp = #()
+
 	for s in sel do
+	(
+		isNotParented = false
+		parentInSel = false
+		
+		if s.parent == undefined then isNotParented = true
+		/*
+		res = finditem sel s.parent 
+		if res == 0 then print "parent is not in selection" else parentInSel = true
+		*/
+		if isNotParented then append objsToGrp s
+	)
+
+-- 	select objsToGrp
+	for s in objsToGrp do
 	(
 		s.parent = daddy
 	)

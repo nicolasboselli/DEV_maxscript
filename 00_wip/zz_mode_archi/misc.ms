@@ -356,6 +356,6 @@ rollout miscRLT "Modeling utilities"
 		)
 	)
 )
-createDialog miscRLT
+createDialog miscRLT --style: #(#style_minimizebox, #style_titlebar ,#style_border , #style_sysmenu,#style_maximizebox )
 
 

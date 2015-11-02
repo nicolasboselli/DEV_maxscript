@@ -1,10 +1,6 @@
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/master
 
 fn convertToVrCam s =
 (

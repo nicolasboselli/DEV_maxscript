@@ -165,7 +165,7 @@ for i = 1 to crtlsList.count do
 -- package rig
 -- add controller
 
-crtlsList = selection as array
+-- crtlsList = selection as array
 
 circlesAr = #()
 for ctr in crtlsList do
