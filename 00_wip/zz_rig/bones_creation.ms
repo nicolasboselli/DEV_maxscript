@@ -12,8 +12,9 @@ for i = 1 to 50 do
 	b0 = b
 )
 */
-boneCount = 63
-gap = 2.497
+
+boneCount = 32
+gap = 2.45*2
 prev = 0
 
 b = BoneSys.createBone [0,prev,0] [0,(prev-gap),0] [1,0,0]

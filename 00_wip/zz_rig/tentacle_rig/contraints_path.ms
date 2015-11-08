@@ -1,5 +1,6 @@
 
 -- ##### create spline controls with skin modifier
+
 fn skinSpline ligne =
 (
 -- 	ligne = $
@@ -19,7 +20,8 @@ fn skinSpline ligne =
 	select helpAr
 	-- add skin on spline 
 	select ligne
-	modPanel.addModToSelection (skin()) ui:on
+	oneSkin = skin()
+	modPanel.addModToSelection oneSkin ui:on
 		
 	-- add control on skin
 	for i = 1 to helpAr.count  do
@@ -28,9 +30,27 @@ fn skinSpline ligne =
 		else skinOps.addbone ligne.skin helpAr[i] -1
 	)
 	
+	-- skin vertices
+	modPanel.setCurrentObject oneSkin
+
+	verts = skinOps.GetNumberVertices  oneSkin
+	bns = skinOps.GetNumberBones oneSkin
+	-- (bns-1)*3 + 1
+	for i = 1 to bns do
+	(
+		format "vertice % to bone %\n" ((i-1)*3 + 1) i 
+		skinOps.ReplaceVertexWeights  oneSkin  ((i-1)*3 + 1) i  1
+		
+		format "vertice % to bone %\n" ((i-1)*3 + 2) i 
+		skinOps.ReplaceVertexWeights  oneSkin  ((i-1)*3 + 2) i  1
+		
+		format "vertice % to bone %\n" ((i-1)*3 + 3) i 
+		skinOps.ReplaceVertexWeights  oneSkin  ((i-1)*3 + 3) i  1
+	)
+	
+	
 	helpAr
 )
-
 
 
 -- apply tunage de bones
@@ -184,6 +204,14 @@ select circlesAr
 
 -- param helper on copy helpers
 
+-- color controls
+sel = selection as array
+
+for s in sel do
+(
+	s.wirecolor = yellow
+)
+
 -- fix parent
 sel = selection as array
 
@@ -196,5 +224,3 @@ for i = 2 to sel.count do
 -- fix ctrol size
 sel = selection as array
 for s in sel do s.size = 5
-
-hideByCategory.bones = not hideByCategory.bones

@@ -119,7 +119,7 @@ rollout edgeToShapeRLT "edge to shape"
 				(
 					select s
 					modPanel.setCurrentObject s
-					subobjectLevel = 4	
+					subobjectLevel = 2
 
 				)
 				else

@@ -768,7 +768,7 @@ rollout assetEditorRLT "assets editor"
 				wipFolder = asset.wipFolder
 				print wipFolder
 				
-				wipFile = wipFolder + "\\" + assetName +"_" + returnDigit vers + "_" + "wip" + "_" + (localTimeStr()) + "_00.max"
+				wipFile = wipFolder + "\\" + assetName +"_" + returnDigit vers + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max"
 
 				test = copyFile assetFile wipFile
 				if test == true then

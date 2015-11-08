@@ -86,9 +86,10 @@ fn idArrayDef s =
 
 
 -- explode mulitmat
-fn explodeMultiMatDef s =
+fn explodeMultiMatDef s matchMat: false=
 (
 	local idArray = idArrayDef s
+	local multiMtl = s.material 
 	
 	for id in idArray do
 	(
@@ -97,9 +98,22 @@ fn explodeMultiMatDef s =
 			s.selectByMaterial  id
 			newName = uniquename (s.name + "_mat_" + (id as string))
 			polyop.detachFaces s #selection delete: true asNode: true name: newName
+			
+			if matchMat then
+			(
+				res = getnodebyname newName
+				res.material = multiMtl[id]
+				format "obj: %, \tmat: % \n" res.name multiMtl[id]
+			)
+
 		)
 	)
+	
+	if matchMat then s.material = multiMtl[idArray[1]]
+	print "done"
 )
+
+
 
 -- undo on
 -- (
@@ -360,6 +374,12 @@ rollout deMultiMatRLT "Materials utilities"
 		button skinMatBT "skin multi-materials"
 		button removeMatBT "remove material"
 		button splitEdgeBT "split edges"
+		
+	)
+	
+	group "explode multi-Materials:"
+	(
+		checkbox matchMatCB "match materials"
 		button explodeBT "explode by material"
 	)
 	
@@ -413,13 +433,13 @@ rollout deMultiMatRLT "Materials utilities"
 	(
 		sel = selection as array
 		
-		if sel.count == 1 do 
-		(
-			for s in sel do
+-- 		if sel.count == 1 do 
+-- 		(
+			for s in sel where classof s.material == multimaterial do
 			(
-				explodeMultiMatDef s
+				explodeMultiMatDef s  matchMat: matchMatCB.state
 			)
-		)
+-- 		)
 	)
 	
 	on skinMatBT pressed do 

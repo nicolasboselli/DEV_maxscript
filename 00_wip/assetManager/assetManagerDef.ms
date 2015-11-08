@@ -20,7 +20,8 @@ fn localTimeStr =
 (
 	timeAr = getLocalTime() 
 	timeStr = stringstream ""
-	format "%_%_%_%_%_%_%" timeAr[1] timeAr[2] timeAr[4] timeAr[5] timeAr[6] timeAr[7] timeAr[8] to: timeStr
+-- 	format "%_%_%_%_%_%_%" timeAr[1] timeAr[2] timeAr[4] timeAr[5] timeAr[6] timeAr[7] timeAr[8] to: timeStr
+	format "%_%_%_%_%" timeAr[1] timeAr[2] timeAr[4] timeAr[5] timeAr[6] to: timeStr
 	timeStr as string
 )
 

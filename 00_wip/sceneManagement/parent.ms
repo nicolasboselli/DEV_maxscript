@@ -1,8 +1,40 @@
 -- sel = selection as array
 
+-- hide/ unhide each helpers
+fn hideUnhideHlps =
+(
+	hlps = helpers as array
+	
+	if not hlps[1].ishidden then
+	(
+		for h in hlps do hide h
+	)
+	else for h in hlps do unhide h	
+)
+
+fn addOneHlp s =
+(
+	ctrl = point transform: s.transform name: (s.name + "_hlp") parent: s.parent
+	s.parent = ctrl
+	ctrl
+)
+
+
+fn displayBones =
+(
+	bonesSel = for o in geometry where classof o == bonegeometry collect o
+		
+	if not bonesSel[1].ishidden then
+	(
+		for b in  bonesSel do hide b 
+	)
+	else for  b in  bonesSel do unhide b 
+	print "done"
+)
+
 fn mayaGrpFN sel =
 (
-	daddy = point name: (sel[1].name + "_null")
+	daddy = point name: (sel[1].name + "_hlp")
 	
 	objsToGrp = #()
 
@@ -24,6 +56,37 @@ fn mayaGrpFN sel =
 	(
 		s.parent = daddy
 	)
+)
+
+-- insert group
+fn insertGrp sel =
+(
+	daddy = point name: (sel[1].name + "_hlp")
+	
+	objsToGrp = #()
+	BigDaddys = #()
+	
+	for s in sel do
+	(
+		res = finditem sel s.parent
+		if res == 0 then
+		(
+			appendifunique objsToGrp s
+			appendifunique BigDaddys s.parent
+		)
+	)
+	
+	if BigDaddys.count == 1 then 
+	(
+		for o in objsToGrp do
+		(
+-- 			format "parent % to %\n" o.name daddy.name
+			o.parent = daddy
+		)
+-- 		format "parent % to %\n" daddy.name BigDaddys[1].name
+		daddy.parent = BigDaddys[1]
+	)
+	BigDaddys
 )
 
 
@@ -60,7 +123,7 @@ fn unParent sel=
 
 fn addUpperPoint obj =
 (
-	upPt = point name: (obj.name + "_zero") axis_tripod: false
+	upPt = point name: (obj.name + "_hlp") axis_tripod: false
 	upPt.transform = obj.transform
 	obj.parent = upPt
 )
@@ -70,16 +133,43 @@ try(destroyDialog hierarchyRLT)catch()
 
 rollout hierarchyRLT "hierarchy"
 (
-	button mayaGrpBT "maya group"
-	button parentBT "parent"
-	button unParentBT "unparent"
+	group "groups:"
+	(
+		button mayaGrpBT "maya group"
+		button insertGrp "insert group"
+	)
+	group "parents:"
+	(
+		button parentBT "parent"
+		button unParentBT "unparent"
+	)
 	button selectChidrenBT "select children"
+	group "display:"
+	(
+		button displayHelpersBT "hide/unhide helpers"
+		button displayBonesBT "hide/unhide bones"
+	)
+	
+	group "controls:"
+	(
+		button addHlpBT "add one helper"
+	)
 	
 	on mayaGrpBT pressed do mayaGrpFN (selection as array)
+	on insertGrp pressed do insertGrp (selection as array)
 	on parentBT pressed do parentFN (selection as array)
 	
 	on selectChidrenBT pressed do selectAllChildren (selection as array)
 	on unParentBT pressed do unParent (selection as array)
+	
+	on displayHelpersBT pressed do hideUnhideHlps()
+	on displayBonesBT pressed do displayBones()
+	
+	on addHlpBT pressed do
+	(	
+		sel = selection as array
+		for s in sel do	addOneHlp s
+	)
 )
 
 createdialog hierarchyRLT
