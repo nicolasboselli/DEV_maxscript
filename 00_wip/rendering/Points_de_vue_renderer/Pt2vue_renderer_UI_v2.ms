@@ -1,6 +1,9 @@
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
+maxVers = getFileVersion "$max/3dsmax.exe"
+
+-- vrayCreateVRayPhysicalCamera()
 
 fn convertToVrCam s =
 (
@@ -10,7 +13,28 @@ fn convertToVrCam s =
 		s.name = s.name + "_bak"
 		vrCam.specify_fov = false
 	)
+	else(print "bad camera")
 )
+
+fn convertToVrCal2016 s = 
+(
+	if classof s == TargetCamera or classof s == FreeCamera or classof s == Physical then
+	(
+		vrCam = vrayCreateVRayPhysicalCamera()
+		vrCam.transform = s.transform
+		vrCam.name = s.name
+		vrCam.targeted = false
+		vrCam.specify_fov = true
+		vrCam.fov = s.fov
+		vrcam.vignetting = false
+		vrcam.shutter_speed = 350
+-- 		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 350 
+		s.name = s.name + "_bak"
+		vrCam.specify_fov = false
+	)
+	else(print "bad camera")
+)
+convertToVrCal2016 $
 
 try(destroyDialog Pt2vue_renderer_UI)catch()
 rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500

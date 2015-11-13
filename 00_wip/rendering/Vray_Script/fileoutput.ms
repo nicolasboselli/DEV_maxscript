@@ -1,0 +1,1 @@
+FileOutGamma = 2.2
