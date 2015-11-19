@@ -11,6 +11,7 @@ fn hideUnhideHlps =
 	)
 	else for h in hlps do unhide h	
 )
+-- hideUnhideHlps()
 
 fn addOneHlp s =
 (
@@ -90,6 +91,7 @@ fn insertGrp sel =
 )
 
 
+
 fn parentFN sel =
 (
 	undo on
@@ -136,7 +138,7 @@ rollout hierarchyRLT "hierarchy"
 	group "groups:"
 	(
 		button mayaGrpBT "maya group"
-		button insertGrp "insert group"
+		button insertGrpBT "insert group"
 	)
 	group "parents:"
 	(
@@ -156,7 +158,7 @@ rollout hierarchyRLT "hierarchy"
 	)
 	
 	on mayaGrpBT pressed do mayaGrpFN (selection as array)
-	on insertGrp pressed do insertGrp (selection as array)
+	on insertGrpBT pressed do insertGrp (selection as array)
 	on parentBT pressed do parentFN (selection as array)
 	
 	on selectChidrenBT pressed do selectAllChildren (selection as array)

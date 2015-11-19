@@ -40,6 +40,29 @@ rollout edgeToShapeRLT "edge to shape"
 	
 	local extSize  = 100
 	
+-- function
+	
+	fn writePosition rlt =
+	(
+		posBak = GetDialogPos rlt
+		res = setINISetting armadasScriptsIni rlt.name "pos" (posBak as string)
+		res
+		format  "position saved: %\n" res
+	)
+	
+	fn loadPosition rlt =
+	(
+		posBak = [800,250]
+
+		if (hasINISetting armadasScriptsIni rlt.name "pos") then
+		(
+			posBakStr = getINISetting armadasScriptsIni  rlt.name "pos"
+			posBak = execute posBakStr
+		)
+		
+		SetDialogPos rlt posBak
+	)
+	
 -- 	ui
 	checkbox addSweepCB "add Sweep"
 	group "Extrusion options:"
@@ -156,13 +179,20 @@ rollout edgeToShapeRLT "edge to shape"
 		-- load ini file
 		try
 		(
-			addSweepCB.state =  		(getINISetting armadasScriptsIni "edgeToSweep" "sweepState") 		as booleanClass
-			extSizeSP.value = 			(getINISetting armadasScriptsIni "edgeToSweep" "extrusionSize") 	as float
-			extSize = 						(getINISetting armadasScriptsIni "edgeToSweep" "extrusionSize") 	as float
-			addExtrusionCB.state =  	(getINISetting armadasScriptsIni "edgeToSweep" "extrusionState") 	as booleanClass
-			removeEdgeCB.state = 	(getINISetting armadasScriptsIni "edgeToSweep" "removeState") 	as booleanClass
-			resetXformCB.state = 		(getINISetting armadasScriptsIni "edgeToSweep" "resetXformState")	as booleanClass
-			collapseXformCB.state = 	(getINISetting armadasScriptsIni "edgeToSweep" "collapseXformState") as booleanClass
+			print "check1"
+-- 			print edgeToShapeRLT.name
+			loadPosition edgeToShapeRLT
+			print "check2"
+			cat = edgeToShapeRLT.name
+
+			
+			addSweepCB.state =  		(getINISetting armadasScriptsIni cat "sweepState") 		as booleanClass
+			extSizeSP.value = 			(getINISetting armadasScriptsIni cat "extrusionSize") 	as float
+			extSize = 						(getINISetting armadasScriptsIni cat "extrusionSize") 	as float
+			addExtrusionCB.state =  	(getINISetting armadasScriptsIni cat "extrusionState") 	as booleanClass
+			removeEdgeCB.state = 	(getINISetting armadasScriptsIni cat "removeState") 	as booleanClass
+			resetXformCB.state = 		(getINISetting armadasScriptsIni cat "resetXformState")	as booleanClass
+			collapseXformCB.state = 	(getINISetting armadasScriptsIni cat "collapseXformState") as booleanClass
 		)
 		catch
 		(
@@ -172,13 +202,15 @@ rollout edgeToShapeRLT "edge to shape"
 	
 	on edgeToShapeRLT close do
 	(
+		writePosition edgeToShapeRLT
+		cat = edgeToShapeRLT.name
 		-- maj ini file
-		setINISetting armadasScriptsIni "edgeToSweep" "sweepState" 			(addSweepCB.state as string)
-		setINISetting armadasScriptsIni "edgeToSweep" "extrusionSize" 		(extSizeSP.value as string)
-		setINISetting armadasScriptsIni "edgeToSweep" "extrusionState" 		(addExtrusionCB.state as string)
-		setINISetting armadasScriptsIni "edgeToSweep" "removeState" 		(removeEdgeCB.state as string)
-		setINISetting armadasScriptsIni "edgeToSweep" "resetXformState" 	(resetXformCB.state as string)
-		setINISetting armadasScriptsIni "edgeToSweep" "collapseXformState" (collapseXformCB.state as string)
+		setINISetting armadasScriptsIni cat "sweepState" 			(addSweepCB.state as string)
+		setINISetting armadasScriptsIni cat "extrusionSize" 		(extSizeSP.value as string)
+		setINISetting armadasScriptsIni cat "extrusionState" 		(addExtrusionCB.state as string)
+		setINISetting armadasScriptsIni cat "removeState" 		(removeEdgeCB.state as string)
+		setINISetting armadasScriptsIni cat "resetXformState" 	(resetXformCB.state as string)
+		setINISetting armadasScriptsIni cat "collapseXformState" (collapseXformCB.state as string)
 		print "maj ini done"
 	)
 	

@@ -54,6 +54,8 @@ struct favFileClass
 rollout mxsLaunchRLT "maxscript launcher"
 (
 -- 	local var = checkIniFileFn()
+	local posBak
+	
 	local btnLine1 = 450
 	
 	local maxIni = getMAXIniFile()
@@ -94,7 +96,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 		-- load favorite list from ini file
 		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
 		(
-			print "ini key found"
+			format "ini key found\n"
 			favArStr = getINISetting armadasScriptsIni  "armadasScriptsFavorite" "armadasScriptsArray"
 			favArTmp = execute favArStr
 -- 			print favArTmp
@@ -109,12 +111,12 @@ rollout mxsLaunchRLT "maxscript launcher"
 			
 			-- correct file string
 -- 			print favAr.count
-			print "favorites list loaded."
+			format "favorites list loaded\n"
 		)
 		else
 		(
 			favAr = #()
-			print "favorites array init"
+			format "favorites array init\n"
 		)
 -- 		
 -- 		print favAr.count
@@ -127,11 +129,31 @@ rollout mxsLaunchRLT "maxscript launcher"
 		)
 		else 
 		(
-			print "no favorites to load"
+			format "no favorites to load\n"
 		)
 		
 		qsort favScriptArray sortbyname
 		favScriptArray
+		
+	)
+	
+	fn writePosition cat =
+	(
+		posBak = GetDialogPos mxsLaunchRLT
+		res = setINISetting armadasScriptsIni cat "pos" (posBak as string)
+		res
+		format  "ScriptLauncher position saved: %\n" res
+	)
+	
+	fn loadPosition cat =
+	(
+		posBak = [800,250]
+		if (hasINISetting armadasScriptsIni cat "pos") then
+		(
+			posBakStr = getINISetting armadasScriptsIni  cat "pos"
+			posBak = execute posBakStr
+		)
+		posBak
 	)
 	
 	fn loadCore =
@@ -150,8 +172,11 @@ rollout mxsLaunchRLT "maxscript launcher"
 		-- for each fav instance collect path
 		-- write pathes in array
 		data = with printAllElements on scriptsPathesAr as string
-		test = setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" data
-		print "favorites list updated."
+
+		res1 = setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" data
+		resPos = writePosition "armadasScriptsFavorite"
+		
+		format  "ScriptLauncher favorites saved: %\n" res1
 	)
 	
 -- 	UI
@@ -166,6 +191,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 	button editBT "edit"  pos:[70,btnLine1]
 	button openFolder "open scripts folder"  pos:[120,btnLine1]
 	*/
+	
 	button launchBT "launch"  across: 3
 	button editBT "edit"  
 	button openFolder "open scripts folder" 
@@ -184,6 +210,9 @@ rollout mxsLaunchRLT "maxscript launcher"
 		fileClassArray = loadFavorites()
 		displayAr = fileClassArray
 		refreshList()
+		
+		posBak = loadPosition "armadasScriptsFavorite"
+		SetDialogPos mxsLaunchRLT posBak
 	)
 	
 	on loadFavoritesBT pressed do

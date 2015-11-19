@@ -32,6 +32,9 @@ rollout opaRLT "plan manipulator"
 	local sel = selection as array
 	local bitmapVar
 	local stPlan
+	
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 -- fn
 -- UI
 	group "map info:" 
@@ -84,7 +87,42 @@ rollout opaRLT "plan manipulator"
 		)
 	)
 	
+	fn writePosition cat rlt =
+	(
+		posBak = GetDialogPos rlt
+		res = setINISetting armadasScriptsIni cat "pos" (posBak as string)
+		res
+		format  "position saved: %, %\n" posBak res
+	)
+	
+	fn loadPosition cat rlt =
+	(
+		posLoad = false
+		posBak = [800,250]
+		if (hasINISetting armadasScriptsIni cat "pos") then
+		(
+			posBakStr = getINISetting armadasScriptsIni  cat "pos"
+			posBak = execute posBakStr
+			posLoad = true
+			
+		)
+		
+		format  "position load: %, %\n" posBak posLoad
+		SetDialogPos rlt posBak
+	)
+	
+	
 -- actions
+	on opaRLT open do
+	(
+		loadPosition opaRLT.name  opaRLT
+	)
+	
+	on opaRLT close do
+	(
+		writePosition opaRLT.name  opaRLT
+	)
+	
 	on refreshMap_bt pressed do
 	(
 		sel = selection as array

@@ -102,8 +102,6 @@ fn createScalerSys =
 	return #(startPt, endPt, scaler)
 )
 
-
-
 fn createRefSys =
 (
 	local startSize, endSize
@@ -138,7 +136,11 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	local	startSize
 	local	endSize 
 
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
 -- 	fonctions
+
 	
 -- 	tools
 	
@@ -312,6 +314,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	)
 	
 	
+	
 	-- rescale points
 	button rescale_bt "resize map"
 	
@@ -364,12 +367,42 @@ rollout planResizerRLT "blueprint resizer" width: 250
 			refreshDistResize_pb.enabled = true
 		)
 	)
+	
+	fn writePosition cat rlt =
+	(
+		posBak = GetDialogPos planResizerRLT
+		res = setINISetting armadasScriptsIni cat "pos" (posBak as string)
+		res
+		format  "position saved: %, %\n" posBak res
+	)
+	
+	fn loadPosition cat rlt =
+	(
+		posLoad = false
+		posBak = [800,250]
+		if (hasINISetting armadasScriptsIni cat "pos") then
+		(
+			posBakStr = getINISetting armadasScriptsIni  cat "pos"
+			posBak = execute posBakStr
+			posLoad = true
+			
+		)
+		
+		format  "position load: %, %\n" posBak posLoad
+		SetDialogPos planResizerRLT posBak
+	)
 
 -- 	actions
 	on planResizerRLT open do
 	(
 		scalerArray = checkScalerDef()
 		refreshUI scalerArray
+		loadPosition "planResizerRLT" planResizerRLT
+	)
+	
+	on planResizerRLT close do
+	(
+		writePosition "planResizerRLT" planResizerRLT
 	)
 	
 	on createScaler_bt pressed do
@@ -625,13 +658,13 @@ rollout planResizerRLT "blueprint resizer" width: 250
 
 
 try(closeRolloutFloater theNewFloater)catch()
-theNewFloater = newRolloutFloater "Blueprint Tools" 300 400 
+planResizerRF = newRolloutFloater "Blueprint Tools" 300 400 
 -- addRollout opaRLT theNewFloater
-addRollout planResizerRLT theNewFloater
+addRollout planResizerRLT planResizerRF
 
 createdialog planResizerRLT style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 
-
+-- planResizerRF.pos 
 
 
 

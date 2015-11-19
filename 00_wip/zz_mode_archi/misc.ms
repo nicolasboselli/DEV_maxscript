@@ -214,6 +214,32 @@ rollout miscRLT "Modeling utilities"
 -- 	vars
 	local sourceInstance
 	
+	
+-- 	functions
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
+	fn writePosition cat rlt =
+	(
+		posBak = GetDialogPos rlt
+		res = setINISetting armadasScriptsIni cat "pos" (posBak as string)
+		res
+		format  "position saved: %\n" res
+	)
+	
+	fn loadPosition cat rlt =
+	(
+		posBak = [800,250]
+		if (hasINISetting armadasScriptsIni cat "pos") then
+		(
+			posBakStr = getINISetting armadasScriptsIni  cat "pos"
+			posBak = execute posBakStr
+		)
+		
+		SetDialogPos rlt posBak
+	)
+	
+	
 	button getInstBT "get instances"
 	
 	/*
@@ -250,6 +276,16 @@ rollout miscRLT "Modeling utilities"
 	)
 	
 -- 	Actions
+	on miscRLT open do
+	(
+		loadPosition miscRLT.name miscRLT
+	)
+	
+	on miscRLT close do
+	(
+		writePosition miscRLT.name miscRLT
+	)
+	
 	on getInstBT pressed do
 	(
 		sel = selection as array
