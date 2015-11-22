@@ -4,9 +4,9 @@ rollout fenetresRLT "fenetres"
 
 	(
 		
-		local cadreSize = 4
-		local dormantSize = 4
-		local battantSize = 4
+		local cadreSize = (units.decodeValue "4cm")
+		local dormantSize = (units.decodeValue "4cm")
+		local battantSize = (units.decodeValue "4cm")
 
 -- 		UI
 		button btn_create_faces "Create face"

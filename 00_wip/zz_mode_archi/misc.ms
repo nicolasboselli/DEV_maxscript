@@ -199,7 +199,9 @@ fn extrudeFaces size =
 	undo on
 	(
 		faceList = polyop.getFaceSelection $
-		polyop.extrudeFaces $ faceList size
+-- 		size = (units.decodeValue "-25cm")
+-- 		polyop.extrudeFaces $ faceList size
+		polyop.extrudeFaces $ faceList (units.decodeValue "-25cm")
 
 		faceListToDel = polyop.getFaceSelection $
 		polyop.deleteFaces $ faceListToDel

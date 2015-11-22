@@ -458,7 +458,7 @@ fenetres_base
 			sceneMaterials ["fenetre"].materialList[2] = sceneMaterials ["fenetre_vitre"]
 		)
 	)
-		
+FenetresMaterial()
 -- declaration de la modelisation de fenetre de base
 	fn fenetres_base s cadreSize: 4 dormantSize: 4 battantSize: 4 =
 	(
@@ -510,7 +510,7 @@ fenetres_base
 	
 	-- appliquer les couleurs
 	)
-
+	
 
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------
