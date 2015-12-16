@@ -634,7 +634,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		aimedDist = size_sp.value
 		print aimedDist
 		
-		if startPt != undefined and scalerParent != undefined then
+		if startPt != undefined and scalerParent != undefined and aimedDist != 0 then
 		(
 			reelDist = float( distance startPt endPt)
 			-- aimedDist =  float(distance startSize endSize)

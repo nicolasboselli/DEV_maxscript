@@ -15,7 +15,7 @@ fn convertToVrCam s =
 	)
 	else(print "bad camera")
 )
-
+/*
 fn convertToVrCal2016 s = 
 (
 	if classof s == TargetCamera or classof s == FreeCamera or classof s == Physical then
@@ -35,6 +35,7 @@ fn convertToVrCal2016 s =
 	else(print "bad camera")
 )
 convertToVrCal2016 $
+*/
 
 try(destroyDialog Pt2vue_renderer_UI)catch()
 rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500

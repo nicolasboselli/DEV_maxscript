@@ -1,5 +1,13 @@
 rollout rotationRLT "rotation"
 (
+	fn rotateInWorld s ang X Y Z =
+	(
+		undo on
+		(
+			rotate s (angleAxis ang [x,y,z])
+		)
+	)
+	
 	group "X"
 	(
 		button X90BT "+90" across: 2
@@ -16,7 +24,7 @@ rollout rotationRLT "rotation"
 		button Zm90BT "-90"
 	)
 	
-	on X90BT pressed do rotate $ (angleAxis 90 [1,0,0])
+	on X90BT pressed do rotateInWorld $ 90 1 0 0
 	on Xm90BT pressed do rotate $ (angleAxis -90 [1,0,0])
 	on Y90BT pressed do rotate $ (angleAxis 90 [0,1,0])
 	on Ym90BT pressed do rotate $ (angleAxis -90 [0,1,0])

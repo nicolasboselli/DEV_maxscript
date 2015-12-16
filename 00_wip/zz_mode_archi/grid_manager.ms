@@ -26,9 +26,38 @@ fn collectGridFN =
 try(destroydialog gridRLT)catch()
 rollout gridRLT "Grids Manager"
 (
+	-- 	vars
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+-- 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
 	--vars
 	local gridList = #()
 	local gridListToDisp = #()
+	
+	-- functions
+		
+	fn writePosition rlt =
+	(
+		posBak = GetDialogPos rlt
+		res = setINISetting armadasScriptsIni rlt.name "pos" (posBak as string)
+		res
+		format  "position saved: %\n" res
+	)
+	
+	fn loadPosition rlt =
+	(
+		posBak = [800,250]
+
+		if (hasINISetting armadasScriptsIni rlt.name "pos") then
+		(
+			posBakStr = getINISetting armadasScriptsIni  rlt.name "pos"
+			posBak = execute posBakStr
+		)
+		
+		SetDialogPos rlt posBak
+	)
+	
 	-- ui
 	listbox gridsLB "Grids List :"
 	button refrListBT "refresh list"
@@ -45,7 +74,20 @@ rollout gridRLT "Grids Manager"
 	)
 	
 	-- actions
-	on gridRLT open  do refreshUIFN()
+	
+	on gridRLT open do
+	(
+		refreshUIFN()
+		-- load ini file
+		try loadPosition gridRLT
+		catch format "*** % ***\n" (getCurrentException())
+
+	)
+	
+	on gridRLT close do
+	(
+		writePosition gridRLT
+	)
 	
 	on gridViewBT pressed do
 	(

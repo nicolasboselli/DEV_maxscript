@@ -71,6 +71,7 @@ fn boxerize selAr =
 					newAngle = GetAngleFromNormal theNormal
 					newAngle.z = newAngle.z*-1
 					
+					print "check1"
 					-- apply new orientation
 					in coordsys local o.rotation =newAngle
 					o.objectoffsetrot =newAngle
@@ -79,11 +80,16 @@ fn boxerize selAr =
 					-- select o
 					polyop.setfaceselection o #all
 					
+					print "check3"
 					-- config outline
 					select o
+					format "o name: %\n" o.name
 					$.outlineAmount = 2
+					print "check4"
+					format "$ name: %\n" o.name
 					$.EditablePoly.Outline ()
 					
+					print "check2"
 					-- add shell on object
 					myShell = Shell innerAmount:0 outerAmount:28
 					addmodifier o myShell
@@ -99,7 +105,7 @@ fn boxerize selAr =
 
 
 
-
+-- myShell = undefined
 sel = selection as array
 if sel.count == 1 do boxerize sel
 	
