@@ -21,3 +21,9 @@ for o in objs where o.modifiers.count >= 1 do
 	)
 )
 	
+-- VRayEdgesTex ()
+-- meditMaterials[21].texmap_bump.widthType = 0
+-- meditMaterials[21].texmap_bump.thickness = 0.2
+
+vrEdge = VRayEdgesTex widthType: 0 thickness: 0.2
+meditMaterials[activeMeditSlot].texmap_bump = vrEdge
