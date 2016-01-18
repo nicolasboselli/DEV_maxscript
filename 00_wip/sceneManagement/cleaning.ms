@@ -21,3 +21,16 @@ for o in objs where o.modifiers.count >= 1 do
 	)
 )
 	
+
+objs = objects as array
+for o in objs where o.modifiers.count >= 1 do
+(
+	for i = 1 to o.modifiers.count where classof o.modifiers[i] ==  meshsmooth do
+	(
+		format "obj: %, mod: %\n" o m
+-- 		converttopoly o
+		deletemodifier o i
+	)
+)
+	
+

@@ -140,10 +140,24 @@ fn collectMultiMatDef =
 -- refresh scenematerial
 fn updateSceneMaterials =
  (
+	drive = undefined
 -- 	 saveNodes #() "d:/temp.max"
 -- 	 deleteFile "d:/temp.max"
-	saveNodes #() "j:/temp.max"
-	 deleteFile "j:/temp.max"
+	 -- test j drive
+	if doesfileexist "j:" then drive = "j:"
+	 
+	-- test c drive
+	else if doesfileexist "c:" then drive = "c:"
+	-- test d drive
+	else if doesfileexist "d:" then drive = "d:"
+
+	if drive != undefined then
+	(
+		cleanPath = drive + "/temp.max" 
+		print cleanPath
+		saveNodes #() cleanPath
+		deleteFile cleanPath
+	)
  )
 -- updateSceneMaterials()
 

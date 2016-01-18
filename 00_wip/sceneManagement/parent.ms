@@ -87,6 +87,8 @@ fn insertGrp sel =
 -- 		format "parent % to %\n" daddy.name BigDaddys[1].name
 		daddy.parent = BigDaddys[1]
 	)
+	else(delete daddy)
+	
 	BigDaddys
 )
 
