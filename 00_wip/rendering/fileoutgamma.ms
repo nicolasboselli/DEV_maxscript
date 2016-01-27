@@ -1,0 +1,1 @@
+fileoutgamma = 2.2

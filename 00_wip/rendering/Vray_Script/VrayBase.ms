@@ -34,7 +34,7 @@ rollout VrayRenderRLT "Vray Options"
 	gi_secondary_type: 3  lightcache_subdivs: 400 lightcache_storeDirectLight: 0 lightcache_showCalcPhase: 1 \
 	colorMapping_type: 0 colorMapping_darkMult: 1.0 colorMapping_brightMult: 1.0 colorMapping_gamma: 2.2 colorMapping_linearWorkflow: false --colorMapping_adaptationOnly: (colorMapTest())
 
-	local vrayExp = vray_exposure_control shutter: 500
+	local vrayExp = vray_exposure_control shutter: 250 f_number: 11 iso: 100 wb_preset: 1 white_balance: [1,1,1]
 
 -- 	functions
 	fn createInfiniteGround =
