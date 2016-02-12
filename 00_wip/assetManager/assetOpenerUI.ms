@@ -773,7 +773,7 @@ rollout assetEditorRLT "assets editor"
 				test = copyFile assetFile wipFile
 				if test == true then
 				(
-					if checkForSave()  == true do loadMaxFile wipFile
+					if checkForSave()  == true do loadMaxFile wipFile useFileUnits: true
 				)
 				else print "wip copy fail"
 			)
