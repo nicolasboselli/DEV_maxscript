@@ -51,13 +51,15 @@ fn skinSpline ligne =
 	
 	helpAr
 )
-
+skinSpline $
 
 -- apply tunage de bones
 sel = selection as array
 ctrls = bonesTuning sel
 select ctrls
 
+-- tunage de box
+ctrls = selection as array
 --#################### create control spline
 -- oneLine = $tuyau_spline
 -- oneLine = $line001
@@ -75,6 +77,7 @@ for i = 1 to upLine.modifiers.count do deletemodifier upLine 1
 
 -- move line on z
 move upline [0,0,10]
+
 
 -- duplicate helpers
 upHlps = #()

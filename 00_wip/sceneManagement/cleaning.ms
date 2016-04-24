@@ -1,18 +1,24 @@
 -- collapse railclone
 objs = objects as array
 
-for o in objs where classof o == railclone_pro do
+i = 0
+for o in objs where classof o.baseobject == railclone_pro do
 (
+	format "railclone:%\n" o.name
+	o.rendermode = off
+	o.weld = on
 	o.vmesh = 0
+	i = i +1
 )
 
-for o in objs where classof o == railclone_pro do
+for o in objs where classof o.baseobject == railclone_pro do
 (
+	format "railclone:%\n" o.name
 	converttopoly o
 )
 
 sel = #()
-for o in objs where classof o == railclone_pro do
+for o in objs where classof o.baseobject == railclone_pro do
 (
 	append sel o
 )
