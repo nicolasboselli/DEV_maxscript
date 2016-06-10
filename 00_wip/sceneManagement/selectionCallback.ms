@@ -5,7 +5,7 @@ fn printTotoFN  a b =
 
 test = NodeEventCallback mouseup: true delay: 1000   selectionChanged: printTotoFN 
 
-printTotoFN
+printTotoFN ()
 
 test = undefined
 gc ()

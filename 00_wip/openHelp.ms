@@ -17,3 +17,5 @@ ShellLaunch @"C:\Users\nicolas_2\Desktop\maxscript-2014-help.chm" ""
 
 ShellLaunch @"G:\Users\nico\Desktop\maxscript-2016-help.chm" ""
 ShellLaunch @"C:\Users\nicolas\Desktop\maxscript-2016-help.chm" ""
+
+ShellLaunch @"C:\Users\nicolas\Desktop\maxscript-2016-help.chm" ""

@@ -47,10 +47,42 @@ global OpenDialogOnMoveCtrl_Function --this will hold the function
   	)--end if
   )
   
+ 
+  
   callbacks.removeScripts id:#OpenDialogOnMoveCtrl --remove general callbacks with this ID
   --call function to register transform event handle for the current selection:
   callbacks.addScript #selectionSetChanged "OpenDialogOnMoveCtrl_Function()" id:#OpenDialogOnMoveCtrl 
   )
 
-  
+createdialog   OpenDialogOnMoveCtrl_Rollout
+
+-- callback au changement sur une selection
 when name selection change do print "youhou"
+
+deleteAllChangeHandlers ()
+  
+testH = when select selection  change id: #printSelName do
+(
+	sel = selection as array
+	print sel
+)
+  
+deleteChangeHandler  testH
+
+
+-- callback au changement de node selection d'objets
+fn printSel ev nd =
+(
+	for s in selection do print s.name
+)
+
+necTest = NodeEventCallback  selectionChanged: printSel
+
+-- deletion
+necTest = undefined
+gc light:true
+
+
+
+
+delete necTest

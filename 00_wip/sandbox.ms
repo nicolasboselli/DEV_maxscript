@@ -21,4 +21,3 @@ if os.count == 3 do print "ok! good selection."
 BakBonesFN (os)
 */
 
-print $.scale.controller.
