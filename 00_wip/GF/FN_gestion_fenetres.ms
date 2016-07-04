@@ -75,24 +75,24 @@ fn detach_elements_selected s =
 	fenetres_array = #()
 
 	-- detachement des elements
-		for i = 1 to elts_num do
-		(
+	for i = 1 to elts_num do
+	(
 
-			selection_globale_array = selection_globale as array
+		selection_globale_array = selection_globale as array
+		
+		detach1 = polyop.getElementsUsingFace s #{selection_globale_array[1]}
+		s.EditablePoly.setSelection #face detach1
+		
+		fenetre_detach_name = uniquename "fenetre_detach_"
+		polyop.detachFaces s detach1 delete:false asNode:true name: fenetre_detach_name
 			
-			detach1 = polyop.getElementsUsingFace s #{selection_globale_array[1]}
-			s.EditablePoly.setSelection #face detach1
-			
-			fenetre_detach_name = uniquename "fenetre_detach_"
-			polyop.detachFaces s detach1 delete:false asNode:true name: fenetre_detach_name
-				
-			selection_globale = selection_globale - detach1
-			
-			fenetre_detach = getnodebyname fenetre_detach_name
-			fenetre_detach.wirecolor = color (random 0 255) (random 0 255) (random 0 255)
-			append fenetres_array fenetre_detach
-			
-		)
+		selection_globale = selection_globale - detach1
+		
+		fenetre_detach = getnodebyname fenetre_detach_name
+		fenetre_detach.wirecolor = color (random 0 255) (random 0 255) (random 0 255)
+		append fenetres_array fenetre_detach
+		
+	)
 
 	s.EditablePoly.setSelection #face selection_globale_bak
 

@@ -91,13 +91,9 @@ struct assetCreationClass
 			(
 				wipFile = getWipFile()
 				saveMaxFile wipFile useNewFile: useWipAsset
-				
-				
-				
 				print "wip created"
 			)
 			
-
 		)
 		else
 		(

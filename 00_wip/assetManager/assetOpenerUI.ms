@@ -16,9 +16,10 @@ maj:
 	-- clean old version (work only with first and last version)
 	-- add comments
 	-- add history in repository
+	-- add favorite/historic selection
 
 debug:
-	-- parent hidden object
+	x- parent hidden object
 	-- error when change status on lastselection
 	
 prob:
@@ -193,23 +194,22 @@ struct assetClass
 		setINISetting versionInfoIniFile "assetProperties" "status" status
 	),
 	
-	fn mergeAsset ignoreCache: false=
+	fn mergeAsset ignoreCache: false =
 	(
 		assetCtrl = undefined
-		res = mergeMAXFile lastVersionFile   #select #autoRenameDups #useSceneMtlDups 
+		lastVersionFile
+		
+		objStrAr = getMAXFileObjectNames lastVersionFile
+		res = mergeMAXFile lastVersionFile  #useSceneMtlDups #mergeDups
 		
 		if res == true then
 		(
+			-- asset  creation
 			LM = layermanager
-			
-			sel = selection as array
 			assetCtrl = point name: (uniquename( name + "_ctrl")) size: 200
-			clearselection()
-			
-			-- set asset ctrl on layer manager
 			assetsLayer = LM.getLayerFromName "assets_layer"
 			if assetsLayer == undefined do assetsLayer = LM.newLayerFromName "assets_layer"
-
+				
 			assetsLayer.addnode assetCtrl
 			
 			setUserProp assetCtrl "asset" true
@@ -228,27 +228,23 @@ struct assetClass
 			
 			mergedElts = #()
 			
-			-- ignore vray set
-			for o in sel do
+			-- objects merged treatment
+			for str in objStrAr do
 			(
-				if classof o == vraysun then delete o
-				else if classof o == vrayplane then delete o
-				else if classof o == targetcamera then delete o
-				else if  o.parent == undefined then
+				o = getnodebyname str
+				deletion = false
+				
+				if classof o == vraysun or classof o == vrayplane or  classof o == targetcamera then deletion = true
+				else if o.layer.name == "cache_layer" then deletion = true
+					
+				if deletion == true then delete o
+				else
 				(
-					o.parent = assetCtrl
+					if  o.parent == undefined then 	o.parent = assetCtrl
+					o.name = name + o.name
 				)
 			)
-			
-			-- ignore cache layer
-			cacheLayer = LM.getLayerFromName "cache_layer"
-			if cacheLayer != undefined and ignoreCache do
-			(
-				cacheLayer.select true
-				delete selection
-			)
 		)
-		
 		assetCtrl
 	),
 	
@@ -790,6 +786,7 @@ rollout assetEditorRLT "assets editor"
 	(
 		asset = assetsToDisplay[assetsBL.selection]
 		ctrl = asset.mergeAsset ignoreCache: ignoreCacheCB.state
+-- 		print ctrl
 		select ctrl
 	)
 )
