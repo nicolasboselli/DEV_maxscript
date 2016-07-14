@@ -144,7 +144,7 @@ rollout suplasliceRLT "supaslice"
 								--remove edit mesh
 								deleteModifier $ meshModifier
 								isMesh = false
-								snapgrid = grid length:10 width:10 grid:0.5 position:firstPoint transform:matrice
+								snapgrid = grid length:200 width:200 grid:10 position:firstPoint transform:matrice
 								activegrid = snapgrid
 								--activer le snap
 								snapMode.active = true
