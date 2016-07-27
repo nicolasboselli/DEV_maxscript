@@ -15,8 +15,8 @@ fn hideUnhideHlps =
 
 fn addOneHlp s =
 (
-	ctrl = point transform: s.transform name: (s.name + "_hlp") parent: s.parent
-	s.parent = ctrl
+	ctrl = point transform: s.transform name: (s.name + "_hlp") -- parent: s.parent
+-- 	s.parent = ctrl
 	ctrl
 )
 
@@ -105,7 +105,33 @@ fn parentFN sel =
 	)
 )
 
+fn createSymCopy s =
+(
+	-- create copy
+	SCopy = copy s
+	-- create helper au centre du monde
+	centerSym = point ()
+	-- parenter selection avec helper centre 
+	SCopy.parent = centerSym
+	-- scale -1 sur le parent
+	centerSym.scale.controller.value.x = -1
+	-- delete parent
+	delete centerSym
+	-- resetscale sur copy
+	resetscale SCopy
+)
 
+-- createSymCopy $
+/*
+-- deselect $
+
+sel = selection as array
+for s in sel do
+(
+	res = finditem sel s.parent
+	if res != 0 then deselect s
+)
+*/
 
 fn selectAllChildren sel=
 (
@@ -152,9 +178,17 @@ rollout hierarchyRLT "hierarchy"
 		button displayBonesBT "hide/unhide bones"
 	)
 	
-	group "controls:"
+	group "helpers:"
 	(
-		button addHlpBT "add one helper"
+		button addHlpBT1 "create on selection" 
+		button addHlpBT2 "create as parent" enabled: false
+		button addHlpBT3 "create as children" enabled: false
+		button addHlpBT4 "insert as parent" enabled: false
+	)
+	
+	group "symetry:"
+	(
+		button createSymBT "create symetry"
 	)
 	
 	on mayaGrpBT pressed do mayaGrpFN (selection as array)
@@ -167,11 +201,20 @@ rollout hierarchyRLT "hierarchy"
 	on displayHelpersBT pressed do hideUnhideHlps()
 	on displayBonesBT pressed do displayBones()
 	
-	on addHlpBT pressed do
+	on addHlpBT1 pressed do
 	(	
 		sel = selection as array
-		for s in sel do	addOneHlp s
+		for s in sel do
+		(
+			hlp = addOneHlp s
+			select hlp
+		)
 	)
+	
+-- 	on addHlpBT2 pressed do
+-- 	(
+-- 		
+-- 	)
 )
 
 createdialog hierarchyRLT

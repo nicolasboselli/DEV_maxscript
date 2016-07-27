@@ -12,17 +12,28 @@ fn returnScriptRoot =
 
 -- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 -- filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
-filein (returnScriptRoot() + "GF/FN_gestion_fenetres.ms")
-filein (returnScriptRoot() + "zz_mode_archi/XformInPlace.ms")
+-- filein (returnScriptRoot() + "GF/FN_gestion_fenetres.ms")
+-- filein (returnScriptRoot() + "zz_mode_archi/XformInPlace.ms")
+filein (returnScriptRoot() + "GF/explodeObject.ms")
 
 -- filein "J:/GitHub_repo/DEV_maxscript/00_wip/zz_mode_archi/XformInPlace.ms"
 /*##############################cubizator ########################"*/
 
+fn resetXformInPlace3 s =
+(
+	addmodifier s (xform ())
+		
+	s.modifiers[#xform].gizmo.rotation = inverse s.objectoffsetrot
+	s.objectoffsetrot = (quat 0 0 0 1)
 
-/*
-function to boxerize selection
-*/
--- $.pivot
+	s.modifiers[#xform].gizmo.position = s.objectoffsetpos
+	s.objectoffsetpos = [0,0,0]
+
+	resetscale s
+	s.modifiers[#xform].gizmo.scale = s.objectoffsetscale
+	s.objectoffsetscale = [1,1,1]
+)
+
 
 fn GetAngleFromNormal theNormal =
 (
@@ -34,7 +45,7 @@ fn GetAngleFromNormal theNormal =
 		local theY = normalize (cross [0,0,1] theX ) --this is the Y axis orthogonal to the Normal and Up
 		local theZ = normalize (cross theY theX) --this is the X orthogonal to Normal and Y
 		local theTM = matrix3   theX theY theZ [0,0,0] --this is the matrix3 describing the orientation of the Normal
-		print theTM
+-- 		print theTM
 		theTM.rotationpart as eulerangles --return its Euler rotation 
 	)
 )
@@ -52,7 +63,7 @@ fn boxerize selAr =
 
 		-- detacher chaque element
 		polyop.setFaceSelection  s #all
-		selArr = detach_elements_selected s
+		selArr = explodeObject s
 
 		-- ## reorient each element
 
@@ -71,7 +82,7 @@ fn boxerize selAr =
 					newAngle = GetAngleFromNormal theNormal
 					newAngle.z = newAngle.z*-1
 					
-					print "check1"
+-- 					print "check1"
 					-- apply new orientation
 					in coordsys local o.rotation =newAngle
 					o.objectoffsetrot =newAngle
@@ -82,9 +93,9 @@ fn boxerize selAr =
 					
 					-- config outline
 					select o
-					format "o name: %\n" o.name
+-- 					format "o name: %\n" o.name
 					$.outlineAmount = 2
-					format "$ name: %\n" o.name
+-- 					format "$ name: %\n" o.name
 					$.EditablePoly.Outline ()
 					
 					-- add shell on object
@@ -92,7 +103,9 @@ fn boxerize selAr =
 					addmodifier o myShell
 					o.pivot = o.center
 					
-					resetInPlaceFN o
+-- 					resetInPlaceFN o
+					resetXformInPlace3 o
+					converttopoly o
 					o.material = undefined
 				)
 			)
