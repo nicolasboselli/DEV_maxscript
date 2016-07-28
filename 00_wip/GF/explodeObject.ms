@@ -17,3 +17,4 @@ fn explodeObject s =
 
 	detached
 )
+-- explodeObject $
