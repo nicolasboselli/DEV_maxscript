@@ -16,23 +16,23 @@ fn detach_face_fenetre s =
 )
 
 
-	-- classement array
-	fn ySort v1 v2 =
+-- classement array
+fn ySort v1 v2 =
+(
+	local dd
+	if(v1.y < v2.y) then
+		dd=-1
+	else
+		dd=1
+	
+--compare les numeros entre eux et les classe	
+	case of
 	(
-		local dd
-		if(v1.y < v2.y) then
-			dd=-1
-		else
-			dd=1
-		
-	--compare les numeros entre eux et les classe	
-		case of
-		(
-			(dd < 0.):1
-			(dd > 0.):-1
-			default: 0
-		)
+		(dd < 0.):1
+		(dd > 0.):-1
+		default: 0
 	)
+)
 	
 ----------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------

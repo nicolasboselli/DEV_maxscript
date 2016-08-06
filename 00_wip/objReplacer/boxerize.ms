@@ -1,59 +1,33 @@
 -- filein (modeArchiScriptRoot + "bardageCreator\zinc_creator_bounding_box_fn.ms")
 
--- fn returnScriptRoot =
--- (
--- 	local maxIni = getMAXIniFile()
--- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
--- 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
--- 	root
--- )
-
+/*
+fn returnScriptRoot =
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	root
+)
+*/
 -- returnScriptRoot()
 
--- filein "J:\GitHub_repo\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
--- filein "J:\github\DEV_maxscript\00_wip\GF\FN_gestion_fenetres.ms"
 -- filein (returnScriptRoot() + "GF/FN_gestion_fenetres.ms")
 -- filein (returnScriptRoot() + "zz_mode_archi/XformInPlace.ms")
 -- filein (returnScriptRoot() + "GF/explodeObject.ms")
 
-
-fn explodeObject s =
+fn resetInPlaceFN sel=
 (
-	num = polyop.getNumFaces s
-	numToDetach = #(num)
-	detached = #()
-
-	for n in numToDetach do
-	(
-		facesToDetach = polyop.getElementsUsingFace s #{num}
-		fenetre_detach_name = uniquename "fenetre_detach_"
-		polyop.detachFaces s facesToDetach delete:true asNode:true name:fenetre_detach_name
-		append detached (getnodebyname fenetre_detach_name)
-		
-		num = polyop.getNumFaces s
-		if num > 0 then append numToDetach num
-	)
-
-	detached
-)
-
-
--- filein "J:/GitHub_repo/DEV_maxscript/00_wip/zz_mode_archi/XformInPlace.ms"
-/*##############################cubizator ########################"*/
-
-fn resetXformInPlace3 s =
-(
-	addmodifier s (xform ())
-		
-	s.modifiers[#xform].gizmo.rotation = inverse s.objectoffsetrot
-	s.objectoffsetrot = (quat 0 0 0 1)
-
-	s.modifiers[#xform].gizmo.position = s.objectoffsetpos
-	s.objectoffsetpos = [0,0,0]
-
-	resetscale s
-	s.modifiers[#xform].gizmo.scale = s.objectoffsetscale
-	s.objectoffsetscale = [1,1,1]
+	bakPos = sel.position
+	bakRot = sel.rotation
+	
+	sel.rotation = eulerangles 0 0 0
+	sel.position = [0,0,0]
+	
+	resetxform sel 
+	ConvertTo sel Editable_Poly
+	
+	sel.rotation = bakRot
+	sel.position = bakPos
 )
 
 fn pivotOnFAce s = 
@@ -76,8 +50,69 @@ fn pivotOnFAce s =
 -- pivotOnFAce $
 
 
+	-- detache elements d'un objet un par un
+fn detach_elements_selected s =
+(
+	-- selection de plusieurs elements 
+	local selection_globale = s.getselection #face
+	local selection_globale_array = selection_globale as array
+	local une_selection = polyop.getElementsUsingFace s #{selection_globale_array[1]} as array
 
-fn boxerize2 selAr =
+	local max_value = selection_globale_array.count
+	local pas = 0
+	local tour = 0
+
+	-- trouver le nombre d'elements à détacher
+	-- compteur d'éléments
+
+		while (selection_globale as array).count != (une_selection as array).count do
+		(
+			max_value_bak = max_value
+			pas = une_selection.count
+			(max_value -= pas)
+			tour += 1
+			
+			selection_globale = selection_globale - (une_selection as bitarray)
+			selection_globale_array = selection_globale as array
+			une_selection = (polyop.getElementsUsingFace s #{selection_globale_array[1]}) as array
+			-- print "max_value avant soustraction : " + (max_value_bak as string) + " ; selection:" + (pas as string) + " ; max_value apres soustraction:" + ((max_value) as string) + " ; verif :" + ((max_value + pas) as string)
+		)	
+
+	elts_num = tour + 1
+	-- print elts_num
+
+	selection_globale = s.getselection #face
+	selection_globale_bak = s.getselection #face
+
+	fenetres_array = #()
+
+	-- detachement des elements
+	for i = 1 to elts_num do
+	(
+
+		selection_globale_array = selection_globale as array
+		
+		detach1 = polyop.getElementsUsingFace s #{selection_globale_array[1]}
+		s.EditablePoly.setSelection #face detach1
+		
+		fenetre_detach_name = uniquename "fenetre_detach_"
+		polyop.detachFaces s detach1 delete:false asNode:true name: fenetre_detach_name
+			
+		selection_globale = selection_globale - detach1
+		
+		fenetre_detach = getnodebyname fenetre_detach_name
+		fenetre_detach.wirecolor = color (random 0 255) (random 0 255) (random 0 255)
+		append fenetres_array fenetre_detach
+		
+	)
+
+	s.EditablePoly.setSelection #face selection_globale_bak
+
+	polyop.deleteFaces s selection_globale_bak
+	return fenetres_array
+)
+
+fn boxerize selAr =
 (
 	undo on 
 	(
@@ -112,8 +147,8 @@ fn boxerize2 selAr =
 					addmodifier o myShell
 					o.pivot = o.center
 					
--- 					resetInPlaceFN o
-					resetXformInPlace3 o
+					resetInPlaceFN o
+-- 					resetXformInPlace3 o
 					converttopoly o
 					
 					o.material = undefined
@@ -206,10 +241,8 @@ fn boxerize selAr =
 	)
 )
 
-
-
 -- myShell = undefined
 sel = selection as array
-if sel.count == 1 do boxerize2 sel
+if sel.count == 1 do boxerize sel
 	
 

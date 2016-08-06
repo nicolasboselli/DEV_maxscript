@@ -1,4 +1,17 @@
-
+fn resetInPlaceFN sel=
+(
+	bakPos = sel.position
+	bakRot = sel.rotation
+	
+	sel.rotation = eulerangles 0 0 0
+	sel.position = [0,0,0]
+	
+	resetxform sel 
+	ConvertTo sel Editable_Poly
+	
+	sel.rotation = bakRot
+	sel.position = bakPos
+)
 
 fn resetInPlace2 s tmpParent =
 (
@@ -17,6 +30,22 @@ fn resetInPlace2 s tmpParent =
 -- 	delete tmpParent
 )
 
+fn resetXformInPlace3 s =
+(
+	addmodifier s (xform ())
+		
+	s.modifiers[#xform].gizmo.rotation = inverse s.objectoffsetrot
+	s.objectoffsetrot = (quat 0 0 0 1)
+
+	s.modifiers[#xform].gizmo.position = s.objectoffsetpos
+	s.objectoffsetpos = [0,0,0]
+
+	resetscale s
+	s.modifiers[#xform].gizmo.scale = s.objectoffsetscale
+	s.objectoffsetscale = [1,1,1]
+)
+
+
 
 try(destroydialog xformRLT)catch()
 
@@ -26,10 +55,17 @@ rollout xformRLT "xform in place V2"
 	local ref
 	
 -- 	UI
-	button addRefBT "add>>"
-	edittext refET "ref:" readonly: true
-	button resetRefBT "Clear ref"
-	button xformBT "reset xform"
+	group "xform on parent:"
+	(
+		button addRefBT "add>>"
+		edittext refET "ref:" readonly: true
+		button resetRefBT "Clear ref"
+		button xformBT "reset xform"
+	)
+	group "clear offset pivot:"
+	(
+		button clearOffsetBT "clear"
+	)
 	
 -- 	function
 	fn refreshUI =
@@ -77,6 +113,11 @@ rollout xformRLT "xform in place V2"
 				resetInPlace2 s ref
 			)
 		)
+	)
+	
+	on clearOffsetBT pressed do
+	(
+		for s in selection do resetXformInPlace3 s
 	)
 	
 )

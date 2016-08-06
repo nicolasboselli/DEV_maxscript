@@ -3,6 +3,47 @@ maj
 add param:  center pivot,  add uvwmap, add mat, setup sweep, 
 */
 
+fn createBoxOrient s =
+(
+	faceSel = polyop.getfaceselection s 
+	posObj = s.pos
+	posCenter = polyop.getFaceCenter s (faceSel as array)[1]
+	theZ = polyop.getFaceNormal s (faceSel as array)[1]
+	theY = normalize (cross [0,0,1] theZ )
+	theX = normalize (cross theY theZ)
+	theTM = matrix3   theX theY theZ posCenter
+
+	rep = box transform: theTM
+)
+
+fn writeRolloutPref rlt =
+(
+	for c in rlt.controls do
+	(
+		pref1 = "___TO_BACKUP!____"
+		pref2 = "_                  __ignore____"
+		
+		if classof c == checkboxcontrol then format "% name:%, class: %, state:% \n" pref1 c.name (classof c) c.state 
+		else if classof c == SpinnerControl then format "% name:%, value: %, state:% \n" pref1 c.name (classof c) c.value
+		else if matchpattern ((classof c) as string) pattern: "Group*" == true then format "% % \n" pref2 c
+		else format "UNKNOWN?____ % \n" c
+	)
+)
+-- writeRolloutPref edgeToShapeRLT
+
+
+fn resetInPlace2 s tmpParent =
+(
+	bakparent = s.parent
+	tmpParent.scale = [1,1,1]
+
+	s.parent = tmpParent
+
+	resetxform s
+	
+	s.parent = bakparent
+)
+
 fn removeEdgeAndVerticesFN sel =
 (
 	sel.EditablePoly.ConvertSelection #Edge #Vertex
@@ -39,7 +80,8 @@ rollout edgeToShapeRLT "edge to shape"
 -- 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	
 	local extSize  = 100
-	
+	local selLev 
+	local boxorient 
 -- function
 	
 	fn writePosition rlt =
@@ -73,13 +115,22 @@ rollout edgeToShapeRLT "edge to shape"
 
 	)
 	checkbox removeEdgeCB "remove edge selection"
-	group "reset x form optons:"
+	
+	group "x form options:"
 	(
 		checkbox resetXformCB "reset x form"
+		checkbox createBoxOrientCB "Create Box Orient"
+		checkbox xformOnBoxCB "Xform on box orient"
 		checkbox collapseXformCB "collapse x form"
 	)
 	
 	checkbox keepSelCB "keep selection"
+	
+-- 	group "box orient:"
+-- 	(
+-- 		button boxOrientBT "create Box Orient"
+-- 	)
+	
 	button extractBT "extract"
 	
 	on extractBT pressed do
@@ -90,8 +141,19 @@ rollout edgeToShapeRLT "edge to shape"
 		(
 			for s in sel do
 			(
+				-- create box orient
+				if createBoxOrientCB.state == true and subobjectLevel == 4 and (polyop.getfaceselection s).count > 0 then
+				(
+					boxorient = createBoxOrient s
+				)else  (print "select faces")
+					
+				
 				-- convert selection if necessary
-				if subObjectLevel == 4 do s.ConvertSelectionToBorder #Face #Edge
+				if subObjectLevel == 4 then
+				(
+					s.ConvertSelectionToBorder #Face #Edge
+					selLev = 4
+				)else (selLev = 2)
 				
 				-- create shape
 				newName = uniqueName (s.name + "_shape")
@@ -99,6 +161,9 @@ rollout edgeToShapeRLT "edge to shape"
 				
 				newShape = getnodebyname newName
 				updateshape newShape
+				
+				-- xform on box orient
+				if boxOrient != undefined and xformOnBoxCB.state == true then resetInPlace2 newShape boxOrient else()
 				
 				-- option reset x form
 				if resetXformCB.state == true do
@@ -110,6 +175,8 @@ rollout edgeToShapeRLT "edge to shape"
 						updateshape newShape
 					)
 				)
+				
+
 				
 				-- option: remove edge
 				if removeEdgeCB.state == True do removeEdgeAndVerticesFN s
@@ -142,7 +209,7 @@ rollout edgeToShapeRLT "edge to shape"
 				(
 					select s
 					modPanel.setCurrentObject s
-					subobjectLevel = 2
+					subobjectLevel = selLev
 
 				)
 				else
@@ -173,6 +240,8 @@ rollout edgeToShapeRLT "edge to shape"
 		addMatCB.enabled = false
 		extSizeSP.enabled = true
 	)
+	
+
 	
 	on edgeToShapeRLT open do
 	(
@@ -212,6 +281,8 @@ rollout edgeToShapeRLT "edge to shape"
 		setINISetting armadasScriptsIni cat "resetXformState" 	(resetXformCB.state as string)
 		setINISetting armadasScriptsIni cat "collapseXformState" (collapseXformCB.state as string)
 		print "maj ini done"
+		
+-- 		writeRolloutPref edgeToShapeRLT
 	)
 	
 )

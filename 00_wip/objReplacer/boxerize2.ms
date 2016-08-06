@@ -1,5 +1,3 @@
-
-
 fn explodeObject s =
 (
 	num = polyop.getNumFaces s
@@ -20,7 +18,6 @@ fn explodeObject s =
 	detached
 )
 
-
 fn pivotOnFAce s = 
 (
 
@@ -39,8 +36,6 @@ fn pivotOnFAce s =
 	s.modifiers[#xform].gizmo.position = (in coordsys local s.center)* -1
 )
 -- pivotOnFAce $
-
-
 
 fn boxerize2 selAr =
 (
@@ -75,17 +70,12 @@ fn boxerize2 selAr =
 					
 					converttopoly o
 				
-					o.material = undefined
--- 					
+					o.material = undefined	
 				)
 			)
-			
-			
 		)
 	)
 )
-
-
 
 -- myShell = undefined
 sel = selection as array

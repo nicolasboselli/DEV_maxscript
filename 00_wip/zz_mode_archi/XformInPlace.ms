@@ -15,6 +15,22 @@ fn resetInPlaceFN sel=
 	sel.position = bakPos
 )
 
+fn resetXformInPlace3 s =
+(
+	addmodifier s (xform ())
+		
+	s.modifiers[#xform].gizmo.rotation = inverse s.objectoffsetrot
+	s.objectoffsetrot = (quat 0 0 0 1)
+
+	s.modifiers[#xform].gizmo.position = s.objectoffsetpos
+	s.objectoffsetpos = [0,0,0]
+
+	resetscale s
+	s.modifiers[#xform].gizmo.scale = s.objectoffsetscale
+	s.objectoffsetscale = [1,1,1]
+)
+
+
 try(destroydialog XformRlt) catch()
 rollout XformRlt "Xform in place"
 (
