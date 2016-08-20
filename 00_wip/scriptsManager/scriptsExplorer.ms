@@ -46,7 +46,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local currentFolder
 	
 -- 	UI
-	edittext pathET "current folder:" readonly: true
+	edittext pathET "current folder:" readonly: true 
 	button openFoldBT "open folder" across: 2
 	button accessIniBT "access ini"
 	listbox scriptsListLB "Scripts:" tooltip: "script list" height: 30 -- across: 2
