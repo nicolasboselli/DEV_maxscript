@@ -67,6 +67,7 @@ fn returnSearch s =
 	else("search introuvable")
 	search
 )
+returnSearch $
 
 -- create first point
 fn addFirstLookAtPoint sel =
