@@ -39,6 +39,7 @@ fn pivotOnFAce s =
 
 fn boxerize2 selAr =
 (
+	wireAr = #(green, red, blue, orange, yellow, brown)
 	undo on 
 	(
 		for s in selAr do
@@ -71,6 +72,9 @@ fn boxerize2 selAr =
 					converttopoly o
 				
 					o.material = undefined	
+					
+					id = random 1 wireAr.count
+					o.wirecolor = wireAr[id]
 				)
 			)
 		)

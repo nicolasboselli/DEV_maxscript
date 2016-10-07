@@ -13,7 +13,7 @@ maj:
 -- make ui interactive to scaler deletion(event)
 -- condition "resize map" active to map to resize selected(event)
 
--- add tool to pick root position  and target position (event with checkbutton)
+x add tool to pick root position  and target position (event with checkbutton)
 
 -- scale resizer with map
 -- calculate dimension on bounding box and do not use plane size anymore
@@ -38,22 +38,6 @@ x-- add init scaler and resizer on opening rollout
 
 */
 
--- helpers layer creation
-fn createHelperLayerDef =
-(
-	local LM = layermanager
-	local planLayer
-	if (LM.getLayerFromName "helpers") == undefined then
-	(
-		planLayer = LM.newLayerFromName "helpers"
-	)
-	else
-	(
-		planLayer = LM.getLayerFromName "helpers"
-	)
-	return planLayer
-)
-
 -- check system presence
 fn checkScalerDef =
 (
@@ -69,11 +53,11 @@ fn checkScalerDef =
 		
 	if scalerAr.count == 3 then
 	(
-		return scalerAr
+		scalerAr
 	)
 	else
 	(
-		return undefined
+		undefined
 	)
 )
 
@@ -81,9 +65,19 @@ fn checkScalerDef =
 --  create system
 fn createScalerSys =
 (
-	oneLayer = createHelperLayerDef()
+	-- create layer
+	local LM = layermanager
+	local planLayer
+	if (LM.getLayerFromName "helpers") == undefined then
+	(
+		planLayer = LM.newLayerFromName "helpers"
+	)
+	else
+	(
+		planLayer = LM.getLayerFromName "helpers"
+	)
 	
-	
+	-- create scaler
 	local startPt, endPt, scaler
 
 	startPt = getnodebyname  "startPoint"
@@ -95,27 +89,15 @@ fn createScalerSys =
 	scaler = getnodebyname  "scaler"
 	if  scaler == undefined do scaler = point name: "scaler" wirecolor: yellow parent: startPt size: 2 box: true cross: false
 	
-	oneLayer.addnode startPt
-	oneLayer.addnode endPt
-	oneLayer.addnode scaler
+	planLayer.addnode startPt
+	planLayer.addnode endPt
+	planLayer.addnode scaler
 	
-	return #(startPt, endPt, scaler)
-)
-
-fn createRefSys =
-(
-	local startSize, endSize
+	#(startPt, endPt, scaler)
 	
-	startSize = getnodebyname  "startSize"
-	if  startSize == undefined do startSize = point name: "startSize" wirecolor: green size: 15 box: true cross: true
+	-- handler
 
-	endSize = getnodebyname  "endSize"
-	if  endSize == undefined do endSize = point name: "endSize" wirecolor: green parent: startSize size: 15 box: false cross: true pos: [10,0,0]
-		
-	return #(startSize, endSize)
 )
-
-
 
 rollout planResizerRLT "blueprint resizer" width: 250
 (
@@ -154,7 +136,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 -- 			print myRay
 			local arr = intersectRayScene myRay
 -- 			print "===="
-			print arr
+-- 			print arr
 			
 			local viewMatrix =  Inverse(viewport.getTM())
 			local viewPos = viewMatrix.pos
@@ -197,8 +179,8 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	-- 			print myRay
 				local arr = intersectRayScene myRay
 	-- 			print "===="
-				print arr
-				print "ploufe"
+-- 				print arr
+-- 				print "ploufe"
 				
 				local viewMatrix =  Inverse(viewport.getTM())
 				local viewPos = viewMatrix.pos
@@ -238,9 +220,6 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		)
 	)
 	
-	
-	
-	
 -- 	UI
 
 	-- pick blueprint resizer
@@ -274,52 +253,17 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		button refreshDistResize_pb "refresh distance"
 	)
 	
-	/*
-	group "Reference:"
-	(
-
-		-- reference selection (radio button)
-		radiobuttons sizeRef_rb labels:#("numeric", "visual")
-	)
-			-- numeric
-			-- repere
-		--  enter precious size
-	
-	group "visual reference:"
-	(
-		
-		button createSizeRef_bt "create size reference" across: 2
-		button selSize_bt "select size reference"
-		
-		button parentRef_bt "parent map" across:2
-		button centerRef_bt "center map" 
-		
-		button resetResizer "Reset Resizer"
-		
-		spinner multiResizer "Resizer size x" range: [0,100,1] type:#float across:2
-		button resizeResizer "resize"
-		
-		edittext mapAsRef_et "map as ref:" readOnly: true
-		edittext distRef_et "distance:" readOnly: true
-		
-		button refreshDistRef_pb "refresh distance"
-			
-	)
-	*/
-	
 	group "Numeric:"
 	(
 		spinner size_sp "size:" range: [0,100000,0]  type: #worldunits 
 		-- display size reference	
 	)
 	
-	
-	
 	-- rescale points
 	button rescale_bt "resize map"
 	
 -- 	UI functions
-	fn refreshUI scalerArray =
+	fn refreshUI  =
 	(
 		if scalerArray == undefined then
 		(
@@ -395,13 +339,27 @@ rollout planResizerRLT "blueprint resizer" width: 250
 -- 	actions
 	on planResizerRLT open do
 	(
+		scalerArray = createScalerSys()
 		scalerArray = checkScalerDef()
-		refreshUI scalerArray
+		
 		loadPosition "planResizerRLT" planResizerRLT
+		refreshUI()
+		
+		sel = selection as array
+		if sel.count == 1 then
+		(			
+			if superclassof sel[1] == geometryclass then
+			(				
+				scalerParent = sel[1]
+				startPt.parent = sel[1]
+				mapToResize_et.text = sel[1].name
+			)
+		)
 	)
 	
 	on planResizerRLT close do
 	(
+-- 		try(delete scalerArray)catch(print "nothing to delete")
 		writePosition "planResizerRLT" planResizerRLT
 	)
 	
@@ -464,6 +422,10 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	on placeObjBT changed state do
 	(
+		when transform scalerArray[1]  changes do (
+			distResize_et.text = ((distance scalerArray[1] scalerArray[2]) as string) + "cm"
+		)
+		
 		bakParent = startPt.parent
 		bakChildParent = endPt.parent
 		
@@ -484,10 +446,15 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		
 		startPt.parent = bakParent
 		endPt.parent = bakChildParent
+		
+
 	)
 	
 	on placeTgtBT changed state do
 	(
+		when transform scalerArray[2]  changes do (
+			distResize_et.text = ((distance scalerArray[1] scalerArray[2]) as string) + "cm"
+		)
 		
 		bakParent = endPt.parent
 		endPt.parent = undefined
@@ -524,15 +491,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 -- 	
 -- 	-- resize with a dimension, resize with a size reference.
 
--- 	-- create visual resizer
-	on createSizeRef_bt pressed do
-	(
-		refArray = createRefSys()
-		startSize = refArray[1]
-		endSize = refArray[2]
-		print refArray
-	)
-	
+-- 	-- create visual resizer	
 	on selSize_bt pressed do
 	(
 		select refArray
@@ -589,48 +548,12 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		)
 		
 	)
-	
-	/*	
-	on resizeResizer pressed do
-	(
-		startSize.size = startSize.size*multiResizer.value
-		endSize.size = endSize.size*multiResizer.value
-		multiResizer.value = 1.0 
-	)
-	*/
-
-	
+		
 -- 	-- resize!
 	on rescale_bt pressed do
 	(
 		local aimedDist
 		
-		/*
-		if sizeRef_rb.state == 1 then
-		(
-			print "numeric reference"
-			aimedDist = size_sp.value
-		)
-		else if sizeRef_rb.state == 2 then
-		(
-			print "visual reference"
-			-- reelDist = float( distance startPt endPt)
-			aimedDist =  float(distance startSize endSize)
-			-- ratio = aimedDist/reelDist
-
-			-- startPt.parent = undefined
-			-- scalerParent.parent = scaler
-			-- scaler.scale = scaler.scale*ratio
-			-- scalerParent.parent = undefined
-			
-			-- scaler.scale = [1,1,1]
-			-- startPt.parent = scalerParent
-		)
-		else
-		(
-			print "fail"
-		)
-		*/
 		aimedDist = size_sp.value
 		print aimedDist
 		
@@ -642,7 +565,8 @@ rollout planResizerRLT "blueprint resizer" width: 250
 
 			startPt.parent = undefined
 			scalerParent.parent = scaler
-			scaler.scale = scaler.scale*ratio
+-- 			scaler.scale = scaler.scale*ratio
+			startPt.scale = scaler.scale*ratio
 			scalerParent.parent = undefined
 			
 			scaler.scale = [1,1,1]
@@ -657,7 +581,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 )
 
 
-try(closeRolloutFloater theNewFloater)catch()
+try(closeRolloutFloater planResizerRF)catch()
 planResizerRF = newRolloutFloater "Blueprint Tools" 300 400 
 -- addRollout opaRLT theNewFloater
 addRollout planResizerRLT planResizerRF

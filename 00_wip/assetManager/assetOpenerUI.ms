@@ -1,5 +1,8 @@
 -- asset opener
 
+-- open in new max instance
+-- shellLaunch (GetDir #maxroot + "3dsmax.exe") @"J:\_svn\zz_ressources3D\ELEMENTS_IMMOBILIERS\rc_gc_verre\001\rc_gc_verre.max"
+
 /*
 maj:
 	/- filter by name
@@ -9,14 +12,17 @@ maj:
 		-- add ignore achive
 	
 	-- update wip name after publishing
-		-- deplace publish method in asset structure
-		-- deplace edit method in asset structure
+	
+	-- deplace publish method in asset structure
+	-- deplace edit method in asset structure
+	-- revoir le systeme d enregistrement en passant par un wip
 
 	-- clean wip folder
 	-- clean old version (work only with first and last version)
 	-- add comments
-	-- add history in repository
-	-- add favorite/historic selection
+	/- add history in repository
+	
+	-- ouvrir l'asset dans une autre instance de 3ds max
 
 debug:
 	x- parent hidden object
@@ -458,6 +464,7 @@ rollout assetEditorRLT "assets editor"
 	
 -- 	local allAssetsFolder = "zz_ressources3D"
 	local root 
+	local rootAr = #()
 	
 	local assetPathsArr = #()
 	local assetsList = #()
@@ -470,6 +477,7 @@ rollout assetEditorRLT "assets editor"
 	(
 		edittext rootET "Path:" readonly: true
 		button findFolderBT "..."
+		dropdownlist pathListDL "Paths: " readonly: true height: 11
 	)
 	
 	group "filters:"
@@ -494,7 +502,7 @@ rollout assetEditorRLT "assets editor"
 	
 	group "Asset selected infos:"
 	(
-		bitmap assetBMP "asset thumbnail" width: 256 height: 256
+		
 		
 -- 		edittext curAssetRootET "assets root: " readonly: true
 -- 		edittext curAllAssetsFolderET "all assets folder: " readonly: true
@@ -512,8 +520,10 @@ rollout assetEditorRLT "assets editor"
 -- 		edittext  openTagsET "tags:" readonly: true
 		
 -- 		checkbox instanceCB "new max instance"
-		button openBT "open" across:2
+		button openBT "open folder" across:3
 		button editBT "edit" 
+		button newMaxBT "edit in new max instance" 
+		bitmap assetBMP "asset thumbnail" width: 256 height: 256
 		
 -- 		button updateBT "update"
 	)
@@ -579,8 +589,9 @@ rollout assetEditorRLT "assets editor"
 	fn refreshListBoxNew assetsAr =
 	(
 		rootET.text = root
-		
+		pathListDL.items = rootAr
 		assetsBL.items = for o in assetsAr collect o.name	
+-- 		pathListDL.items = for p in rootAr collect p
 		
 		if assetsAr.count >0 then
 		(
@@ -645,7 +656,11 @@ rollout assetEditorRLT "assets editor"
 	)
 	*/
 
-	fn updateIni = setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
+	fn updateIni = 
+	(
+		setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
+		setINISetting armadasScriptsIni "assetManager" "repositoryPathAr" (rootAr as string)
+	)
 	
 	fn refreshFromOutside =
 	(
@@ -665,16 +680,24 @@ rollout assetEditorRLT "assets editor"
 -- 		root = @"J:\_svn\zz_ressources3D"
 		
 		-- collect root
+		rootArStr =  (getINISetting armadasScriptsIni "assetManager" "repositoryPathAr")
+		if rootArStr.count > 0 then  rootAr = execute rootArStr else rootAr = #()
+		
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		if rootIni.count > 0 then
 		(
-			if doesfileexist rootIni == true then root = rootIni
+			if doesfileexist rootIni == true then
+			(
+				root = rootIni
+				append rootAr rootIni
+			)
 		)
 		else
 		(
 			root = ""
 		)
 		
+		rootAr = makeuniquearray rootAr
 		
 		-- collect assets list
 		assetsList = collectAssets root
@@ -700,6 +723,12 @@ rollout assetEditorRLT "assets editor"
 			assetsList = collectAssets root
 			-- collect list to display
 			assetsToDisplay = filterAssetsList assetsList
+			
+			-- update path array
+			insertItem res rootAr 1
+			rootAr = makeuniqueArray rootAr
+			if rootAr.count > 10 then deleteItem rootAr 11
+			 
 			-- display list
 			refreshListBoxNew assetsToDisplay
 			
@@ -708,6 +737,34 @@ rollout assetEditorRLT "assets editor"
 		else
 		(
 			print "fail!"
+		)
+	)
+	
+	on pathListDL selected  val do
+	(
+		
+		if rootAr[val] != undefined then
+		(
+			local res = rootAr[val]
+			
+			root = res
+			
+			-- collect assets list
+			assetsList = collectAssets root
+			-- collect list to display
+			assetsToDisplay = filterAssetsList assetsList
+			
+			-- update path array
+			insertItem res rootAr 1
+			rootAr = makeuniqueArray rootAr
+			if rootAr.count > 10 then deleteItem rootAr 11
+			 
+			-- display list
+			refreshListBoxNew assetsToDisplay
+			
+			updateIni()
+			
+			pathListDL.selection = 1
 		)
 	)
 	
@@ -770,6 +827,41 @@ rollout assetEditorRLT "assets editor"
 				if test == true then
 				(
 					if checkForSave()  == true do loadMaxFile wipFile useFileUnits: true
+				)
+				else print "wip copy fail"
+			)
+			else print "can't find file"
+		)
+		else print "uncorrect filename"
+
+		
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+-- 		refreshPublishGroup assetsToDisplay[assetsBL.selection]
+	)
+	
+	on newMaxBT pressed do
+	(
+				asset = assetsToDisplay[assetsBL.selection]
+
+		assetFile =  asset.getLastVersionFile()
+		
+		print ("assetfile: " + assetFile)
+		
+		if assetFile.count>0 then
+		(
+			if doesFileExist assetFile == true then
+			(
+				vers = asset.lastVersion
+				assetName = asset.name
+				wipFolder = asset.wipFolder
+				print wipFolder
+				
+				wipFile = wipFolder + "\\" + assetName +"_" + returnDigit vers + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max"
+
+				test = copyFile assetFile wipFile
+				if test == true then
+				(
+						shellLaunch (GetDir #maxroot + "3dsmax.exe") wipFile
 				)
 				else print "wip copy fail"
 			)
