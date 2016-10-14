@@ -565,8 +565,8 @@ rollout planResizerRLT "blueprint resizer" width: 250
 
 			startPt.parent = undefined
 			scalerParent.parent = scaler
--- 			scaler.scale = scaler.scale*ratio
-			startPt.scale = scaler.scale*ratio
+			scaler.scale = scaler.scale*ratio
+-- 			startPt.scale = scaler.scale*ratio
 			scalerParent.parent = undefined
 			
 			scaler.scale = [1,1,1]
