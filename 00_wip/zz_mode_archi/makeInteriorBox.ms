@@ -38,7 +38,7 @@ fn roundNumber num =
 
 interior = copy $
 -- interior = $
-
+select interior
 -- interior.material = undefined
 maxVert = polyop.getNumVerts interior
 
@@ -92,7 +92,7 @@ for i = 1 to maxVert do
 	
 	
 	-- compare angles
-	val = -10
+	val = -25
 	angMax = 30 -- replace by angle collection with tresohld
 	
 	angAr = #()

@@ -24,3 +24,4 @@ for sp = 1 to spCount do
 	)
 )
 updateShape  s
+
