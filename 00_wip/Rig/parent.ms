@@ -108,7 +108,6 @@ fn insertGrp sel =
 )
 
 
-
 fn parentFN sel =
 (
 	undo on
@@ -117,7 +116,10 @@ fn parentFN sel =
 		
 		for i = 1 to (sel.count - 1) do
 		(
-			sel[i].parent = daddy
+			if not isGroupMember sel[i] then
+			(
+				sel[i].parent = daddy
+			)
 		)
 	)
 )
@@ -141,6 +143,33 @@ fn createSymCopy s =
 	resetscale SCopy
 -- 	s.objectoffsetscale = [1,1,1]
 -- 	s.objectoffsetrot =(quat -1 0 0 0)
+)
+
+fn findHead sel =
+(
+	local heads= #()
+	sel = sel as array
+	for s in sel do
+	(
+		res = finditem sel s.parent
+		if res == 0 then append heads s
+	)
+	heads
+)
+
+fn createSymCopy2 sel =
+(
+	maxOps.CloneNodes  sel expandHierarchy: false newNodes: &SCopy
+	format "scopy: %\n" SCopy
+	heads = findHead sel
+	
+	centerSym = point ()
+	for h in heads do h.parent = centerSym
+		
+	centerSym.scale.controller.value.x = -1
+
+	delete centerSym
+	for s in SCopy do resetscale s
 )
 
 
@@ -218,9 +247,9 @@ rollout hierarchyRLT "hierarchy"  width: 400
 		
 	group "bones:"
 	(
-		button addBoxBoneBT "add" across: 2
+		button addBoxBoneBT "add" across: 3
 		button resizeBoxBoneBT "resize" 
-		
+		button boxmodeToggleBT "boxmode" 
 	)
 	
 	group "symmetry:"
@@ -253,6 +282,15 @@ rollout hierarchyRLT "hierarchy"  width: 400
 	(
 		sel = selection as array
 		addBoneBox sel
+	)
+	
+	on  boxmodeToggleBT pressed do
+	(
+		sel = selection as array
+		for s in sel do
+		(
+			s.boxmode = not s.boxmode
+		)
 	)
 	
 	on resizeBoxBoneBT pressed do

@@ -106,6 +106,7 @@ fn makeFloorFN currentSel =
 	)
 )
 
+
 fn connectRingFN s loopNum: 1 =
 (
 -- 	maj: init connect decay
