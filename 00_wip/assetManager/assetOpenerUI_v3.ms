@@ -1,43 +1,53 @@
 -- asset opener
 
--- open in new max instance
--- shellLaunch (GetDir #maxroot + "3dsmax.exe") @"J:\_svn\zz_ressources3D\ELEMENTS_IMMOBILIERS\rc_gc_verre\001\rc_gc_verre.max"
-
 /*
+memo:
+	-- fonctionnalité	
+		-- create asset from sel
+		-- create asset from scene
+		-- publish asset version
+		-- merge asset
+		-- edit asset
+
 maj:
-	/- filter by name
-		-- add * add begining and end of search	
+	x- filter by name
+		x- add * add begining and end of search	
 		
 	x-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore achive
+		
+	x- fuse "assetCreatorUI" and "assetCreatorFromSelectionUI2"
 	
-	-- update wip name after publishing
-	
-	-- deplace publish method in asset structure
-	-- deplace edit method in asset structure
-	-- revoir le systeme d enregistrement en passant par un wip
+	x- deplace publish method in asset structure
+	x- deplace edit method in asset structure
+	x- revoir le systeme d enregistrement en passant par un wip
+		x- update wip name after publishing
 
-	-- clean wip folder
+	x- clean wip folder
 	-- clean old version (work only with first and last version)
 	-- add comments
-	/- add history in repository
+	x- add history in repository
+	-- delete/ rename asset
 	
-	-- ouvrir l'asset dans une autre instance de 3ds max
+	x- ouvrir l'asset dans une autre instance de 3ds max
+	
+	x- au merge eviter le cache layer et les sun
+		
+	-- proposer merge ou xref ou xref object
+	
+	x- faire apparaitre version de max du fichier: getMaxFileVersionData filename
 
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection
-	
-prob:
-	-- when merging list merged objects?
 		
 */
 
-
+filein "assetCreatorUI4.ms"
 filein "assetManagerDef.ms"
 
 rof
-
+/*
 fn sortAssestbyname v1 v2 =
 (
 	-- qsort <array> sortbyname
@@ -57,7 +67,6 @@ fn sortAssestbyname v1 v2 =
 		default: 0
 	)
 )
-
 
 -- scan asset folder to collect asset
 fn walkDir dir pattern =
@@ -88,16 +97,11 @@ fn walkDir dir pattern =
 )
 
 
-
-struct assetClass
+struct assetClass  
 (
 	assetInfo,
 	assetFolder, 
-	
--- 	allAssetsRoot,
--- 	allAssetsFolder,
--- 	relativeFolder,
--- 	relativeFolder2,
+
 	name,
 	lastVersion,
 	
@@ -112,52 +116,10 @@ struct assetClass
 	
 	status,
 	
-	/*
-	fn returnRootPath onePath folderName=
-	(
-		oneRoot
-		count = findString onePath folderName
-		subTest = substring onePath 1 (count - 2)
-		rootTmp = subTest -- + folderName
-		
-		if (getDirectories rootTmp).count > 0 then oneRoot = (rootTmp + "\\") else oneRoot = undefined
-		oneRoot
-	),
+	maxVers,
 	
-	fn returnRelativeFolder onePath folderName  =
-	(
-		count = findString onePath folderName
-		subTest = substring onePath count -1
-		relPathTmp = substituteString  subTest folderName  ""
-		relPathTmp
-	),
+	fn getWipFile =wipFolder + "\\" + name +"_" + (returnDigit lastVersion) + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max", 
 	
-	fn returnRelativeFolder2 onePath folderName oneName =
-	(		
-		count = findString onePath folderName
-		subTest = substring onePath count -1
-		relPathTmp = substituteString  subTest folderName  ""
-		relPath = cleanFilename(substituteString  relPathTmp oneName  "")
-		relPath
-	),
-	
-	fn returnLastVersionFile versionInfoFile =
-	(
-		oneLastVersionFile = undefined
-		if doesfileexist versionInfoFile == true then
-		(
-			versionFileTmp = (getFilenamePath versionInfo) + name + ".max"
-			if doesfileexist versionFileTmp == true then oneLastVersionFile = versionFileTmp
-		)
-		oneLastVersionFile
-	),
-	
-	fn returnLastVersionRelativeFile =
-	(
-		tmp = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
-		tmp
-	),
-	*/
 	fn initFromIni iniFile assetsTank =
 	(
 -- 		print "start init"
@@ -178,7 +140,7 @@ struct assetClass
 		
 		root = cleanFilename(assetsTank + "\\")
 		
-		print ("asset created: " + name)
+		format  "Asset Init: %\n" name
 	),
 	
 	
@@ -200,17 +162,13 @@ struct assetClass
 		setINISetting versionInfoIniFile "assetProperties" "status" status
 	),
 	
-	fn mergeAsset ignoreCache: false =
+	
+	fn mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: false =
 	(
-		assetCtrl = undefined
-		lastVersionFile
-		
-		objStrAr = getMAXFileObjectNames lastVersionFile
-		res = mergeMAXFile lastVersionFile  #useSceneMtlDups #mergeDups
-		
-		if res == true then
+		local assetCtrl
+		-- create asset point
+		if mergeAsAsset then 
 		(
-			-- asset  creation
 			LM = layermanager
 			assetCtrl = point name: (uniquename( name + "_ctrl")) size: 200
 			assetsLayer = LM.getLayerFromName "assets_layer"
@@ -218,6 +176,7 @@ struct assetClass
 				
 			assetsLayer.addnode assetCtrl
 			
+			-- tag de l'asset point
 			setUserProp assetCtrl "asset" true
 			
 			setUserProp assetCtrl "root" root
@@ -231,37 +190,115 @@ struct assetClass
 			
 			setUserProp assetCtrl "assetName"  name
 			setUserProp assetCtrl "assetVersion" lastVersion
-			
-			mergedElts = #()
-			
-			-- objects merged treatment
-			for str in objStrAr do
-			(
-				o = getnodebyname str
-				deletion = false
+		)
+		
+		local objsCountBef = objects.count
+		--import
+		mergeMAXFile lastVersionFile  #useSceneMtlDups #AutoRenameDups  -- #AutoRenameDups  -- #mergeDups -- #select
+		
+	--	collect objects import
+		objsImpAr = #()
+		if objects.count > objsCountBef do
+		(
+			objsImpAr = for i = (objsCountBef + 1) to objects.count collect objects[i]
+		)
+		
+		for o in objsImpAr do
+		(
+			if not isValidNode o do continue
 				
-				if classof o == vraysun or classof o == vrayplane or  classof o == targetcamera then deletion = true
-				else if o.layer.name == "cache_layer" then deletion = true
-					
-				if deletion == true then delete o
-				else
-				(
-					if  o.parent == undefined then 	o.parent = assetCtrl
-					o.name = name + o.name
-				)
-			)
+	-- 		o = getnodebyname str
+			deletion = false
+			
+			-- suppresion des elemets vray
+			local belongToVrSet = false
+			if classof o == vraysun or classof o == vrayplane or  classof o == targetcamera then belongToVrSet = true
+			if ignoreVrSet and belongToVrSet  then deletion = true
+
+			-- suppression des elements caches
+			belongToCachLay = matchpattern o.layer.name pattern: "*cache_layer*"	
+			if ignoreCacheLay and belongToCachLay then deletion = true
+			
+			-- parenter au ctrl asset
+			else if mergeAsAsset and  o.parent == undefined and not isGroupMember o then o.parent = assetCtrl
+			
+			
+			format "obj: %, deletion:% \n" o.name deletion
+			
+			if deletion == true then delete o
 		)
 		assetCtrl
 	),
+	
 	
 	fn getLastVersionFile =
 	(
 		lastVersionFile = cleanFilename(assetFolder + "\\" + (returnDigit lastVersion) + "\\" + name + ".max")
 		lastVersionFile
+	),
+	
+	fn createWipFile  =
+	(
+		lastVersionFile = getLastVersionFile()
+		wipFile = getWipFile()
+		copyFile lastVersionFile wipFile
+-- 		saveMaxFile wipFile useNewFile: useWipAsset
+		format "Wip Created: %\n"	wipFile	
+		wipFile
+	),
+	
+	fn getMaxFileVersion = 
+	(
+		maxVers
+		res = getMaxFileVersionData lastVersionFile 
+		if res[1] == 14000 then maxVers = "2012"
+		else if res[1] == 15000 then maxVers = "2013"
+		else if res[1] == 16000 then maxVers = "2014"
+		else if res[1] == 17000 then maxVers = "2015"
+		else if res[1] == 18000 then maxVers = "2016"
+		else if res[1] == 19000 then maxVers = "2017"
+		else maxVers = "unknow"
+		
+		maxVers
+	),
+	
+	fn publishNewVersion =
+	(
+		-- create new version folder
+		newFolder =  assetFolder +"\\" +  (returnDigit( lastVersion + 1))
+		folderCreated = makedir newFolder all: true
+		
+		-- save new version file
+		local newFile
+			
+		if folderCreated == true then
+		(
+			newFile =  newFolder + "\\" +  name + ".max" 
+			newfileCreated = saveMaxFile newFile useNewFile: false
+			if newfileCreated then (format "Asset Publishing Done: % ; New Version Published: % \n" name newFile) else (format "Asset Publishing Fail: % \n" name)
+		)
+		
+		if newfileCreated == true then
+		(
+			 lastVersion =  lastVersion + 1
+			 lastVersionFile = newFile
+			
+			-- update asset info file
+			 updateAssetFileInfo()
+			
+			-- create version info file
+			 createVersionFileInfo()
+		)
+		else
+		(
+-- 			delete folder
+		)
+		newFile
 	)
-
 )
+*/
 
+/*
 rollout publishVersionRLT "publish asset" width: 400
 (
 	local currentAsset
@@ -270,7 +307,8 @@ rollout publishVersionRLT "publish asset" width: 400
 	edittext assetNameET "asset name:" readonly: true
 	editText nextVersionET "next version:" readonly: true
 	dropdownlist statusDL "status:" 
-	button publishBT "publish version"
+-- 	button publishBT "publish version" across: 2
+	button publishBT2 "publish version v2"
 	
 	fn refreshPublishRlt asset =
 	(
@@ -343,18 +381,18 @@ rollout publishVersionRLT "publish asset" width: 400
 		-- enable publishing
 		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
 		(
-			publishBT.enabled = true
+			publishBT2.enabled = true
 		)
 		else
 		(
-			publishBT.enabled = false
+			publishBT2.enabled = false
 		)
 	)
 	
 	on publishVersionRLT open do
 	(
 		-- init rollout
-		currentAsset = rof.rollouts[1].currentAsset
+		currentAsset = rof.rollouts[2].currentAsset
 		statusDL.items = statusAr
 		
 		-- set rollout
@@ -366,98 +404,39 @@ rollout publishVersionRLT "publish asset" width: 400
 		currentAsset.status = statusAr[arg]
 	)
 	
-	on publishBT pressed do
+	on publishBT2 pressed do
 	(
-		print "publishing started"
+		currentAsset.publishNewVersion()
 		
-		-- create new version folder
-		newFolder = currentAsset.assetFolder +"\\" +  (returnDigit(currentAsset.lastVersion + 1))
-		folderCreated = makedir newFolder all: true
+		wipFile = currentAsset.createWipFile()
+		if checkForSave() do loadMaxFile wipFile useFileUnits: true
 		
-		-- save new version file
-		local newFile
-			
-		if folderCreated == true then
-		(
-			newFile =  newFolder + "\\" + currentAsset.name + ".max" 
-			newfileCreated = saveMaxFile newFile useNewFile: false
-			print newfileCreated
-		)
+-- 		try refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
+-- 		refreshEditGroup assetsToDisplay[assetsBL.selection]
+-- 		format "Asset Published: %\n" currentAsset.getLastVersionFile()
+-- 		format "Asset Edited: %\n" wipFile
 		
-		if newfileCreated == true then
-		(
-			currentAsset.lastVersion = currentAsset.lastVersion + 1
-			currentAsset.lastVersionFile = newFile
-			
-			-- update asset info file
-			currentAsset.updateAssetFileInfo()
-			
-			-- create version info file
-			currentAsset.createVersionFileInfo()
-		)
-		else
-		(
--- 			delete folder
-		)
-
-		-- collect assets list
 		rof.rollouts[2].refreshFromOutside()
-		
-		print "publishing done"
-		
 		destroyDialog publishVersionRLT
 	)
 )
-
+*/
 
 rollout externalToolsRLT "asset tools"
 (
 	local currentAsset
 	
-	group "create asset:"
+	group "tools:"
 	(
-		button createAssetBT "from scene..." across:2
-		button createAssetFromSelBT "from selection..." 
-	)
-	group "publishing:"
-	(
-		button publishRolloutBT "publish asset..."
-	)
-	
-	button assetToolsBT "asset tools..." across:2
-	button updateToolsBT "update tools..."
-	
-	on createAssetBT pressed do filein "assetPublisherUI.ms"
-	on createAssetFromSelBT pressed do 
-	(
-		sel = selection as array
-		if sel.count > 0 then filein "assetCreatorFromSelectionUI.ms"
-		else print "make selection first"
-	)
-	
-	on publishRolloutBT pressed do
-	(
-		-- check if we are in asset
-		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
-			-- find assetInfo.ini file
-		res = doesfileexist infoTest 
-		
-		if res then
-		(
-			root = rof.rollouts[2].root
-			currentAsset = assetClass()
-			currentAsset.initFromIni infoTest root
-			createdialog publishVersionRLT
-		)
-		else (print "this is not an asset")
+		button assetToolsBT "asset tools..." across:2
+		button updateToolsBT "update tools..."
 	)
 	
 	on assetToolsBT pressed do filein "assetManagerTools.ms"
-	on  updateToolsBT pressed do filein "updateAssetTool.ms"
+	on updateToolsBT pressed do filein "updateAssetTool.ms"
 )
 
-
-rollout assetEditorRLT "assets editor"
+rollout assetEditorRLT "assets editor v2"
 (
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
@@ -471,20 +450,36 @@ rollout assetEditorRLT "assets editor"
 	local assetsToDisplay = #()
 	
 	local statusAr = #("all","none","approved","wip","retake", "archive" )
+	local currentAsset
 -- 	UI
 -- 	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
 	group "Assets Repository:"
 	(
+		dropdownlist pathListDL "History Paths: " readonly: true height: 11
 		edittext rootET "Path:" readonly: true
 		button findFolderBT "..."
-		dropdownlist pathListDL "Paths: " readonly: true height: 11
 	)
 	
-	group "filters:"
+	group "Asset Creation:"
+	(
+		button createAssetBT "from scene..." across:3
+		button createAssetFromSelBT "from selection..." 
+		button publishRolloutBT "publish..."
+	)
+	
+	group "Asset Creation v 3 :"
+	(
+		button createAssetBT3 "from scene... v3" across:3
+		button createAssetFromSelBT3 "from selection...v3" 
+		button publishRolloutBT3 "publish...v3"
+	)
+	
+	group "Filters:"
 	(
 		edittext nameSearchET "search by name:"
 		dropdownlist  statusDL "status:"  items: statusAr
 	)
+	
 	
 	group "Assets List:"
 	(
@@ -494,10 +489,11 @@ rollout assetEditorRLT "assets editor"
 -- 	rof.rollouts[2].assetsList[1].name
 	group "Merging:"
 	(
-		checkbox ignoreCacheCB "ignore cache_layer" across: 3
-		checkbox ignoreVrCB "ignore sun, camera and vrayplane" enabled: false
+		checkbox ignoreCacheCB "ignore cache_layer" checked: true across: 4
+		checkbox ignoreVrCB "ignore vray set" checked: true -- enabled: false 
 		checkbox createAsAssetCB "create as asset" enabled: false
-		button mergeBT "merge"
+-- 		button mergeBT "merge"
+		button mergeBT3 "merge v3"
 	)
 	
 	group "Asset selected infos:"
@@ -510,19 +506,25 @@ rollout assetEditorRLT "assets editor"
 		edittext curAssetNameET "asset name:" readonly: true
 		edittext versionET "last version:" readonly: true
 		
-		edittext absPathET "absolute path" readonly: true
+		edittext absPathET "absolute path:" readonly: true
 -- 		edittext relVersionET "relative version" readonly: true
 		
-		edittext statusET "status" readonly: true
-		edittext editableET "asset editable" readonly: true
+		edittext statusET "status:" readonly: true
+		edittext editableET "asset editable:" readonly: true
+		edittext wipFilesCountET "wip files count:" readonly: true
+		edittext maxFileVersET "max version:" readonly: true
  		
 -- 		edittext openStatusET "status:"  readonly: true
 -- 		edittext  openTagsET "tags:" readonly: true
 		
 -- 		checkbox instanceCB "new max instance"
-		button openBT "open folder" across:3
-		button editBT "edit" 
-		button newMaxBT "edit in new max instance" 
+		button openBT "open folder" across:4
+-- 		button editBT "edit" 
+		button editBT2 "edit v2" 
+-- 		button newMaxBT "edit in new max instance" across:3
+		button newMaxBT2 "edit in new max instance v2" 
+		button cleanWipFolderBT  "clean wip folder" 
+		
 		bitmap assetBMP "asset thumbnail" width: 256 height: 256
 		
 -- 		button updateBT "update"
@@ -561,23 +563,35 @@ rollout assetEditorRLT "assets editor"
 		if doesfileexist thumbFile == true then assetBMP.filename = thumbFile
 		else 
 		(
-			print "no thumbnail"
+-- 			print "no thumbnail"
 			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
 		
 -- 		refresh status
 		if asset.status != undefined then statusET.text = asset.status
+			
+-- 		wip files
+		files = getFiles (asset.wipfolder + "*")
+		wipFilesCountET.text = files.count as string
+
+	-- max version
+		try
+		(
+		maxFileVersET.text = asset.getMaxFileVersion()
+		)catch()
 	)
 	
 	fn collectAssets root =
 	(
+		format "######Refresh Assets List#####\n"
 		assetPathsArr = walkDir  root "assetInfo.ini"
 		tmpAssetsList = #()
 		for a in assetPathsArr do
 		(
 			try
 			(
-				newAsset = assetClass()
+-- 				newAsset = assetClass()
+				newAsset = assetCreationClass()
 				newAsset.initFromIni a root
 -- 				allAssetsFolder
 				append tmpAssetsList newAsset
@@ -588,6 +602,7 @@ rollout assetEditorRLT "assets editor"
 	
 	fn refreshListBoxNew assetsAr =
 	(
+		
 		rootET.text = root
 		pathListDL.items = rootAr
 		assetsBL.items = for o in assetsAr collect o.name	
@@ -609,8 +624,13 @@ rollout assetEditorRLT "assets editor"
 		(
 			for a in assetsAr do
 			(
-				res = findString a.name nameSearch
-				if res != undefined then appendifunique tmpAsset a
+				
+				res = matchpattern a.name pattern: nameSearch
+-- 				format "a.name: %, search: %, res: % \n" a.name nameSearch res
+				if res then appendifunique tmpAsset a
+				
+-- 				res = findString a.name nameSearch
+-- 				if res != undefined then appendifunique tmpAsset a
 			)
 		)
 		else
@@ -673,7 +693,7 @@ rollout assetEditorRLT "assets editor"
 		if assetsToDisplay.count > 0 do	refreshEditGroup assetsToDisplay[assetsBL.selection]
 	)
 	
-	 
+	
 -- 	Actions
 	on assetEditorRLT open do
 	(
@@ -768,6 +788,53 @@ rollout assetEditorRLT "assets editor"
 		)
 	)
 	
+		
+	on createAssetBT pressed do filein "assetCreatorUI3.ms"
+		
+	on createAssetFromSelBT pressed do 
+	(
+		sel = selection as array
+		if sel.count > 0 then filein "assetCreatorFromSelectionUI2.ms"
+		else print "make selection first"
+	)
+	
+	on publishRolloutBT pressed do
+	(
+		-- check if we are in asset
+		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
+			-- find assetInfo.ini file
+		res = doesfileexist infoTest 
+		
+		if res then
+		(
+-- 			root = rof.rollouts[2].root
+			currentAsset = assetClass()
+			currentAsset.initFromIni infoTest root
+			createdialog publishVersionRLT
+-- 			publishVersionRLT.currentAsset = currentAsset
+		)
+		else (print "this is not an asset")
+	)
+	
+	on createAssetBT3 pressed do
+	(
+		createdialog createAssetRLT width: 800
+		createAssetRLT.initForScene()
+	)
+	
+	on createAssetFromSelBT3 pressed do
+	(
+		sel = selection as array
+		if sel.count > 0 then createdialog createAssetRLT width: 800
+		createAssetRLT.initForSelection()
+	)
+	
+	on publishRolloutBT3 pressed do
+	(
+		createdialog createAssetRLT width: 800
+		createAssetRLT.initForPublishing()
+	)
+	
 	on collectAssetBT pressed do
 	(
 		-- collect assets list
@@ -799,90 +866,53 @@ rollout assetEditorRLT "assets editor"
 	
 	on openBT pressed do
 	(
-		asset = assetsToDisplay[assetsBL.selection]
-		print asset.assetFolder
-		doscommand ("explorer " + asset.assetFolder)
-	)
-	
-	on editBT pressed do
-	(
-		asset = assetsToDisplay[assetsBL.selection]
-
-		assetFile =  asset.getLastVersionFile()
-		
-		print ("assetfile: " + assetFile)
-		
-		if assetFile.count>0 then
+		if assetsBL.selection > 0 then
 		(
-			if doesFileExist assetFile == true then
-			(
-				vers = asset.lastVersion
-				assetName = asset.name
-				wipFolder = asset.wipFolder
-				print wipFolder
-				
-				wipFile = wipFolder + "\\" + assetName +"_" + returnDigit vers + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max"
-
-				test = copyFile assetFile wipFile
-				if test == true then
-				(
-					if checkForSave()  == true do loadMaxFile wipFile useFileUnits: true
-				)
-				else print "wip copy fail"
-			)
-			else print "can't find file"
+			asset = assetsToDisplay[assetsBL.selection]
+-- 			print asset.assetFolder
+			doscommand ("explorer " + asset.assetFolder)
 		)
-		else print "uncorrect filename"
-
-		
-		refreshEditGroup assetsToDisplay[assetsBL.selection]
--- 		refreshPublishGroup assetsToDisplay[assetsBL.selection]
 	)
-	
-	on newMaxBT pressed do
-	(
-				asset = assetsToDisplay[assetsBL.selection]
-
-		assetFile =  asset.getLastVersionFile()
 		
-		print ("assetfile: " + assetFile)
-		
-		if assetFile.count>0 then
-		(
-			if doesFileExist assetFile == true then
-			(
-				vers = asset.lastVersion
-				assetName = asset.name
-				wipFolder = asset.wipFolder
-				print wipFolder
-				
-				wipFile = wipFolder + "\\" + assetName +"_" + returnDigit vers + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max"
-
-				test = copyFile assetFile wipFile
-				if test == true then
-				(
-						shellLaunch (GetDir #maxroot + "3dsmax.exe") wipFile
-				)
-				else print "wip copy fail"
-			)
-			else print "can't find file"
-		)
-		else print "uncorrect filename"
-
-		
-		refreshEditGroup assetsToDisplay[assetsBL.selection]
--- 		refreshPublishGroup assetsToDisplay[assetsBL.selection]
-	)
-	
-	on mergeBT pressed do
+	on editBT2 pressed do
 	(
 		asset = assetsToDisplay[assetsBL.selection]
-		ctrl = asset.mergeAsset ignoreCache: ignoreCacheCB.state
+		
+		wipFile = asset.createWipFile()
+		if checkForSave() do loadMaxFile wipFile useFileUnits: true
+		
+-- 		try refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+		format "Asset Edited: %\n" wipFile
+	)
+	
+	on newMaxBT2 pressed do
+	(
+		asset = assetsToDisplay[assetsBL.selection]
+		wipFile = asset.createWipFile()
+		if doesFileExist wipFile do shellLaunch (GetDir #maxroot + "3dsmax.exe") wipFile
+	)
+	
+
+	on mergeBT3 pressed do
+	(
+		asset = assetsToDisplay[assetsBL.selection]
+		ctrl = asset.mergeAsset3 ignoreVrSet: ignoreVrCB.state ignoreCacheLay: ignoreCacheCB.state
 -- 		print ctrl
 		select ctrl
 	)
+	
+	on cleanWipFolderBT pressed do
+	(
+-- 		print "youhou"
+		asset = assetsToDisplay[assetsBL.selection]
+-- 		print asset.wipfolder
+		files = getFiles (asset.wipfolder + "*")
+		for f in files do deletefile f
+			
+		refreshEditGroup asset
+	)
 )
-
 
 -- try(destroyDialog assetEditorRLT)catch()
 try(closeRolloutFloater  rof)catch()
@@ -890,6 +920,7 @@ rof= newrolloutfloater "Asset Editor" 600 900
 
 addrollout externalToolsRLT rof
 addrollout assetEditorRLT rof
+
 
 -- rof.rollouts[2].assetslist
 -- createdialog assetEditorRLT width: 200

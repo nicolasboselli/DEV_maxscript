@@ -50,7 +50,6 @@ fn returnAllHierarchyDown selArray=
 		(
 			for c in s.children do  append selArray c
 		)
-		
 	)
 -- 	print selArray
 	selArray

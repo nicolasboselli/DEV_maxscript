@@ -9,11 +9,10 @@ maj:
 
 bug:
 	-- confond filename with folder name
-*/
-
+*/ 
 
 -- 	structure 
-struct assetFromSelClass
+struct assetFromSelClass 
 (
 	objs,
 	basefolder,
@@ -38,7 +37,7 @@ struct assetFromSelClass
 	
 -- 		fn getWipFile = getWipFolder() + "\\" + name + "_wip_" + ".max",
 
-	fn getWipFile = getWipFolder() + "\\" + name +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_00.max",
+	fn getWipFile = getWipFolder() + "\\" + name +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max",
 		
 	fn createFolders =
 	(
@@ -75,7 +74,7 @@ struct assetFromSelClass
 		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
 		
 	),
-	
+		
 	fn createAssetFromSel =
 	(
 		res = createFolders()
@@ -245,10 +244,11 @@ rollout createAssetFromSelRLT "create asset from selection"
 		
 -- 	actions
 
-	on createAssetFromSelRLT open do
-	(
+	on createAssetFromSelRLT open do 
+	( 
 		sel = selection as array
-		rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
 		if rootIni.count > 0 and sel.count > 0 then
 		(
@@ -295,21 +295,8 @@ rollout createAssetFromSelRLT "create asset from selection"
 		
 	)
 	
-	/*
-	on createAssetFromSelBT pressed do
-	(
-		newAsset.createAssetFromSel useWipCB.state
-				
-		try rof.rollouts[2].refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
-		destroydialog createAssetFromSelRLT
-		print "asset creation done"
-		
-	)
-	*/
-	
 	on createAssetFromSelBT2 pressed do
 	(
-		print "youpi"
 		newAsset.createAssetFromSel()
 		
 		if useWipCB.state then
@@ -317,10 +304,10 @@ rollout createAssetFromSelRLT "create asset from selection"
 			wipFile = newAsset.createWipFile()
 			if checkForSave() do loadMaxFile wipFile useFileUnits: true
 		)
-		try rof.rollouts[2].refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
-		format "asset creation done: %\n" newAsset.name
-		destroydialog createAssetRLT
 		
+		format "asset creation done: %\n" newAsset.name
+		try rof.rollouts[2].refreshFromOutside() catch(format "*** % ***\n" (getCurrentException()))
+		destroydialog createAssetRLT
 	)
 	 
 )

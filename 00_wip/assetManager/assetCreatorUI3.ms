@@ -9,16 +9,22 @@ maj:
 
 bug:
 	-- confond filename with folder name
-*/
-
-
--- 	structure 
-struct assetFromSelClass
+*/ 
+ 
+-- 	structure
+struct assetCreationClass 
 (
 	objs,
 	basefolder,
 	name,
 	version,
+	
+	fn initFromScene =
+	(
+		basefolder = getUpperFolder maxFilePath
+		name = getFilenameFile maxFileName
+		version = 0
+	),
 	
 	fn initFromSel sel assetRepo =
 	(
@@ -27,6 +33,10 @@ struct assetFromSelClass
 		name = sel[1].name
 		version = 0
 	),
+	
+	
+-- 		assetFolder = basefolder + "\\" + name,
+-- 		versionFolder = basefolder + "\\" + name +"\\" + (returnDigit version),
 	
 	fn getAssetFolder = basefolder +  name,
 	
@@ -38,15 +48,15 @@ struct assetFromSelClass
 	
 -- 		fn getWipFile = getWipFolder() + "\\" + name + "_wip_" + ".max",
 
-	fn getWipFile = getWipFolder() + "\\" + name +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_00.max",
+	fn getWipFile = getWipFolder() + "\\" + name +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max",
 		
 	fn createFolders =
 	(
 		versionFolder = makedir (getVersionFolder()) all: true
-		format "version folder: %\n" (getVersionFolder())
+		format "version folder: %\n " versionFolder
 			
 		folderCreated = makedir (getWipFolder())
-		format "wip folder: %\n " (getWipFolder())
+		format "wip folder: %\n" folderCreated
 			
 		folderCreated
 	),
@@ -74,6 +84,24 @@ struct assetFromSelClass
 -- 			setINISetting versionInfoIniFile "assetProperties" "versionFile" (getVersionFile())
 		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
 		
+	),
+	
+	fn createAssetFromScene  =
+	(
+		res = createFolders()
+		if res == true then
+		(
+			newFile = getVersionFile()
+-- 			print newFile
+			saveMaxFile newFile useNewFile: false
+			if doesfileexist newFile then
+			(
+				createAssetFileInfo()
+				createVersionFileInfo()
+				format "New Asset Created: %\n"	newFile	
+			)
+		)
+		else format "folders are not existing\n"
 	),
 	
 	fn createAssetFromSel =
@@ -105,19 +133,22 @@ struct assetFromSelClass
 	)
 	
 )
+	
+try(destroyDialog createAssetRLT)catch()
 
-try(destroyDialog createAssetFromSelRLT)catch()
-
-rollout createAssetFromSelRLT "create asset from selection"
+rollout createAssetRLT "create asset v3" 
 (
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
 -- 	vars
 	local allAssetsFolder
-	local root 
+	local root
 	
+-- 	local assetPath = @"\\ELVIS\_svn\zz_ressources3D"
 	local newAsset
+	
+	local mode
 	
 	
 	group "parameters"
@@ -131,8 +162,8 @@ rollout createAssetFromSelRLT "create asset from selection"
 		edittext versionET "version:" enabled: false readonly: true
 		
 		edittext statusET "status:" enabled: false
-		edittext superclassET "superclass:" enabled: false
-		edittext classET "class:"  enabled: false
+-- 		edittext superclassET "superclass:" enabled: false
+-- 		edittext classET "class:"  enabled: false
 		edittext commentET "comment:"  enabled: false
 	)
 	
@@ -157,12 +188,13 @@ rollout createAssetFromSelRLT "create asset from selection"
 		edittext publishingSanity "publishing ready" readonly: true
 	)
 	
-	group "asset creation from scene :"
+	group "asset creation :"
 	(
 		checkbox useWipCB "use wip asset created" state: false across: 3 enabled: false
 -- 		button createAssetBT "create asset with scene" enabled: false 
-		button createAssetFromSelBT "create asset from selection" enabled: false
-		button createAssetFromSelBT2 "create asset from selection v2" enabled: false
+		button createAssetBT2 "create version" enabled: false 
+-- 		button createAssetFromSelBT2 "from selection" enabled: false
+-- 		button createAssetFromSelBT "create asset from selection" enabled: false
 	)
 	
 	-- functions ui dependant 
@@ -214,25 +246,24 @@ rollout createAssetFromSelRLT "create asset from selection"
 		if creationSanity == true then
 		(
 -- 			createAssetBT.enabled = true
-			createAssetFromSelBT.enabled = true
-			createAssetFromSelBT2.enabled = true
+			createAssetBT2.enabled = true
+-- 			createAssetFromSelBT2.enabled = true
 			useWipCB.enabled = true
 		)
 		else
 		(
-			createAssetFromSelBT.enabled = false
-			createAssetFromSelBT2.enabled = false
 -- 			createAssetBT.enabled = false
+			createAssetBT2.enabled = false
+-- 			createAssetFromSelBT2.enabled = false
 			useWipCB.enabled = false
 		)
 		
 		creationSanity
 	)
 	
-	
 	fn completeParam asset =
 	(
-		pathET.text = root
+		pathET.text = asset.basefolder
 		pathET.enabled = true
 		
 		nameET.text = asset.name
@@ -242,20 +273,44 @@ rollout createAssetFromSelRLT "create asset from selection"
 		versionET.enabled = true
 	)
 	
-		
--- 	actions
-
-	on createAssetFromSelRLT open do
+	fn initForScene =
 	(
+		mode = 1
+		createAssetBT2.caption = "create asset from scene"
+		
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		
+		if rootIni.count > 0 then
+		(
+			if doesfileexist rootIni == true then root = rootIni + "\\"
+				
+			newAsset = assetCreationClass()
+			newAsset.initFromScene()
+-- 			print newAsset
+			
+			newAsset.basefolder = root
+-- 			print newAsset
+			
+			completeParam newAsset		
+			checkCreationSanity newAsset
+			format "newAsset: % \n" newAsset
+		)
+	)
+	
+	fn initForSelection =
+	(
+		mode = 2
 		sel = selection as array
-		rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		createAssetBT2.caption = "create asset from selection"
+		
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
 		if rootIni.count > 0 and sel.count > 0 then
 		(
 -- 			print "youpi!"
 			if doesfileexist rootIni == true then root = rootIni + "\\"
 			
-			newAsset = assetFromSelClass()
+			newAsset = assetCreationClass()
 			newAsset.initFromSel sel root
 -- 			print newAsset
 			
@@ -263,12 +318,9 @@ rollout createAssetFromSelRLT "create asset from selection"
 			checkCreationSanity newAsset
 			format "newAsset: % \n" newAsset
 		)
-		else
-		(		
-			destroydialog createAssetFromSelRLT
-			print "make selection first"
-		)
 	)
+	
+	-- Actions
 	
 	on nameET entered str do
 	(
@@ -283,45 +335,28 @@ rollout createAssetFromSelRLT "create asset from selection"
 	
 	on checkCreationBT pressed do
 	(
-		
-		if newAsset != undefined then
-		(
-			checkCreationSanity newAsset
-		)
-		else
-		(
-			print "complete fields"
-		)
-		
+		if newAsset != undefined then checkCreationSanity newAsset
+		else	print "complete fields"
 	)
 	
-	/*
-	on createAssetFromSelBT pressed do
+	on createAssetBT2 pressed do
 	(
-		newAsset.createAssetFromSel useWipCB.state
-				
-		try rof.rollouts[2].refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
-		destroydialog createAssetFromSelRLT
-		print "asset creation done"
-		
-	)
-	*/
-	
-	on createAssetFromSelBT2 pressed do
-	(
-		print "youpi"
-		newAsset.createAssetFromSel()
-		
+		if mode == 1 then newAsset.createAssetFromScene()
+		else if mode == 2 then newAsset.createAssetFromSel()
+			
 		if useWipCB.state then
 		(
 			wipFile = newAsset.createWipFile()
 			if checkForSave() do loadMaxFile wipFile useFileUnits: true
 		)
-		try rof.rollouts[2].refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
-		format "asset creation done: %\n" newAsset.name
-		destroydialog createAssetRLT
 		
+		format "asset creation done: %\n" newAsset.name
+		try rof.rollouts[2].refreshFromOutside() catch(format "*** % ***\n" (getCurrentException()))
+		destroydialog createAssetRLT
 	)
-	 
+	
 )
-createdialog createAssetFromSelRLT width: 800
+
+createAssetRLT.createAssetBT2.caption = "create asset from scene"
+
+
