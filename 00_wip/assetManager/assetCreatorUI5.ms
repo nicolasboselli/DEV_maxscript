@@ -62,6 +62,9 @@ struct assetCreationClass
 		assetFolder =cleanFilename(getFilenamePath assetInfo)
 		--
 		assetName = getINISetting iniFile "assetProperties" "name"
+		format "assetName: %, count: %\n" assetName assetName.count
+		if assetName.count == 0 then assetName = getINISetting iniFile "assetProperties" "assetName"
+		
 		lastVersion = (getINISetting iniFile "assetProperties" "version") as integer
 		version = lastVersion
 		--

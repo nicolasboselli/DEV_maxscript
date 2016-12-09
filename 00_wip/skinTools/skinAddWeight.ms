@@ -1,13 +1,30 @@
 -- todo: améliorer le calcul des poids à l'approche de 0 et de 1
 -- faire les calculs sur 1000 en int
-
-
+-- bug: quand une influence minorée descend sous zero avant que l'influence majoré atteigne 1,  
+	-- par défaut l'influence minorée disparait et les influences restantes se moyennent.
+	-- préféré une soustraction à l'influence ajoutée
 
 fn getSkinVertSel m =
 (
 	vxCount = skinOps.GetNumberVertices m
 	local vxSelAr = for i = 1 to vxcount where skinops.IsVertexSelected m i == 1 collect i
 	vxSelAr
+)
+
+fn vertexInfo m vx =
+(
+	vxMaxBones = skinOps.GetVertexWeightCount m vx
+	bnList = #()
+	wtList = #()
+	
+	for i = 1 to vxMaxBones do
+	(
+		append bnList (skinOps.GetVertexWeightBoneID m vx i)
+		append wtList (skinOps.GetVertexWeight m vx i)
+	)
+	#(bnList, wtList)
+	
+	format "info # vertex: %, bones:%, weight: % \n" vx bnList wtList 
 )
 
 fn majOneVertex m majoredBone unLockedBoneList  vx wtAdd =
@@ -50,10 +67,7 @@ fn majOneVertex m majoredBone unLockedBoneList  vx wtAdd =
 		majoredCorrect = true
 -- 		format "bone majored added : %, initial weight: %\n" bnList[mbiId] wtList[mbiId]
 	)
-	else
-	(
-		format "the selected bone is locked: %\n" majoredBone
-	)
+	else format "the selected bone is locked: %\n" majoredBone
 	
 	-- collecter les bones sur lesquels on enlève du poid
 	minoredCorrect = False
@@ -72,62 +86,57 @@ fn majOneVertex m majoredBone unLockedBoneList  vx wtAdd =
 	)
 -- 	format "minored bones: % ,  initial weight: %\n" minoredBnList minoredWtList
 	
-	
-
-
 	/* test du poids à ajouter */
-	if majoredCorrect== true then majoredBoneWt = wtList[mbiId]
+	if majoredCorrect == true then majoredBoneWt = wtList[mbiId]
 		-- prévoir que l'addition arrive à 0 ou à 1 sur le bone majorée et laisse un reste:
 			-- permettre l'addition, soustraire le reste de l'influence à repartir sur les autres bones
-	
-	-- prévoir que la compensation arrive à 0 ou à 1 sur un bone minoré et laisse un reste:
-			-- répartir ce reste sur les autre bones disponible
-	
-	
-	-- majoration
-	additionDone = False
+		
 	-- si le bone à majorer est correct et si les bone à minorer son correct
 	if majoredCorrect == true and minoredCorrect == true  then 
 	(
-		-- tester si la valeur majorée est comprise entre 0 et 1
-		if (wtList[mbiId] + wtAdd) > 0 and (wtList[mbiId] + wtAdd) < 1 then
-		(
+			format "BEFORE # vertex: %, bones:%, weight: % \n" vx bnList wtList 
+			local maxAdd
+			local maxSub
+		
 -- 			ADDITION
--- 			si le bone est présent dans les influences, ajouter le poids
--- 			format "vertex: %, bone majored: %, weight initial:% \n" vx majoredBone wtList[mbiId] 
-			wtList[mbiId] += wtAdd
-			
--- 			format "vertex: %, bone majored: %, weight majored:% \n" vx majoredBone wtList[mbiId]
-			
+			-- tester si la valeur majorée est comprise entre 0 et 1
+			if wtList[mbiId] + wtAdd >= 1 then maxAdd = 1 - wtList[mbiId]
+			else if wtList[mbiId] + wtAdd <= 0 then maxAdd = 0 - wtList[mbiId]
+			else maxAdd = wtAdd
+						
 -- 			COMPENSATION
-			minorWt = wtAdd / minoredBnList.count
+			-- diviser le poids ajouter en autant de bones collecter
+			minorWt = (maxAdd / minoredBnList.count) * -1
+			
+			-- le traitement ci dessous ne fonctionne pas mais c'est pour me rappeler qu'il faut faire quelquechose avec les suppression de poids maxi
+			-- prévoir que la compensation arrive à 0 ou à 1 sur un bone minoré et laisse un reste:
+				-- répartir ce reste sur les autre bones disponible
+				-- s'il y n'y a pas d'autres bones sur lesquels repartir le poids diminuer l'ajout de poids
+			
 			for id in minoredBnIdList do
 			(
-				wtList[id] -= minorWt
+				if wtList[id] + minorWt >= 1 then maxSub = 1 - wtList[id]
+				else if wtList[id] + minorWt <= 0 then maxSub = 0 - wtList[id]
+				else maxSub = minorWt
 			)
-			
-			additionDone = True
-		)
--- 		else (format "vertex: %, bone: %, addition impossible, valeur butoir atteinte\n" vx majoredBone ) 
-	)
--- 	else (format "vertex: %, bone majored: %, bones minored: %, addition impossible\n" vx majoredBone minoredBnList ) 
-
-	-- compensation
-	if additionDone == True then 
-	(
--- 		format "vertex: %, bones:%, weight: % \n\n" vx bnList wtList 
-		skinOps.ReplaceVertexWeights m vx bnList wtList
-	)
-	
-			-- diviser le poids ajouter en autant de bones collecter
+				
+			format "maxAdd: %, count: %, minorWt:% , maxSub:% \n" maxAdd minoredBnList.count minorWt maxSub
+			if abs(maxSub) < abs(minorWt) then maxAdd = (maxSub * minoredBnList.count) * -1
+						
+-- 			CALCUL
+			-- ajout du l'influence au bone majoré
+			wtList[mbiId] = wtList[mbiId] + maxAdd
 			-- retrancher le poids au poids des bones delockés (repartition égale)
-			-- retrancher le poids au poids des bones delockés (repartition proportionné)
-	
-		-- enlever tout ce poids uniquement au vertex delockés
+			for id in minoredBnIdList do wtList[id] = wtList[id] + minorWt
+			
+--			EXECUTION
+			format "AFTER # vertex: %, bones:%, weight: % \n\n" vx bnList wtList 
+			skinOps.ReplaceVertexWeights m vx bnList wtList
+	)
+	else (format "7 # vertex: %, bones:%, weight: % \n\n" vx bnList wtList) 
 )
 
-try(destroydialog addWtRLT)catch()
-rollout addWtRLT "Addition Weight"
+rollout addWtRLT "Weight Operation"
 (
 	local wtAdd
 	local m 
@@ -137,10 +146,18 @@ rollout addWtRLT "Addition Weight"
 	local vxSelAr
 	local parentRLT
 	
-	spinner wtSP "weight:" range: [0,1,0.1] type: #float
-	button majWtBT "+" across: 2
-	button minWitBT "-"
-	button testBT "test"
+	group "addition"
+	(
+		spinner wtSP "weight:" range: [0,1,0.1] type: #float
+		button majWtBT "+" across: 2
+		button minWtBT "-"
+	)
+	button testBT "vertex infos"
+	
+	on addWtRLT open do
+	(
+		m = modPanel.getCurrentObject() 
+	)
 	
 	on majWtBT pressed do
 	(
@@ -155,7 +172,7 @@ rollout addWtRLT "Addition Weight"
 		for vx in vxSelAr do	majOneVertex m majoredBone unLockedBoneList  vx wtAdd 
 	)
 	
-	on minWitBT pressed do
+	on minWtBT pressed do
 	(
 		wtAdd = wtSP.value
 		m = modPanel.getCurrentObject() 
@@ -163,7 +180,6 @@ rollout addWtRLT "Addition Weight"
 -- 		unLockedBoneList = for i = 1 to skinMaxBones collect i
 		unLockedBoneList = for o in parentRLT.skinBonesAr where o.isLocked == false collect o.id
 		majoredBone = skinOps.GetSelectedBone m
-		
 		vxSelAr = getSkinVertSel m
 		
 		for vx in vxSelAr do	majOneVertex m majoredBone unLockedBoneList  vx (wtAdd*-1)
@@ -171,8 +187,8 @@ rollout addWtRLT "Addition Weight"
 	
 	on testBT pressed do
 	(
-		bonesUnlocked = for o in parentRLT.skinBonesAr where o.isLocked == false collect o.id
-		format "test: %\n" bonesUnlocked
+		vxSelAr = getSkinVertSel m
+		for vx  in vxSelAr do vertexInfo m vx 
 	)
 )
 -- createdialog addWtRLT

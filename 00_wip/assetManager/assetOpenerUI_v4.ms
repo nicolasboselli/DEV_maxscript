@@ -48,7 +48,6 @@ filein "assetManagerDef.ms"
 
 rof
 
-
 fn sortAssestbyname v1 v2 =
 (
 	-- qsort <array> sortbyname
@@ -135,14 +134,14 @@ rollout assetEditorRLT "assets editor v2"
 		edittext rootET "Path:" readonly: true
 		button findFolderBT "..."
 	)
-	
+	/*
 	group "Asset Creation:"
 	(
 		button createAssetBT "from scene..." across:3
 		button createAssetFromSelBT "from selection..." 
 		button publishRolloutBT "publish..."
 	)
-	
+	*/
 	group "Asset Creation v 3 :"
 	(
 		button createAssetBT3 "from scene... v3" across:3
@@ -261,6 +260,7 @@ rollout assetEditorRLT "assets editor v2"
 	(
 		format "######Refresh Assets List#####\n"
 		assetPathsArr = walkDir  root "assetInfo.ini"
+		-- for a in assetPathsArr do format "assetPath: %\n" a
 		tmpAssetsList = #()
 		for a in assetPathsArr do
 		(
@@ -273,7 +273,9 @@ rollout assetEditorRLT "assets editor v2"
 				append tmpAssetsList newAsset
 			)catch()
 		)
+		-- for a in tmpAssetsList do format "asset: %\n" a
 		tmpAssetsList
+		
 	)
 	
 	fn refreshListBoxNew assetsAr =

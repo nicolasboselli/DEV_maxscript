@@ -1,5 +1,9 @@
 -- sel = selection as array
 
+
+-- scale value [1,1,1]
+fn scale1 s = s.scale.controller.value = [1,1,1]
+	
 -- hide/ unhide each helpers
 fn hideUnhideHlps =
 (
@@ -161,7 +165,7 @@ fn createSymCopy2 sel =
 (
 	maxOps.CloneNodes  sel expandHierarchy: false newNodes: &SCopy
 	format "scopy: %\n" SCopy
-	heads = findHead sel
+	heads = findHead SCopy
 	
 	centerSym = point ()
 	for h in heads do h.parent = centerSym
@@ -169,9 +173,9 @@ fn createSymCopy2 sel =
 	centerSym.scale.controller.value.x = -1
 
 	delete centerSym
-	for s in SCopy do resetscale s
+-- 	select SCopy
+-- 	for s in SCopy do resetscale s
 )
-
 
 fn selectAllChildren sel=
 (
@@ -237,6 +241,11 @@ rollout hierarchyRLT "hierarchy"  width: 400
 		button displayBonesBT "hide/unhide bones"
 	)
 	*/
+	group "scale tools:"
+	(
+		button scale1BT "scale value [1,1,1]" 
+	)
+	
 	group "helpers:"
 	(
 		button addHlpBT1 "create on selection"  across: 2
@@ -261,6 +270,12 @@ rollout hierarchyRLT "hierarchy"  width: 400
 	on mayaGrpBT pressed do mayaGrpFN (selection as array)
 	on insertGrpBT pressed do insertGrp (selection as array)
 	on parentBT pressed do parentFN (selection as array)
+	
+	on scale1BT pressed do
+	(
+		sel = selection as array
+		for s in sel do scale1 s
+	)
 	
 	on selectChidrenBT pressed do selectAllChildren (selection as array)
 	on unParentBT pressed do unParent (selection as array)
@@ -308,7 +323,8 @@ rollout hierarchyRLT "hierarchy"  width: 400
 	on createSymBT pressed do
 	(
 		sel = selection as array
-		for s in sel do createSymCopy s
+-- 		for s in sel do createSymCopy2 s
+		createSymCopy2 sel
 	)
 )
 
