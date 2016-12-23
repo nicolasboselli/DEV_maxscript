@@ -359,7 +359,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	on planResizerRLT close do
 	(
--- 		try(delete scalerArray)catch(print "nothing to delete")
+		try(delete scalerArray)catch(print "nothing to delete")
 		writePosition "planResizerRLT" planResizerRLT
 	)
 	

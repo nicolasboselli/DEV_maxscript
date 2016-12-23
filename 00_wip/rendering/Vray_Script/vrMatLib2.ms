@@ -98,7 +98,7 @@ rollout vrMatRlt "VRay mat Lib"
 		button upLibBT "refresh lib"
 		listbox matLB "materials list:"
 		button editMatBT "edit material"
-		button loadMatBT "copy material"
+		button copyMatBT "copy material"
 -- 		button replaceMatBT "replace material" enabled: false
 	)
 	
@@ -132,6 +132,7 @@ rollout vrMatRlt "VRay mat Lib"
 			matLibLoaded = true
 			
 			matAr = for mat in vrLib collect mat
+			qsort matAr sortbyname
 		)
 		else
 		(
@@ -245,11 +246,13 @@ rollout vrMatRlt "VRay mat Lib"
 		meditMaterials[activeMeditSlot] =  vrlib[matName]
 	)
 	
-	on loadMatBT pressed do
+	
+	on copyMatBT pressed do
 	(
 		matName = matLB.selected
 		meditMaterials[activeMeditSlot] = copy vrlib[matName]
 	)
+
 	
 )
 createdialog vrMatRlt

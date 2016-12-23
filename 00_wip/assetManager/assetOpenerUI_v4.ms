@@ -108,7 +108,7 @@ rollout externalToolsRLT "asset tools"
 	)
 	
 	on assetToolsBT pressed do filein "assetManagerTools.ms"
-	on updateToolsBT pressed do filein "updateAssetTool.ms"
+	on updateToolsBT pressed do filein "updateAssetTool2.ms"
 )
 
 rollout assetEditorRLT "assets editor v2"

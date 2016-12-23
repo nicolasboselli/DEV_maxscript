@@ -114,24 +114,20 @@ struct assetCreationClass
 	
 	fn createVersionFileInfo =
 	(
-		print"check 7"
 		versionInfoIniFile =  basefolder +  assetName + "\\" + (returnDigit version) + "\\versionInfo.ini"
 
 		versionInfoFileStream = createFile versionInfoIniFile
 		close versionInfoFileStream
 		
-		print "check 75"
 		setINISetting versionInfoIniFile "assetProperties" "name" assetName
 -- 			setINISetting versionInfoIniFile "assetProperties" "versionFile" (getVersionFile())
 		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
 		setINISetting versionInfoIniFile "assetProperties" "status" status
-		print"check 8"
 	),
 	
 	fn updateAssetFileInfo =
 	(
 		setINIsetting assetInfo "assetProperties" "version" (lastVersion as string)
-		print "check 6"
 	),
 	
 	fn createAssetFromScene  =
@@ -298,7 +294,7 @@ struct assetCreationClass
 			else if mergeAsAsset and  o.parent == undefined and not isGroupMember o then o.parent = assetCtrl
 			
 			
-			format "obj: %, deletion:% \n" o.name deletion
+			format "obj: %, deletion:%, parent:%\n" o.name deletion o.parent
 			
 			if deletion == true then delete o
 		)

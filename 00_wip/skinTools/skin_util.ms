@@ -46,45 +46,152 @@ selVertByBones()
 
 	
 /* WEIGHT MULTPLICATION */
+-- collecte du skin selectionné
+
 m = modPanel.getCurrentObject()
+
 -- lister les bones
 skinMaxBones = skinOps.GetNumberBones m
 
--- retourner la selection de vertex
-m = modPanel.getCurrentObject()
-vxCount = skinOps.GetNumberVertices m
-
-	
+-- retourner une selection de vertex
 fn getSkinVertSel m =
 (
+	local vxSelAr
 	vxCount = skinOps.GetNumberVertices m
-	local vxSelAr = for i = 1 to vxcount where skinops.IsVertexSelected m i == 1 collect i
+	vxSelAr = for i = 1 to vxcount where skinops.IsVertexSelected m i == 1 collect i
 	vxSelAr
 )
-vxSelAr = getSkinVertSel m
+
 
 -- collecter les poids sur une selection de vertex
--- vxWtAr = for i = 1 to vxCount collect #()
-vxWtAr = #()
-for vx in vxSelAr do
+fn collectVxWt vxSelAr m =
 (
--- 	vx = 21
-	vxMaxBones = skinOps.GetVertexWeightCount m vx
-	bnList = #()
-	wtList = #()
+	local vxWtAr = #()
+	local bnList
+	local wtList
 	
-	for i = 1 to vxMaxBones do
+	for vx in vxSelAr do
 	(
-		append bnList (skinOps.GetVertexWeightBoneID m vx i)
-		append wtList (skinOps.GetVertexWeight m vx i)
+	-- 	vx = 21
+		bnList = #()
+		wtList = #()
+		vxMaxBones = skinOps.GetVertexWeightCount m vx
+		
+		for i = 1 to vxMaxBones do
+		(
+			append bnList (skinOps.GetVertexWeightBoneID m vx i)
+			append wtList (skinOps.GetVertexWeight m vx i)
+		)
+		append vxWtAr #(bnList, wtList)
 	)
--- 	vxWtTwice = #(vxList, wtList)
-	append vxWtAr #(bnList, wtList)
+	format "vxWtAr:%\n" vxWtAr
+	vxWtAr
 )
-vxWtAr
-
 
 -- calculer une moyene de poids sur les poids d'une selection de vertex
+-- Methode 2
+vxSelAr = getSkinVertSel m
+vxWtAr = collectVxWt vxSelAr m
+
+
+-- créer un array du nombre de bone
+bnAr = for bn = 1 to skinMaxBones collect 0.0
+-- pour chaque influence trouvée sur chaque vertex ajouté l'influences
+for vxVal in vxWtAr do
+(
+	format "vxVal: % \n" vxVal
+	-- calcul de l'array
+	for i = 1 to vxVal[1].count do
+	(
+		id = vxVal[1][i]
+-- 		format "vxVal[1][i]:%,  vxVal[2][i]: %, bnAr[vxVal[1][i]]: %\n" vxVal[1][i] vxVal[2][i] bnAr[id]
+		
+		bnAr[id] = bnAr[id] + vxVal[2][i]
+	)
+)
+format "vertex value 2: % \n" bnAr
+-- moyenne sur l'array
+bnArAdd = for val in bnAr collect val/vxSelAr.count
+
+-- les array de poids ont deux formes, une avec deux array(pour le replace) et une avec un seul array(pour les calculs)
+
+-- Mix value
+vxDestSel = getSkinVertSel m
+vxWtDestAr = collectVxWt vxDestSel m
+-- vxWtSrc = #(bnListMedium, wtListMedium)
+
+
+fn calcToApplyForm bnAr =
+(
+	-- lorsqu'une valeur de l'array est supérieure à 0: la collecté et la diviser par le nombre de vertex selectionnés
+	bnListMedium = #()
+	wtListMedium = #()
+	for bn = 1 to bnAr.count where bnAr[bn] != 0 do
+	(
+	-- calculer une moyene de poids sur les poids d'une selection de vertex
+		format "bn(id): %, bnAr[bn](weight): %\n" bn bnAr[bn]
+		append bnListMedium bn
+		append wtListMedium (bnAr[bn]/vxSelAr.count)
+	)
+	#(bnListMedium, wtListMedium)
+)
+
+-- pour chaque vertex de la destination
+for vxVal in vxWtDestAr do
+(
+	bnAr = for bn = 1 to skinMaxBones collect 0
+	-- deployer les valeur initiale
+	for i = 1 to vxVal[1].count do
+	(
+		id = vxVal[1][i]		
+		bnAr[id] = vxVal[2][i]
+	)	
+	format "vertex value dest: % \n" bnAr
+	
+	/*
+	bnArAdd = for bn = 1 to skinMaxBones collect 0
+		
+	-- deployer les valeur à ajouter
+	for i =  1 to vxWtSrc[1].count do
+	(
+		id = vxWtSrc[1][i]
+		bnArAdd[id] = vxWtSrc[2][i]
+	)
+	format "vertex value added: % \n" bnArAdd
+	*/
+	
+	-- mixé
+	multi1 = 0.5
+	multi2 = 1 - multi1
+	for i = 1 to bnAr.count do
+	(
+		bnAr[i] = bnAr[i]*multi1 + bnArAdd[i]*multi2
+	)
+	format "vertex value mixed: % \n" bnAr
+	
+	bnListMedium = #()
+	wtListMedium = #()
+	for bn = 1 to bnAr.count where bnAr[bn] != 0 do
+	(
+	-- calculer une moyene de poids sur les poids d'une selection de vertex
+		format "bn(id): %, bnAr[bn](weight): %\n" bn bnAr[bn]
+		append bnListMedium bn
+		append wtListMedium (bnAr[bn]/vxSelAr.count)
+	)
+-- 	#(bnListMedium, wtListMedium)
+	
+	format "vertex: %, bones:%, weight: % \n\n" vx bnListMedium wtListMedium 
+	skinOps.ReplaceVertexWeights m vx bnListMedium wtListMedium
+	
+	-- retourner deux array applicable
+)
+
+
+
+-- calcul de la moyenne et mise en forme des array
+
+/*
+-- Methode 1
 bnListMedium = #()
 wtListMedium = #()
 for i = 1 to skinMaxBones do
@@ -123,6 +230,8 @@ for i = 1 to skinMaxBones do
 	)
 )
 medVertex = #(bnListMedium, wtListMedium)
+*/
+
 
 -- copier/coller les valeurs d'un vertex sur d'autre
 
