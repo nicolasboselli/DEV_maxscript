@@ -13,18 +13,20 @@ for o in objs where classof o.baseobject == railclone_pro do
 	i = i +1
 )
 
-for o in objs where classof o.baseobject == railclone_pro do
-(
-	format "railclone:%\n" o.name
-	converttopoly o
-)
-
 sel = #()
 for o in objs where classof o.baseobject == railclone_pro do
 (
 	append sel o
 )
 select sel
+
+for o in objs where classof o.baseobject == railclone_pro do
+(
+	format "railclone:%\n" o.name
+	converttopoly o
+)
+
+
 
 
 -- collapse sweep
