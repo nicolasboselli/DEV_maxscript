@@ -49,9 +49,12 @@ rollout objReplacerRLT "objects replacer"
 				(
 					if (s != refObj) then
 					(
+						if isvalidnode refObj then
+						(
 						res = replaceObject refObj s
 	-- 					res = replaceRefDef refObj s
 						format  "result: %\n" res
+						)else(format "not valid node: %\n" refObj)
 					)
 					else
 					(

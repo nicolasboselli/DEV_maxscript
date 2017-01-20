@@ -1,4 +1,4 @@
-
+-- Maj: add replace string
 
 try(destroydialog renameRLT)catch()
 rollout renameRLT "Renamer" width: 400
@@ -7,7 +7,12 @@ rollout renameRLT "Renamer" width: 400
 	local s
 	local callSel
 	local copyName
+	
+	local search = ""
+	local rep = ""
+	
 	-- function
+	
 
 			
 	-- UI
@@ -27,6 +32,14 @@ rollout renameRLT "Renamer" width: 400
 		button rigBT "RIG"
 		button plotBT "PLOT"
 		button loBT "LO"
+	)
+	
+	group "Replace:"
+	(
+		edittext searchET "search:"
+		edittext replaceET "replace:"
+		edittext prevET "preview:" readonly: true
+		button repalceBT "replace"
 	)
 	
 	group "Erase:"
@@ -56,6 +69,8 @@ rollout renameRLT "Renamer" width: 400
 		)
 		
 		if s != undefined then nameET.text = s.name
+			
+		if s != undefined and search != undefined and rep != undefined then prevET.text = substituteString s.name search rep
 	)
 	
 	fn refreshUI_NEC ev nd = updateUI ()
@@ -85,6 +100,7 @@ rollout renameRLT "Renamer" width: 400
 	)
 	
 	-- Actions
+	-- groupe name
 	on nameET changed val do
 	(
 		s.name = val
@@ -104,6 +120,7 @@ rollout renameRLT "Renamer" width: 400
 -- 		updateUI()
 	)
 	
+	-- groupe suffix	
 	on ctrlBT pressed do
 	(
 		s.name = changeSuffix s.name "CTRL"
@@ -133,7 +150,28 @@ rollout renameRLT "Renamer" width: 400
 		s.name = changeSuffix s.name "LO"
 		updateUI()
 	)
+	-- group replace
+	on searchET changed val do
+	(
+		search = val
+		updateUI()
+	)
 	
+	on replaceET changed val do
+	(
+		rep = val
+		updateUI()
+	)
+	
+	on repalceBT pressed do
+	(
+		s.name = substituteString s.name search rep
+		
+		format "s.name: %, search: %, replace: %\n" s.name search rep
+		updateUI()
+	)
+	
+	-- group erase
 	on eraseEndBT pressed do
 	(
 		s.name = reraseEnd s.name
@@ -144,13 +182,13 @@ rollout renameRLT "Renamer" width: 400
 	(
 		callSel = NodeEventCallback  selectionChanged: refreshUI_NEC
 		updateUI()
-		print "youpi"
+-- 		print "youpi"
 	)
 	
 	on renameRLT close do
 	(
 		callSel = undefined
-		print "ploufe"
+-- 		print "ploufe"
 	)
 	
 	on subLeftBT pressed do

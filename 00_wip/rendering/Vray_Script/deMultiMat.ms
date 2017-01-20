@@ -95,6 +95,7 @@ fn explodeMultiMatDef s matchMat: false=
 	(
 		if id != 1 do
 		(
+			countBefore = objects.count
 			s.selectByMaterial  id
 			newName = uniquename (s.name + "_mat_" + (id as string))
 			polyop.detachFaces s #selection delete: true asNode: true name: newName
@@ -105,20 +106,32 @@ fn explodeMultiMatDef s matchMat: false=
 				res.material = multiMtl[id]
 				format "obj: %, \tmat: % \n" res.name multiMtl[id]
 			)
-
+			
+			
+			-- copy/paste original modifier
+			contAfter = objects.count
+-- 			format "count"
+			mf = for m in  s.modifiers collect m
+			for i = (countBefore + 1) to objects.count do
+			(
+-- 				format "i :%\n" i
+-- 				format "obj explode:%\n" objects[i]
+				for m in s.modifiers do addmodifier objects[i] m
+			)
+			
 		)
 	)
 	
 	if matchMat then s.material = multiMtl[idArray[1]]
-	print "done"
+	format "explode material done: %\n" s
 )
 
+-- explodeMultiMatDef $ matchMat: true
+-- select objects[objects.count]
+-- mf = for m in  s.modifiers collect m
 
+-- addmodifier w
 
--- undo on
--- (
--- 	explodeMultiMatDef $
--- )
 
 
 -- collect scene multimaterial

@@ -95,10 +95,10 @@ rollout vrMatRlt "VRay mat Lib"
 	(
 		button addMatBT "add mat"
 		button delMatBT "delete mat" enabled: true
-		button upLibBT "refresh lib"
+-- 		button upLibBT "refresh lib"
 		listbox matLB "materials list:"
 		button editMatBT "edit material"
-		button copyMatBT "copy material"
+-- 		button copyMatBT "copy material"
 -- 		button replaceMatBT "replace material" enabled: false
 	)
 	
@@ -110,133 +110,116 @@ rollout vrMatRlt "VRay mat Lib"
 	)
 	*/
 	
+	-- functions
+	fn loadLib vrLibPath =
+	(
+		if doesfileexist vrLibPath then
+		(
+			format "loading start\n"
+			vrLib = loadTempMaterialLibrary vrLibPath
+			matLibLoaded = true
+			
+			matAr = for mat in vrLib collect mat
+			qsort matAr sortbyname
+			format "loading done: %\n" vrLibPath
+		)
+		else
+		(
+			vrLib = materialLibrary ()
+			format "loading fail\n"
+		)
+	)	
+
+	fn writeLib vrLibPath =
+	(
+		vrMatTmp = materiallibrary()
+-- 		vrMatTmp.count
+
+		for m in matAr do append vrMatTmp m
+		if doesfileexist vrLibPath then
+		(
+			res = saveTempMaterialLibrary  vrMatTmp vrLibPath
+			if res do (format "library saved: %\nlibrary saved: %\n" vrLibPath matAr) 
+		)
+	)
+	
+	fn refreshUI =
+	(
+		if vrLibPath!= undefined then libPthBT.text = vrLibPath else libPthBT.text = "???"
+		qsort matAr sortbyname
+		matLB.items = for mat in matAr collect mat.name
+	)
+	
 -- 	actions
 	on vrMatRlt open do
 	(
 		matLibLoaded = false
 		
-		-- init lobrary path
+		-- init library path
 		if vrLibPath == undefined then
 		(
 			try 
 			(
 				vrLibPath = getINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath"
 			)
-			catch()
+			catch(format "error: %\n" (getcurrentexception()))
 		)
 		
 		-- load library
-		if doesfileexist vrLibPath then
-		(
-			vrLib = loadTempMaterialLibrary vrLibPath
-			matLibLoaded = true
-			
-			matAr = for mat in vrLib collect mat
-			qsort matAr sortbyname
-		)
-		else
-		(
-			vrLib = materialLibrary ()
-		)
-		
-		/*
-		-- collect material 
-		for m in vrLib do
-		(
-			mTmp = matStruct mat: m
-			append matColAr mTmp
-		)
-		
-		-- collect material to display
-		matDispAr = matColAr
-		
-		-- sort by name  material array to display
-		qsort matColAr sortMatbyname
-		*/
-		
-		/*
-		-- refresh ui
-		if matLibLoaded then
-		(
-			libPthBT.text = vrLibPath
-			matLB.items = for mat in vrLib collect mat.name
-		)
-		else (libPthBT.text = "???")
-		*/
+		loadLib vrLibPath
 		
 		-- refresh ui 2
-		if matLibLoaded then
-		(
-			libPthBT.text = vrLibPath
-			matLB.items = for mat in matAr collect mat.name
-		)
-		else (libPthBT.text = "???")
+		refreshUI()
 	)
 	
 	on vrMatRlt close do
 	(
+		-- save pref
 		setINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath" 	vrLibPath
+		-- save lib
+		writeLib vrLibPath
 	)
 	
 	on openLibBT pressed do
 	(
 		vrLibPath = getOpenFileName caption: "open material library" types: "mat(*.mat)|*.mat|All Files|*.*"
--- 		openFileName = fileOpenMatLib()
-		print vrLibPath
 		
-		if vrLibPath != undefined do
-		(
-			vrLib = loadTempMaterialLibrary vrLibPath
-			libPthBT.text = vrLibPath
-			matLB.items = for mat in vrLib collect mat.name
-		)
+-- 		load library
+		loadLib vrLibPath
+		
+		refreshUI()
 	)
 	
 	on saveLibBT pressed do
 	( 
-		if doesfileexist vrLibPath then
-		(
-			res = saveTempMaterialLibrary  vrLib vrLibPath
-			if res do print "library saved"
-		)
-		else
-		(
-			print "path not valid"
-		)
+		if doesfileexist vrLibPath then writeLib vrLibPath
+		else 	( format "path not valid: %\n" vrLibPath )
 	)
 	
 	on saveAsLibBT pressed do
 	(
 		tmpPath = getSaveFileName caption: "save material library" types: "mat(*.mat)|*.mat|All Files|*.*"
-		if tmpPath != undefined then
-		(
-			saveTempMaterialLibrary  vrLib tmpPath
-		)
-		else
-		(
-			print "path not valid"
-		)
+		if tmpPath != undefined then writeLib tmpPath
+		else 	( format "path not valid: %\n" tmpPath )
 	)
-
 	
-	on upLibBT pressed do
-	(
--- 		tmpLib = materialLibrary
--- 		vrLib = loadTempMaterialLibrary vrLibPath
-		matLB.items = for mat in vrLib collect mat.name
-	)
+	on upLibBT pressed do refreshUI()
 	
 	on addMatBT pressed do
 	(
-		append  vrLib meditMaterials[activeMeditSlot]
-		matLB.items = for mat in vrLib collect mat.name
+		append matAr meditMaterials[activeMeditSlot]
+		refreshUI()
+		
+-- 		matLB.items = for mat in vrLib collect mat.name
 	)
 	
 	on delMatBT pressed do
 	(
-		matName = matLB.selection
-		deleteItem vrLib matName
-		matLB.items = for mat in vrLib collect mat.name
+		id = matLB.selection
+		format "matName: %\n" matName
+		deleteItem matAr id
+		refreshUI()
+-- 		matLB.items = for mat in vrLib collect mat.name
 	)
 	 
 	
@@ -246,17 +229,16 @@ rollout vrMatRlt "VRay mat Lib"
 		meditMaterials[activeMeditSlot] =  vrlib[matName]
 	)
 	
-	
+	/*
 	on copyMatBT pressed do
 	(
 		matName = matLB.selected
 		meditMaterials[activeMeditSlot] = copy vrlib[matName]
 	)
-
+*/
 	
 )
 createdialog vrMatRlt
-
 
 
 /*
@@ -306,6 +288,7 @@ tmp = loadTempMaterialLibrary "G:\vrlib.mat"
 meditMaterials[activeMeditSlot] = vrLib[1]
 
 */
+
 
 
 /*
