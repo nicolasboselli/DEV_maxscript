@@ -36,10 +36,16 @@ maj:
 	-- proposer merge ou xref ou xref object
 	
 	x- faire apparaitre version de max du fichier: getMaxFileVersionData filename
+	
+	-- enregister le fichier courant dans le wip
+	-- ouvrir le dernier wip 
+	-- renommer la dialog box lors de la creation d'assets de maniere approptié
 
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection
+	-- error quand enregistre asset et que le path selectionner ne fonctionne pas
+	-- error: "rollouts"
 		
 */
 

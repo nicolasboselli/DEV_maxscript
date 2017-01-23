@@ -10,6 +10,7 @@ for o in objs where classof o.baseobject == railclone_pro do
 	o.rendermode = off
 	o.weld = on
 	o.vmesh = 0
+	faceType = 1
 	i = i +1
 )
 
