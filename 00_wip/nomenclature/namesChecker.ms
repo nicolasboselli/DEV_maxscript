@@ -1,5 +1,7 @@
 -- name checker
-
+	-- maj:
+		-- relever les doublons
+		-- relever les suffixes non conformes
 
 fn sortbyname v1 v2 =
 (
@@ -26,7 +28,7 @@ try(destroydialog nameCheckerRLT)catch()
 rollout nameCheckerRLT "Names Checker:"
 (
 -- 	vars
-	local BaseName
+	global BaseName
 	local objsAr
 	
 	local UtoDisp = #()
@@ -58,31 +60,44 @@ rollout nameCheckerRLT "Names Checker:"
 	
 -- 	UI
 	editText basenameET "Basename"
-	listBox undefinedLB "Undefined:" height: 40 across: 4 
-	listBox DLB "Droit:" height: 40
-	listBox GLB "Gauche:" height: 40
-	listBox MLB "Milieu:" height: 40
+	multilistBox undefinedLB "Undefined:" height: 60 across: 4 
+	multilistBox DLB "Droit:" height: 60
+	multilistBox GLB "Gauche:" height: 60
+	multilistBox MLB "Milieu:" height: 60
+	editText undefinedCountET "undefined:" readonly: true across:4
+	editText DCountET "droit:" readonly: true
+	editText GCountET "gauche:" readonly: true
+	editText MCountET "Milieu:" readonly: true
+	
+	button refreshBT "refresh"
 	
 -- 	functions UI
 	fn refreshUI =
 	(
+		if BaseName != undefined then basenameET.text = BaseName
 		undefinedLB.items = for o in UtoDisp collect o.name
 		DLB.items = for o in DtoDisp collect o.name
 		GLB.items = for o in GtoDisp collect o.name
 		MLB.items = for o in MtoDisp collect o.name
+		undefinedCountET.text = UtoDisp.count as string
+		DCountET.text = DtoDisp.count as string
+		GCountET.text = GtoDisp.count as string
+		MCountET.text = MtoDisp.count as string
 	)
 	
 
 -- 	Actions
 	on nameCheckerRLT open do
 	(
-		refreshAr basenameET.text
+-- 		id = 1
+		try(refreshAr BaseName)catch(getCurrentException())
 		refreshUI()
 	)
 	
 	on basenameET changed val do
 	(
-		refreshAr basenameET.text
+		BaseName = val
+		refreshAr BaseName
 		refreshUI()
 	)
 	
@@ -90,7 +105,38 @@ rollout nameCheckerRLT "Names Checker:"
 	on DLB selected id do select DtoDisp[id]
 	on GLB selected id do select GtoDisp[id]
 	on MLB selected id do select MtoDisp[id]
+		
+	on undefinedLB selectionEnd do
+	(
+		clearselection ()
+		for i in undefinedLB.selection do  selectmore UtoDisp[i]
+	)
+	
+	on DLB selectionEnd do
+	(
+		clearselection ()
+		for i in DLB.selection do  selectmore DtoDisp[i]
+	)
+	
+	on GLB selectionEnd do
+	(
+		clearselection ()
+		for i in GLB.selection do  selectmore GtoDisp[i]
+	)
+	
+	on MLB selectionEnd do
+	(
+		clearselection ()
+		for i in MLB.selection do  selectmore MtoDisp[i]
+	)
+		
+	on refreshBT pressed do
+	(
+		refreshAr BaseName
+		format "refresh done \n"
+		refreshUI()
+	)
 
 	
 )
-createDialog nameCheckerRLT width: 800 height: 600
+createDialog nameCheckerRLT width: 1200 --height: 800

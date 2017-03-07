@@ -33,18 +33,28 @@ maj:
 	
 	x- au merge eviter le cache layer et les sun
 		
-	-- proposer merge ou xref ou xref object
+	-- proposer merge ou xref scene ou xref object
+	-- ouvrir le dialogbox du merge en option
 	
 	x- faire apparaitre version de max du fichier: getMaxFileVersionData filename
 	
-	-- enregister le fichier courant dans le wip
-	-- ouvrir le dernier wip 
-	-- renommer la dialog box lors de la creation d'assets de maniere approptié
+	x- enregister le fichier courant dans le wip
+	x- ouvrir le dernier wip 
+	
+	x- renommer la dialog box lors de la creation d'assets de maniere approprié
+
+	-- prendre en charge les asset node
+		-- checker les asset node de la scene
+		-- compter les instances
+		-- importer le nouvel asset
+		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
+		
+	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
 
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection
-	-- error quand enregistre asset et que le path selectionner ne fonctionne pas
+	-- error quand enregistre asset et que le path selectionner ne correspond pas
 	-- error: "rollouts"
 		
 */
@@ -199,12 +209,14 @@ rollout assetEditorRLT "assets editor v2"
 -- 		edittext  openTagsET "tags:" readonly: true
 		
 -- 		checkbox instanceCB "new max instance"
-		button openBT "open folder" across:4
+		button openBT "open folder" width: 160 across:3
+		button openWipBT "open wip" width: 160
+		button saveInWipBT "save in wip"  width: 160
 -- 		button editBT "edit" 
-		button editBT2 "edit v2" 
+		button editBT2 "edit v2" width: 160 across: 3
 -- 		button newMaxBT "edit in new max instance" across:3
-		button newMaxBT2 "edit in new max instance v2" 
-		button cleanWipFolderBT  "clean wip folder" 
+		button newMaxBT2 "edit in new max instance v2" width: 160
+		button cleanWipFolderBT  "clean wip folder" width: 160
 		
 		bitmap assetBMP "asset thumbnail" width: 256 height: 256
 		
@@ -472,8 +484,8 @@ rollout assetEditorRLT "assets editor v2"
 		)
 	)
 	
-		
-	on createAssetBT pressed do filein "assetCreatorUI3.ms"
+	/*
+	on createAssetBT pressed do filein "assetCreatorUI5.ms"
 		
 	on createAssetFromSelBT pressed do 
 	(
@@ -499,7 +511,7 @@ rollout assetEditorRLT "assets editor v2"
 		)
 		else (print "this is not an asset")
 	)
-	
+	*/
 	on createAssetBT3 pressed do
 	(
 		createdialog createAssetRLT width: 800
@@ -555,6 +567,28 @@ rollout assetEditorRLT "assets editor v2"
 			asset = assetsToDisplay[assetsBL.selection]
 -- 			print asset.assetFolder
 			doscommand ("explorer " + asset.assetFolder)
+		)
+	)
+	
+	on openWipBT pressed do
+	(
+		if assetsBL.selection > 0 then
+		(
+			asset = assetsToDisplay[assetsBL.selection]
+-- 			print asset.assetFolder
+			res = getOpenFileName caption: "open wip file" filename:(asset.getWipFile()) types:"Max(*.max)|*.max|All|*.*|"
+			if res != undefined then loadMaxFile res
+		)
+	)
+	
+	on saveInWipBT pressed do
+	(
+		if assetsBL.selection > 0 then
+		(
+			asset = assetsToDisplay[assetsBL.selection]
+-- 			print asset.assetFolder
+			res = getSaveFileName  caption: "save in wip folder" filename:(asset.getWipFile()) types:"Max(*.max)|*.max|All|*.*|"
+			if res != undefined then saveMaxFile res useNewFile: true
 		)
 	)
 		

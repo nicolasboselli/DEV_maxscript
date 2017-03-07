@@ -4,7 +4,7 @@ ikMod = EmptyModifier name: "IKFK_Switch"
 	-- prevoir le scale sur 
 	-- prevoir le hide/unhide des ctrls
 	
-
+-- $.position.controller.position_constraint.controller.Position_Weight_0
 
 -- global IKFKDataTmp
 attr = attributes "ikfkSwitch"
@@ -17,7 +17,8 @@ attr = attributes "ikfkSwitch"
 		fkList type: #nodeTab tabSizeVariable:true
 		switchList type: #nodeTab tabSizeVariable:true
 		
-		ikfkVal type:#float ui: ikFkSp default:0
+		ikVal type:#float ui: ikFkSp default:0
+		fkVal type:#float
 		
 		ikToFk type: #boolean default: false
 		fkToIk type: #boolean default: false
@@ -38,8 +39,12 @@ attr = attributes "ikfkSwitch"
 		
 		
 -- 		switch ik/fk
-		on ikfkVal set val do
+		on ikVal set val do
 		(
+			format "val: %\n" val
+-- 			ikVal = ikfkValq
+			
+			/*
 			for o in switchList do
 			(
 				try
@@ -55,18 +60,19 @@ attr = attributes "ikfkSwitch"
 				)
 				catch(format "exception switch: %\n" (getcurrentexception()))
 			)
+			*/
 			
 			if autoDis do
 			(
 				ikDisplay = true
 				fkDisplay = true
 				
-				if ikfkVal == 0.0 then
+				if ikVal == 0.0 then
 				(
 					ikDisplay = true
 					fkDisplay = false
 				)
-				else if ikfkVal == 1.0 then
+				else if ikVal == 1.0 then
 				(
 					ikDisplay = false
 					fkDisplay = true
@@ -78,7 +84,7 @@ attr = attributes "ikfkSwitch"
 				)
 				
 				for o in fkList do o.ishidden = fkDisplay
-				for o in ikList do 	o.ishidden = ikDisplay
+-- 				for o in ikList do 	o.ishidden = ikDisplay
 				for o in ikCtrlList do o.ishidden = ikDisplay
 			)
 		)
@@ -104,7 +110,7 @@ attr = attributes "ikfkSwitch"
 		(
 			for obj in IKFKDataTmp do
 			(
-				try(setproperty this obj[1] obj[2])catch()
+				try(setproperty this obj[1] obj[2])catch(format "ERROR:%\n" (getcurrentexception()))
 			)
 		)else (format "no data: % \n" $)
 	)
@@ -181,7 +187,8 @@ attr = attributes "ikfkSwitch"
 		button addIkCtrlBT "add" 
 
 		listBox SwitchList "Switch:"
-		button addSwBT "add" 
+		button addSwBT "add" across: 2
+		button mapSwBT "map" 
 		
 		fn refreshui =
 		(
@@ -195,24 +202,8 @@ attr = attributes "ikfkSwitch"
 		)
 		
 -- 		actions
-		on addptDist1BT pressed do
-		(
-			this.ptDist1 = $
-			refreshUI()
-		)
 		
-		on addptDist2BT pressed do
-		(
-			this.ptDist2 = $
-			refreshUI()
-		)
-		
-		on paramRLT open do
-		(
-			refreshUI()
-		)
-		
-		on params open do refreshui()
+		on paramRLT open do refreshUI()
 		
 		on ExpBT pressed do
 		(
@@ -263,24 +254,37 @@ attr = attributes "ikfkSwitch"
 			for s in sel do append ikMod.switchList s
 			refreshui()
 		)
+		
+		on mapSwBT pressed do
+		(
+			for s in this.switchList do
+			(
+				format "start: %\n" s
+				s.position.controller.position_constraint.controller.weight[1].controller = this.ikVal.controller
+				s.position.controller.position_constraint.controller.weight[2].controller = this.fkVal.controller
+				format "done: %\n" s
+			)
+		)
 	)
 		
 	on load do 
 	(
 		global IKFKDataTmp
 	)
-	/*
+	
 	on create do
 	(
-		format "this: %\n" this
+-- 		format "this: %\n" this.fkVal
+		this.ikVal.controller = bezier_float ()
+		this.fkVal.controller = float_script ()
+		this.fkVal.controller.AddObject "driver" this.ikVal.controller
+		this.fkVal.controller.script = "1 - driver.value"
 	)
-	*/
-	
 )
 custAttributes.add ikMod attr
 addmodifier $ ikMod
 
--- $.modifiers[#IKFK_Leg_CTRL].testFn()
+$.position.controller.position_constraint.controller.weight[1].controller = bezier_float ()
 
 /*
 obj =  $Box003

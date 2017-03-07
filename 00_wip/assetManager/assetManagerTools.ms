@@ -259,7 +259,7 @@ fn createThumb =
 fn createOneVrmesh s folder =
 (
 	vrmeshFile = folder + "\\" +s.name
-	vrayMeshExport meshFile: vrmeshFile  maxPreviewFaces:500 exportMultiple: true autoCreateProxies: true exportPointClouds: false
+	vrayMeshExport meshFile: vrmeshFile  maxPreviewFaces:2000 exportMultiple: true autoCreateProxies: true exportPointClouds: false
 )
 
 

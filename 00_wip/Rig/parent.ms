@@ -112,6 +112,7 @@ fn insertGrp sel =
 )
 
 
+
 fn parentFN sel =
 (
 	undo on
@@ -120,10 +121,54 @@ fn parentFN sel =
 		
 		for i = 1 to (sel.count - 1) do
 		(
-			if not isGroupMember sel[i] then
+			
+			parentable = true
+			parentInSel = false
+			-- test parent dans la selection
+			for j = 1 to (sel.count - 1) do
 			(
-				sel[i].parent = daddy
+-- 				tmpParent = sel[j].parent
+				if isvalidnode  sel[i].parent and i != j then
+				(
+-- 					format "i: %, parent: % ,j: %\n" sel[i].name sel[i].parent.name sel[j].name
+					if sel[i].parent == sel[j] then 
+					(
+						
+						parentable = false
+						parentInSel = true
+						exit
+					)
+				)
+				else if  i != j then 
+				(
+-- 					format "i: %, parent: % ,j: %\n" sel[i].name sel[i].parent sel[j].name
+					exit
+				)
+				
+-- 				if parentable ==  false then 
 			)
+			
+			
+			if not parentInSel then
+			(
+				-- test appartenance à un groupe 
+				if isGroupMember sel[i] and not isGroupHead sel[i]  then parentable = false
+			)
+			
+			-- prent
+			try
+			(
+				if parentable then 
+				(
+					format "i: %, groupHead: %, groupmember: %, parent: %, parentable:%, parentinsel: % \n" sel[i].name (isGroupHead sel[i])  (isGroupMember sel[i]) sel[i].parent parentable parentInSel
+					sel[i].parent = daddy
+				)
+			)catch(format "FAIL: % , ERROR: %\n"  sel[i].name (getcurrentexception()))
+			
+
+
+			
+
 		)
 	)
 )
@@ -217,6 +262,13 @@ fn addBoneBox s =
 -- sel = selection as array
 -- addBoneBox sel
 
+fn copyCleanBaseMesh s=
+(
+	copyS = copy s
+	for i = 1 to copyS.modifiers.count do deletemodifier copyS 1
+	copyS
+)
+
 
 try(destroyDialog hierarchyRLT)catch()
 
@@ -252,6 +304,7 @@ rollout hierarchyRLT "hierarchy"  width: 400
 		button addHlpBT2 "create as parent" enabled: false
 		button addHlpBT3 "create as children" enabled: false  across: 2
 		button addHlpBT4 "insert as parent" enabled: false
+		button transAttrBT "transfer attribute" 
 	)
 		
 	group "bones:"
@@ -265,6 +318,11 @@ rollout hierarchyRLT "hierarchy"  width: 400
 	(
 		button createSymBT "create symetry"  across: 2
 		button resetScaleBT "reset scale" 
+	)
+	
+	group "base mesh:"
+	(
+		button cleanCopyBT "create clean copy"  -- across: 2
 	)
 	
 	on mayaGrpBT pressed do mayaGrpFN (selection as array)
@@ -290,6 +348,22 @@ rollout hierarchyRLT "hierarchy"  width: 400
 		(
 			hlp = addOneHlp s
 			select hlp
+		)
+	)
+	
+	on transAttrBT pressed do
+	(
+		sel = selection as array
+		model = sel[1]
+		
+		for i = 2 to sel.count do
+		(
+			sel[i].size = model.size
+			sel[i].wirecolor = model.wirecolor
+			sel[i].cross = model.cross
+			sel[i].axis_tripod = model.axis_tripod
+			sel[i].box = model.box
+			
 		)
 	)
 	
@@ -325,6 +399,13 @@ rollout hierarchyRLT "hierarchy"  width: 400
 		sel = selection as array
 -- 		for s in sel do createSymCopy2 s
 		createSymCopy2 sel
+	)
+	
+	on cleanCopyBT pressed do
+	(
+		sel = selection as array
+		res = for s in sel collect copyCleanBaseMesh s
+		select res
 	)
 )
 

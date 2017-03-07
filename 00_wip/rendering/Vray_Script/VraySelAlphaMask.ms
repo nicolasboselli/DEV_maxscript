@@ -1,7 +1,7 @@
--- Vars
+-- maj:
+-- a l alpha sur selection, prendre en compte les masque d'opacité des materiaux de la selection
 
-
-
+-- find vray version functions
 fn findVray  =
 (
 	for r in rendererClass.classes do
@@ -10,12 +10,6 @@ fn findVray  =
 		break
 	)
 )
-
-
-
--- Global AutoIllumMat = standard twosided: on Diffuse: (color 255 255 255) selfIllumAmount: 100
--- local AutoIllumMat = vraylightmtl ()
--- meditMaterials[1] = AutoIllumMat
 
 -- fonction pour activer ou desactiver l'exposition des cameras vray
 fn VrayCamExpStateFN TheState = 
@@ -29,6 +23,7 @@ fn VrayCamExpStateFN TheState =
 	)
 )
 
+try(destroydialog VrayAlphaMaskRLT)catch()
 -- rollout
 rollout VrayAlphaMaskRLT "Vray passes render"
 (
@@ -51,7 +46,7 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 	local VrayAlphaPreset = vrayClass \
 	imageSampler_type: 1 \
 	filter_on: false \
-	options_maps: false \
+	options_maps: true \
 	gi_on: false \
 	options_lights: false options_defaultLights: 0 \
 	colorMapping_type: 0 colorMapping_darkMult: 1 colorMapping_brightMult: 1 colorMapping_gamma: 1  \
@@ -119,12 +114,14 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 -- 		button BatchAlphaSelRenderBT "On Selected BatchRender"
 	)
 	
+	/*
 	group "render occlu:"
 	(
 		button OccluRenderBT "Set Render"
 		button CleanRenderBT "Clean Render"
 	)
-
+	*/
+	
 	on VRAlphaPresetCB changed state do
 	(
 		if state == true do
@@ -147,7 +144,7 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 		local SelToAlpha = selection as array
 		
 		Material_Bak = for o in SelToAlpha collect o.material
-		for o in SelToAlpha do o.material = AutoIllumMat
+		for o in SelToAlpha do o.material = copy AutoIllumMat
 		
 		-- backup des parametres de rendu
 		backupRenderDef()
@@ -167,21 +164,37 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 	
 	on MatSelRenderBT pressed do
 	(
-		Material_Bak = meditMaterials[activeMeditSlot]
-		replaceinstances meditMaterials[activeMeditSlot] AutoIllumMat
-		
-		-- backup des parametres de rendu
-		backupRenderDef()
-		-- applications des params de rendus alpha
-		setVrayNight()
-		backgroundColor = color 0 0 0
-		-- rendus
-		max quick render
-		
-		replaceinstances meditMaterials[activeMeditSlot] Material_Bak
-		
-		-- recup des preset de rendu
-		restoreRenderDef()
+		try
+		(
+			Material_Bak = meditMaterials[activeMeditSlot]
+			AutoIllumMatTmp = copy AutoIllumMat
+			if Material_Bak.texmap_opacity != undefined then
+			(
+	-- 			format "AutoIllumMatTmp: %\n" AutoIllumMatTmp
+				AutoIllumMatTmp.opacity_texmap = copy Material_Bak.texmap_opacity
+				AutoIllumMatTmp.opacity_multiplyColor = on
+				AutoIllumMatTmp.opacity_texmap_on = on
+			)
+	-- 		meditMaterials[1] = copy AutoIllumMatTmp
+			replaceinstances meditMaterials[activeMeditSlot] AutoIllumMatTmp
+			
+			-- backup des parametres de rendu
+			backupRenderDef()
+			-- applications des params de rendus alpha
+			setVrayNight()
+			backgroundColor = color 0 0 0
+			-- rendus
+			max quick render
+			
+			replaceinstances meditMaterials[activeMeditSlot] Material_Bak
+			
+			-- recup des preset de rendu
+			restoreRenderDef()
+		)
+		catch
+		(
+			restoreRenderDef()
+		)
 	)
 	
 	
@@ -215,111 +228,6 @@ rollout VrayAlphaMaskRLT "Vray passes render"
 		)
 	)
 	
-	/*
-	on BatchAlphaSelRenderBT pressed do
-	(
-		if selection.count > 0 then
-		(
-			-- vars
-			local RenderList = batchRenderMgr
-
-			local RenderListNameBak = #()
-			local RenderListOutputBak = #()
-			
-			local SelToAlpha = $selection as array
-
-			local RendNum = RenderList.numViews
-			
-			--	CREATION BAKUP
-			
-			-- backup des materiaux de la selection
-			Material_Bak = for o in SelToAlpha collect o.material
-			
-			-- backup des parametres de rendu
-			VrayStateBak = renderers.current
-			environBak = useEnvironmentMap
-			expBak = sceneExposureControl.exposureControl
-			RenderEltsStateBak = re.getElementsActive ()
-			
-			-- bakup des batchrender
-			for i = 1 to RendNum do
-			(
-			TempRender = RenderList.getview i
-			append RenderListNameBak TempRender.name
-			append RenderListOutputBak TempRender.outputFilename
-				
-			print TempRender.name
-			print TempRender.outputFilename 
-			)
-			
-			-- PARAMETRAGE du RENDU ALPHA
-			-- 	application du materiel a la selection
-			for o in SelToAlpha do o.material = AutoIllumMat
-				
-			-- 	application des prametres de rendu
-			renderers.current = VrayAlphaPreset
-			useEnvironmentMap = false
-			sceneExposureControl.exposureControl = undefined
-			re.setElementsActive false
-			VrayCamExpStateFN false
-			
-			-- modif des noms de batchrender
-			for i = 1 to RendNum do
-			(
-			TempRender = RenderList.getview i
-			TempRender.name =  TempRender.name + "_alpha"
-				
-			TempRender.outputFilename = (substring TempRender.outputFilename 1 ((TempRender.outputFilename).count - 4 )) + "_alpha_" + ((random 1 10000) as string)+ "_.jpg"
-				
-			print TempRender.name
-			print TempRender.outputFilename 
-			)
-			
--- 			Envoi des rendus
-			renderSceneDialog.close()
-
-			BakrendTimeType = rendTimeType
-
-			rendTimeType = 2
-
-			renderSceneDialog.commit ()
-
-			batchRenderMgr.render ()
-
-			rendTimeType = BakrendTimeType
-
-			renderSceneDialog.open()
-			
-			-- RECUPERATION DES BAKUP
-			
-			-- bakup batchrender
-			for i = 1 to RendNum do
-			(
-			TempRender = RenderList.getview i
-			TempRender.name = RenderListNameBak[i]
-			TempRender.outputFilename = RenderListOutputBak[i]
-			
-			-- recup des materiaux originaux de la selection
-			for i = 1 to SelToAlpha.count do SelToAlpha[i].material = Material_Bak[i]
-			
-			-- recup des preset de rendu
-			renderers.current = VrayStateBak
-			useEnvironmentMap = environBak
-			sceneExposureControl.exposureControl = expBak 
-			re.setElementsActive RenderEltsStateBak
-			VrayCamExpStateFN true
-				
-			print TempRender.name
-			print TempRender.outputFilename 
-			)
-		)
-		else
-		(
-			messagebox "select an object"
-		)
-
-	)
-	*/
 )
 
 createdialog VrayAlphaMaskRLT

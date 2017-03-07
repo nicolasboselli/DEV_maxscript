@@ -8,6 +8,7 @@ maj:
 		-- save matlib after addition or deletion
 		-- mark material edited
 		-- sort material by name
+		-- proposer un replace lorsqu'on veut enregistrer un materiau avec un nom deja existant
 		
 		-- versioning material library file
 		-- add thumbnail
@@ -226,7 +227,7 @@ rollout vrMatRlt "VRay mat Lib"
 	on editMatBT pressed do
 	(
 		matName = matLB.selected
-		meditMaterials[activeMeditSlot] =  vrlib[matName]
+		meditMaterials[activeMeditSlot] =  copy vrlib[matName]
 	)
 	
 	/*

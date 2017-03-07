@@ -11,8 +11,8 @@ attr = attributes "ikCtrl"
 		ikSquash type:#float ui: ikSquashSP default:0 
 		lock type:#float ui: lockSP default:0
 		
-		cuisseSize type:#float  ui:cuisseSizeSP default:0
-		tibiaSize type:#float  ui:tibiaSizeSP default:0
+		resize1 type:#float  ui:cuisseSizeSP default:0
+		resize2 type:#float  ui:tibiaSizeSP default:0
 	)
 	
 	rollout actions "IK/FK:"
@@ -21,7 +21,7 @@ attr = attributes "ikCtrl"
 		(
 			spinner ikStretchSP "Ik Stretch:" type: #float range: [0,1,0]
 			spinner ikSquashSP "Ik Squash:" type: #float range: [0,1,0]
-			spinner cuisseSizeSP "Resize 1 Size:" type: #float  range:  [-100,100,0]
+			spinner cuisseSizeSP "Resize 1:" type: #float  range:  [-100,100,0]
 			spinner tibiaSizeSP "Resize 2:" type: #float  range:  [-100,100,0]
 			spinner lockSP "Lock:" type: #float  range:  [0,1,0]
 		)
@@ -32,8 +32,8 @@ attr = attributes "ikCtrl"
 
 	on create do
 	(
-		cuisseSize.controller = bezier_float()
-		tibiaSize.controller = bezier_float()
+		resize1.controller = bezier_float()
+		resize2.controller = bezier_float()
 		
 		ikStretch.controller = bezier_float()
 		ikSquash.controller = bezier_float()

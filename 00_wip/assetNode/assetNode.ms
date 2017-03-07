@@ -1,19 +1,8 @@
 -- asset
-
--- maj: prevoir le remove
--- debug: 
-	-- prevoir le delete
-	-- / empecher l auto selection
-	-- empecher les objects d etre dans plusieurs categories
--- prob:
-	-- 
-
-
 Content_Node_Attr = attributes "Content_Node" 
 (
 	local catNameList = #()
 	local catContentList = #()
-
 	
 	parameters main --rollout: allContentRLT
 	(	
@@ -97,6 +86,7 @@ Content_Node_Attr = attributes "Content_Node"
 				counter += sizeCount
 			)else append this.startList 0
 		)
+		
 		t2 = timeStamp()
 		format "writing done: % ms\n" ((t2  - t1))
 	)
@@ -108,6 +98,7 @@ Content_Node_Attr = attributes "Content_Node"
 		(
 			addNode = true
 			
+			-- empecher l'auto addition
 			try
 			(
 				s.modifiers[#content_node].content_node.allContentList
@@ -116,13 +107,65 @@ Content_Node_Attr = attributes "Content_Node"
 			)
 			catch()
 			
-			if addNode then appendifunique catContentList[cat] s
+			-- ajout
+			if addNode do
+			(
+				for i = 1 to catContentList.count do
+				(
+					if cat == i then appendifunique catContentList[i] s
+					else
+					(
+						/*-- supprimer des autres array -*/
+						res = finditem catContentList[i] s
+						if res > 0 then deleteitem catContentList[i] res
+					)
+				)
+			)		
 		)
 	)
+	
+	fn remove cat =
+	(
+		sel = selection as array
+		for s in sel do
+		(
+			removeNode = true
+			
+			if removeNode do
+			(
+				for i = 1 to catContentList.count do
+				(
+					if cat == i then
+					(
+						res = finditem catContentList[i] s
+						if res > 0 then deleteitem catContentList[i] res
+					)
+					else()
+				)
+			)
+		)
+	)
+	
+	fn hideCat cat = for o in catContentList[cat] do o.ishidden = true
+	fn unhideCat cat = for o in catContentList[cat] do o.ishidden = false
+	
+	fn selectCat cat clean: true = 
+	(
+		if clean then clearselection() else()
+		for o in  catContentList[cat] do selectmore o
+	)
+	
+	fn addCat newName = 
+	(
+		append  catNameList newName
+		append  catContentList #()
+	)
+
 	
 	rollout allContentRLT "Asset Nodes List:"
 	(
 		local menuRC
+		local CatRCMenu
 
 -- 		UI
 		ListBox CatLB "Categories:"
@@ -149,12 +192,12 @@ Content_Node_Attr = attributes "Content_Node"
 		(
 			rcmenu menuRC
 			(
-				menuItem addIT "add"
-				menuItem remIT "remove" 
+				menuItem addIT "add selection"
+				menuItem remIT "remove selection" 
 				
 				on addIT picked do	
 				(
-					loadNodeTab
+					loadNodeTab ()
 					id = CatLB.selection
 -- 					format "id: %\n" id
 					
@@ -166,13 +209,59 @@ Content_Node_Attr = attributes "Content_Node"
 				
 				on remIT picked do 
 				(
-					catId = CatLB.selection
-					objId = ContentsLB.selection
+					loadNodeTab ()
+					Id = CatLB.selection
+-- 					objId = ContentsLB.selection
+					remove id
+					writeNodeTab ()
 					
-					format "remove object: %\n" catContentList[catId][objId].name
+					refreshUI()
+					
+-- 					format "remove object: %\n" catContentList[catId][objId].name
 				)
 			)
-			
+		)
+		
+		fn createCatRCMenu =
+		(
+			rcmenu CatRCMenu
+			(
+				menuItem hideIT "Hide"
+				menuItem unHideIT "Unhide"
+				menuItem selectIT "Select"
+				separator  sep1
+				menuItem createIT "New"
+				
+				on hideIT picked do
+				(
+					loadNodeTab ()
+					id = CatLB.selection
+					hideCat id
+				)
+				
+				on unHideIT picked do
+				(
+					loadNodeTab ()
+					id = CatLB.selection
+					unhideCat id
+				)
+				
+				on selectIT picked do
+				(
+					loadNodeTab ()
+					id = CatLB.selection
+					selectCat id
+				)
+				
+				on createIT picked do
+				(
+					loadNodeTab ()
+					addCat "ROOT"
+					writeNodeTab ()
+					refreshUI()
+					
+				)
+			)	
 		)
 		
 		-- actions
@@ -182,6 +271,7 @@ Content_Node_Attr = attributes "Content_Node"
 			
 			refreshUI()
 			createRCMenu()
+			createCatRCMenu()
 		)
 		
 		on allContentRLT close do
@@ -196,7 +286,13 @@ Content_Node_Attr = attributes "Content_Node"
 			
 			refreshUI()
 		)
-				
+			
+		
+		on CatLB rightClick do
+		(
+			popUpMenu CatRCMenu rollout: allContentRLT
+		)
+		
 		on ContentsLB rightClick do
 		(
 			popUpMenu menuRC rollout: allContentRLT
@@ -228,7 +324,7 @@ Content_Node_Attr = attributes "Content_Node"
 	
 	on create do
 	(
-		nameList = #("MAIN_CTRL", "RIG", "MDL", "FACIAL", "SECOND_CTRL")
+		nameList = #("ROOT","MAIN_CTRL", "RIG", "MDL", "FACIAL", "SECOND_CTRL")
 		startList = for c in nameList collect 0
 		sizeList = for c in nameList collect 0
 	)

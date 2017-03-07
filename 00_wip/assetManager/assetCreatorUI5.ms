@@ -291,7 +291,8 @@ struct assetCreationClass
 			if ignoreCacheLay and belongToCachLay then deletion = true
 			
 			-- parenter au ctrl asset
-			else if mergeAsAsset and  o.parent == undefined and not isGroupMember o then o.parent = assetCtrl
+			if mergeAsAsset and  o.parent == undefined and not isGroupMember o then o.parent = assetCtrl
+			else if mergeAsAsset and o.parent == undefined and isGroupHead o then o.parent = assetCtrl
 			
 			
 			format "obj: %, deletion:%, parent:%\n" o.name deletion o.parent
@@ -302,6 +303,7 @@ struct assetCreationClass
 	)
 	
 )
+
 
 try(destroyDialog createAssetRLT)catch()
 rollout createAssetRLT "create asset v3" 
@@ -530,6 +532,7 @@ rollout createAssetRLT "create asset v3"
 	(
 		mode = 1
 		createAssetBT2.caption = "create asset from scene"
+		createAssetRLT.title = "create asset from scene"
 		
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
@@ -555,6 +558,7 @@ rollout createAssetRLT "create asset v3"
 		mode = 2
 		sel = selection as array
 		createAssetBT2.caption = "create asset from selection"
+		createAssetRLT.title = "create asset from selection"
 		
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
@@ -576,7 +580,8 @@ rollout createAssetRLT "create asset v3"
 	fn initForPublishing =
 	(
 		mode = 3
-		createAssetBT2.caption = "publish asset new version"
+		createAssetBT2.caption = "publish new asset version"
+		createAssetRLT.title = "publish new asset version"
 		
 		-- check if we are in asset
 		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
@@ -633,7 +638,6 @@ rollout createAssetRLT "create asset v3"
 		try rof.rollouts[2].refreshFromOutside() catch(format "*** % ***\n" (getCurrentException()))
 		destroydialog createAssetRLT
 	)
-	
 )
 
 

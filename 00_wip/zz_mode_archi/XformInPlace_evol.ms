@@ -13,6 +13,18 @@ fn resetInPlaceFN sel=
 	sel.position = bakPos
 )
 
+fn resetInPlaceAuto s =
+(
+	bakparent = s.parent
+	tmpParent = point rotation: s.rotation
+	s.parent = tmpParent	
+	
+	resetxform s
+	s.parent = bakparent	
+	delete tmpParent
+)
+
+
 fn resetInPlace2 s tmpParent =
 (
 	bakparent = s.parent
@@ -55,6 +67,11 @@ rollout xformRLT "xform in place V2"
 	local ref
 	
 -- 	UI
+	group "auto xform: "
+	(
+		button autoBT "auto xform"
+	)
+	
 	group "xform on parent:"
 	(
 		button addRefBT "add>>"
@@ -80,6 +97,12 @@ rollout xformRLT "xform in place V2"
 		refreshUI()
 	)
 	
+	on autoBT pressed do
+	(
+		sel = selection as array
+		for s in sel do resetInPlaceAuto s
+	)
+	
 	on addRefBT pressed do
 	(
 		sel = selection as array
@@ -95,6 +118,8 @@ rollout xformRLT "xform in place V2"
 		ref = undefined
 		refreshUI()
 	)
+	
+	
 	
 	on xformBT pressed do
 	(

@@ -1,7 +1,11 @@
+copyS = copy $
+for i = 1 to copyS.modifiers.count do deletemodifier copyS 1
+select copyS
+
 -- source
-src = $P_Loup_MDL012
+src = $P_LeLoup_MDL
 -- destination
-dest = $P_Loup_MDL_retopo
+dest = $P_LeLoup_MDL001
 
 -- créer un skinwrap sur la destination
 

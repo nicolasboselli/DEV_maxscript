@@ -10,10 +10,8 @@ rollout renameRLT "Renamer" width: 400
 	
 	local search = ""
 	local rep = ""
-	
+	local basename = ""
 	-- function
-	
-
 			
 	-- UI
 	edittext nameET "name:"
@@ -25,7 +23,22 @@ rollout renameRLT "Renamer" width: 400
 		edittext copyNameET "copy:" readonly: true
 	)
 	
+	group "basename:"
+	(
+		edittext baseNameET "basename:" 
+		button addBasenameBT "add"
+	)
+	
 	group "add suffix:"
+	(
+		button addCtrlBT "CTRL" across:5
+		button addMdlBT "MDL"
+		button addRigBT "RIG"
+		button addPlotBT "PLOT"
+		button addLoBT "LO"
+	)
+	
+	group "change suffix:"
 	(
 		button ctrlBT "CTRL" across:5
 		button mdlBT "MDL"
@@ -120,6 +133,19 @@ rollout renameRLT "Renamer" width: 400
 -- 		updateUI()
 	)
 	
+	on baseNameET changed val do
+	(
+		basename = val
+		format "basename: %\n" basename
+	)
+	
+	on addBasenameBT pressed do
+	(
+-- 		format "s.name: %\n" s.name
+		s.name = basename + "_" + s.name
+		updateUI()
+	)
+	
 	-- groupe suffix	
 	on ctrlBT pressed do
 	(
@@ -193,13 +219,13 @@ rollout renameRLT "Renamer" width: 400
 	
 	on subLeftBT pressed do
 	(
-		if matchpattern $.name pattern: "*_*_D_*" then $.name = substitutestring $.name "_D_" "_G_"
+		if matchpattern s.name pattern: "*_*_D_*" then $.name = substitutestring $.name "_D_" "_G_"
 		updateUI()
 	)
 	
 	on subRightBT pressed do
 	(
-		if matchpattern $.name pattern: "*_*_G_*" then $.name = substitutestring $.name "_G_" "_D_"
+		if matchpattern s.name pattern: "*_*_G_*" then $.name = substitutestring $.name "_G_" "_D_"
 		updateUI()
 	)
 	

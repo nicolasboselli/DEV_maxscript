@@ -1,4 +1,5 @@
-
+-- fix:
+	-- au remove d'un bone faire une refresh pour mettre à jour les noms
 
 filein "skinAddWeight.ms"
 

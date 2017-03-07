@@ -8,9 +8,11 @@ for o in objs where classof o.baseobject == railclone_pro do
 (
 	format "railclone:%\n" o.name
 	o.rendermode = off
-	o.weld = on
+	o.weld = off
+	o.weldth = 0
+
 	o.vmesh = 0
-	faceType = 1
+	o.faceType = 1
 	i = i +1
 )
 
@@ -67,6 +69,7 @@ for o in objs where o.modifiers.count >= 1 do
 	)
 )
 select col
+
 
 -- VRayEdgesTex ()
 -- meditMaterials[21].texmap_bump.widthType = 0

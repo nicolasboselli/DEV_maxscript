@@ -2,6 +2,7 @@ s = $
 spCount = numSplines   s
 
 -- getKnotPoint  $ 1 1
+tres = 0.1
 
 for sp = 1 to spCount do
 (
@@ -18,9 +19,13 @@ for sp = 1 to spCount do
 	-- 	format "vec1: %, vec2: % \n" vec1 vec2
 		
 		ang = acos (dot vec1 vec2)
-		format "i: %, ang: % \n" i ang
 		
-		if ang< 0.02 then deleteKnot s sp i
+		
+		if ang< tres then 
+		(
+			format "i: %, ang: % \n" i ang
+			deleteKnot s sp i
+		)
 	)
 )
 updateShape  s

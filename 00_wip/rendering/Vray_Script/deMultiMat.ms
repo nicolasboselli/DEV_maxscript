@@ -287,6 +287,8 @@ fn convertToVrMatDef =
 	replaceinstances meditMaterials[activeMeditSlot] vrMat
 )
 
+-- meditMaterials[activeMeditSlot].diffuse
+
 /*
 fn publishSceneMatAdvDef =
 (
