@@ -37,7 +37,7 @@ fn pivotOnFAce s =
 )
 -- pivotOnFAce $
 
-fn boxerize2 selAr =
+fn boxerize2 selAr amount: 28 =
 (
 	wireAr = #(green, red, blue, orange, yellow, brown)
 	undo on 
@@ -65,7 +65,7 @@ fn boxerize2 selAr =
 -- 					converttopoly o
 					
 					-- add shell on object
-					myShell = Shell innerAmount:0 outerAmount:28
+					myShell = Shell innerAmount:0 outerAmount:amount
 					addmodifier o myShell
 					o.pivot = o.center
 					
@@ -83,6 +83,5 @@ fn boxerize2 selAr =
 
 -- myShell = undefined
 sel = selection as array
-if sel.count == 1 do boxerize2 sel
-	
+if sel.count == 1 do boxerize2 sel amount: 28
 

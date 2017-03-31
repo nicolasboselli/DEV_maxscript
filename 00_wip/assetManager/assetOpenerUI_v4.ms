@@ -13,8 +13,8 @@ maj:
 	x- filter by name
 		x- add * add begining and end of search	
 		
-	x-- filter by status (all, approved, wip, retake, archived)
-		-- add ignore achive
+	-- filter by status (all, approved, wip, retake, archived)
+		-- add ignore archive
 		
 	x- fuse "assetCreatorUI" and "assetCreatorFromSelectionUI2"
 	
