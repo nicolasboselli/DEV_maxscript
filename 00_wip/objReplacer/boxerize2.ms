@@ -82,6 +82,18 @@ fn boxerize2 selAr amount: 28 =
 )
 
 -- myShell = undefined
-sel = selection as array
-if sel.count == 1 do boxerize2 sel amount: 28
 
+
+try(destroydialog boxerizeRLT)catch()
+rollout boxerizeRLT "Boxerize"
+(
+	spinner boxSizeSP "Size:" type: #worldunits range:[0,1000,25]
+	button boxBT "Boxerize"
+	
+	on boxBT pressed do
+	(
+		sel = selection as array
+		if sel.count == 1 do boxerize2 sel amount: boxSizeSP.value
+	)
+)
+createdialog boxerizeRLT

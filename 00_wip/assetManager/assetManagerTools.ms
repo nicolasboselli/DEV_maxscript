@@ -1,7 +1,5 @@
 filein "assetManagerDef.ms"
 
-
-
 /*
 maj create thumbnail:
 	x-- check if there are in an asset folder
@@ -112,9 +110,6 @@ result
 )
 
 -- test = @"S:\Groupe Carrere\2015\Visite Oculus_0315\Appartement_Crealys\Modelisation\Textures\mpm_vol.06_p20_03_Wallpaper_06_diff.JPG"
-
-
-
 
 
 -- hjRemoveGhostTex()

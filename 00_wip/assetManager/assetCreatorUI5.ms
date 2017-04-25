@@ -191,7 +191,7 @@ struct assetCreationClass
 		if folderCreated == true then
 		(
 			newFile =  newFolder + "\\" +  assetName + ".max" 
-			newfileCreated = saveMaxFile newFile useNewFile: false
+			newfileCreated = saveMaxFile newFile useNewFile: false -- saveAsPrevious
 			if newfileCreated then (format "Asset Publishing Done: % ; New Version Published: % \n" assetName newFile) else (format "Asset Publishing Fail: % \n" assetName)
 		)
 		

@@ -15,7 +15,9 @@ maj:
 		
 	-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore archive
-		
+	
+	-- choix de la version de max à l'enregistrement en option
+	
 	x- fuse "assetCreatorUI" and "assetCreatorFromSelectionUI2"
 	
 	x- deplace publish method in asset structure
@@ -50,6 +52,7 @@ maj:
 		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
 		
 	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
+		-- proposer d'ouvrir la version la plus recente
 
 debug:
 	x- parent hidden object
@@ -195,7 +198,8 @@ rollout assetEditorRLT "assets editor v2"
 -- 		edittext curAllAssetsFolderET "all assets folder: " readonly: true
 -- 		edittext assetRelativePathET "asset relative path: " readonly: true
 		edittext curAssetNameET "asset name:" readonly: true
-		edittext versionET "last version:" readonly: true
+		edittext versionET "last published version:" readonly: true
+		edittext mostRecentVersionET "most recent version:" readonly: true
 		
 		edittext absPathET "absolute path:" readonly: true
 -- 		edittext relVersionET "relative version" readonly: true

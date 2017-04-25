@@ -25,8 +25,9 @@ select sel
 
 for o in objs where classof o.baseobject == railclone_pro do
 (
-	format "railclone:%\n" o.name
+	
 	converttopoly o
+	format "convert done:%\n" o.name
 )
 
 
