@@ -116,12 +116,18 @@ rollout edgeToShapeRLT "edge to shape"
 	)
 	checkbox removeEdgeCB "remove edge selection"
 	
-	group "x form options:"
+	group "reset x form (world):"
 	(
 		checkbox resetXformCB "reset x form"
-		checkbox createBoxOrientCB "Create Box Orient"
-		checkbox xformOnBoxCB "Xform on box orient"
 		checkbox collapseXformCB "collapse x form"
+	)
+	
+	group "reset x form (box oriennt):"
+	(
+		checkbox createBoxOrientCB "Create Box Orient"
+		checkbox xformOnBoxCB "reset x form"
+		checkbox collapseXformCB2 "collapse x form"
+		checkbox delBoxOrientCB "delete Box orient"
 	)
 	
 	checkbox keepSelCB "keep selection"
@@ -162,21 +168,30 @@ rollout edgeToShapeRLT "edge to shape"
 				newShape = getnodebyname newName
 				updateshape newShape
 				
-				-- xform on box orient
-				if boxOrient != undefined and xformOnBoxCB.state == true then resetInPlace2 newShape boxOrient else()
-				
-				-- option reset x form
-				if resetXformCB.state == true do
+				-- reset xform 
+				if boxOrient != undefined and xformOnBoxCB.state == true then 
 				(
+					-- on box orient
+					resetInPlace2 newShape boxOrient
+					if collapseXformCB2.state == true do
+					(
+						converttosplineshape  newShape
+						updateshape newShape
+					)
+				)
+				else if resetXformCB.state then
+				(
+					-- on world
 					resetxform newShape 
 					if collapseXformCB.state == true do
 					(
 						converttosplineshape  newShape
 						updateshape newShape
 					)
-				)
+				)else()
 				
-
+				
+				if delBoxOrientCB.state then delete boxorient
 				
 				-- option: remove edge
 				if removeEdgeCB.state == True do removeEdgeAndVerticesFN s
@@ -219,6 +234,28 @@ rollout edgeToShapeRLT "edge to shape"
 				)
 			)
 		)
+	)
+	
+	
+	on resetXformCB changed state do
+	(
+		collapseXformCB.state = state
+		
+		createBoxOrientCB.state = not state
+		xformOnBoxCB.state = not state
+		collapseXformCB2.state = not state
+		delBoxOrientCB.state = not state
+	)
+	
+	on xformOnBoxCB changed state do
+	(
+		resetXformCB.state = not state
+		collapseXformCB.state = not state
+		
+		createBoxOrientCB.state =  state
+-- 		xformOnBoxCB.state =  state
+		collapseXformCB2.state =  state
+		delBoxOrientCB.state =  state
 	)
 	
 	on addSweepCB changed theState do

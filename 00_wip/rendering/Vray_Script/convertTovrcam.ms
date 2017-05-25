@@ -15,11 +15,8 @@ for c in selList do
 	)
 )
 
-vrayCam = vrayCreateVRayPhysicalCamera ()
-vrayCam.transform = $.transform.controller.value
+-- vrayCam = vrayCreateVRayPhysicalCamera ()
+-- vrayCam.transform = $.transform.controller.value
 
-for i = 1 to scenematerials.count do
-(
-	meditmaterials[i] = scenematerials[i]
-)
+
 

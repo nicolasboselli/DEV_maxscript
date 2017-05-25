@@ -87,7 +87,7 @@ fn boxerize2 selAr amount: 28 =
 try(destroydialog boxerizeRLT)catch()
 rollout boxerizeRLT "Boxerize"
 (
-	spinner boxSizeSP "Size:" type: #worldunits range:[0,1000,25]
+	spinner boxSizeSP "Size:" type: #worldunits range:[0,1000,28]
 	button boxBT "Boxerize"
 	
 	on boxBT pressed do
