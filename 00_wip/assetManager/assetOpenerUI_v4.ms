@@ -53,7 +53,8 @@ maj:
 		
 	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
 		-- proposer d'ouvrir la version la plus recente
-
+	-- ajouter une fonction "substitute"
+	-- ajouter une fonction "merge picker"
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection
