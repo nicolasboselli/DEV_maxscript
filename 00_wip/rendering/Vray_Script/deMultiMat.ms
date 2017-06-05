@@ -355,7 +355,7 @@ fn splitSmthGrpDef s =
 
 fn collectMatFromSel sel=
 (
-	matAr = #()
+	local matAr = #()
 -- 	for s in sel do print s
 	for s in sel where s.material != undefined do appendifunique matAr s.material 
 	if matAr.count < 25 then
