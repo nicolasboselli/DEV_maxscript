@@ -66,7 +66,7 @@ rollout vrMatRlt "VRay mat Lib"
 	local matColAr = #()
 	local matDispAr = #()
 	
-	global vrLib = materiallibrary()
+	local vrLib = materiallibrary()
 	global matAr = #()
 	
 -- 	UI
@@ -195,12 +195,44 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	on addMatBT pressed do
 	(
-		append matAr meditMaterials[activeMeditSlot]
-		refreshUI()
+		local matCand = meditMaterials[activeMeditSlot]
 		
--- 		matLB.items = for mat in vrLib collect mat.name
+-- 		format "matCand: %\n" matCand
+		local saving = true
+		-- finditem matAr matCand
+		
+		-- check enregistrer material existant
+		for i = matAr.count  to 1 by -1 do
+		(
+			if matAr[i].name == matCand.name then
+			(
+				local res = queryBox  "Un materiau avec le même nom existe déja.\n Voulez-vous le remplacer?" title: matAr[i].name 
+-- 				format "res: %\n" res
+				if res then
+				(
+					-- erase
+					deleteitem matAr i
+					exit 
+				)
+				else
+				(
+					saving = false
+					exit
+				)
+			)else()
+			
+		)
+		
+		-- save
+		if saving then
+		(
+			append matAr matCand
+			format "saving done: %\n" matCand
+		)
+		
+		refreshUI()
 	)
-	
+
 	on delMatBT pressed do
 	(
 		id = matLB.selection
@@ -214,19 +246,13 @@ rollout vrMatRlt "VRay mat Lib"
 	on editMatBT pressed do
 	(
 		matName = matLB.selected
-		meditMaterials[activeMeditSlot] =  copy vrlib[matName]
+		id = finditem matLB.items matName
+		meditMaterials[activeMeditSlot] =  copy matAr[id]
 	)
-	
-	/*
-	on copyMatBT pressed do
-	(
-		matName = matLB.selected
-		meditMaterials[activeMeditSlot] = copy vrlib[matName]
-	)
-*/
 	
 )
 createdialog vrMatRlt
+
 
 
 /*
