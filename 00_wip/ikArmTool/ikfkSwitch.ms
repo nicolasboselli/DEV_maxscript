@@ -41,7 +41,7 @@ attr = attributes "ikfkSwitch"
 -- 		switch ik/fk
 		on ikVal set val do
 		(
-			format "val: %\n" val
+-- 			format "val: %\n" val
 -- 			ikVal = ikfkValq
 			
 			/*
@@ -100,16 +100,18 @@ attr = attributes "ikfkSwitch"
 				append IKFKDataTmp #(p, (getProperty this p))
 			)catch()
 		)
-		format "data: %\n" IKFKDataTmp
+		format "IKFKDataTmp: %\n" IKFKDataTmp
 		IKFKDataTmp
 	)
 	
 	fn importData2 =
 	(
+		format "IKFKDataTmp: %\n"  IKFKDataTmp
 		if not IKFKDataTmp == undefined then
 		(
 			for obj in IKFKDataTmp do
 			(
+				format "this: %,  obj[1]: %,  obj[2]: %\n"  this obj[1] obj[2]
 				try(setproperty this obj[1] obj[2])catch(format "ERROR:%\n" (getcurrentexception()))
 			)
 		)else (format "no data: % \n" $)
@@ -131,6 +133,8 @@ attr = attributes "ikfkSwitch"
 		group "display:"
 		(
 			checkbox autoDisCB "auto display" checked: true
+			checkbox displayFKCB "display FK" checked: false
+			checkbox displayIKCB "display IK" checked: false
 		)
 		
 		on ikToFkBT pressed do this.ikToFk = not this.ikToFk
@@ -192,13 +196,13 @@ attr = attributes "ikfkSwitch"
 		
 		fn refreshui =
 		(
-			ikMod = this
+-- 			ikMod = this
 			
-			try (ikChainET.text = this.ikChain.name) catch()
-			try(IKList.items = for o in this.ikList collect o.name)catch()
-			try(IKCtrlList.items = for o in this.ikCtrlList collect o.name)catch()
-			try(FKList.items = for o in this.FKList collect o.name)catch()
-			try(SwitchList.items = for o in this.SwitchList collect o.name)catch()
+			try (ikChainET.text = this.ikChain.name) catch(format "ikchain ERROR:%\n" (getcurrentexception()))
+			try(IKList.items = for o in this.ikList collect o.name)catch(format "IKList ERROR:%\n" (getcurrentexception()))
+			try(IKCtrlList.items = for o in this.ikCtrlList collect o.name)catch(format "IKCtrlList ERROR:%\n" (getcurrentexception()))
+			try(FKList.items = for o in this.FKList collect o.name)catch(format "FKList ERROR:%\n" (getcurrentexception()))
+			try(SwitchList.items = for o in this.SwitchList collect o.name)catch(format "SwitchList ERROR:%\n" (getcurrentexception()))
 		)
 		
 -- 		actions
@@ -214,6 +218,7 @@ attr = attributes "ikfkSwitch"
 		(
 			this.importData2()
 			refreshui()
+			print "import done"
 		)
 		
 -- 		on addIkChainBT pressed do
@@ -225,33 +230,33 @@ attr = attributes "ikfkSwitch"
 		
 		on addFkBT pressed do
 		(
-			ikMod.fkList  = #()
+			this.fkList  = #()
 			sel = selection as array
-			for s in sel do append ikMod.fkList s
+			for s in sel do append this.fkList s
 			refreshui()
 		)
 		
 		on addIkBT pressed do
 		(
-			ikMod.ikList  = #()
+			this.ikList  = #()
 			sel = selection as array
-			for s in sel do append ikMod.ikList s
+			for s in sel do append this.ikList s
 			refreshui()
 		)
 		
 		on addIkCtrlBT pressed do
 		(
-			ikMod.ikCtrlList  = #()
+			this.ikCtrlList  = #()
 			sel = selection as array
-			for s in sel do append ikMod.ikCtrlList s
+			for s in sel do append this.ikCtrlList s
 			refreshui()
 		)
 		
 		on addSwBT pressed do
 		(
-			ikMod.switchList  = #()
+			this.switchList  = #()
 			sel = selection as array
-			for s in sel do append ikMod.switchList s
+			for s in sel do append this.switchList s
 			refreshui()
 		)
 		
@@ -284,7 +289,8 @@ attr = attributes "ikfkSwitch"
 custAttributes.add ikMod attr
 addmodifier $ ikMod
 
-$.position.controller.position_constraint.controller.weight[1].controller = bezier_float ()
+
+-- $.position.controller.position_constraint.controller.weight[1].controller = bezier_float ()
 
 /*
 obj =  $Box003

@@ -60,6 +60,7 @@ debug:
 	-- error when change status on lastselection
 	-- error quand enregistre asset et que le path selectionner ne correspond pas
 	-- error: "rollouts"
+	-- error quand on ne choisi pas comme repository le dossier parent des asset
 		
 */
 
