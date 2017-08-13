@@ -15,6 +15,10 @@ for i = 2 to sel.Count do
 	new.transform = copy l.transform
 	-- re assign line
 	new.banode[1] = l
+	
+	new.disabled = true
+	redrawviews ()
+	new.disabled = false
 )
 
 
