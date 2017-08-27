@@ -17,6 +17,7 @@ for i = 2 to sel.Count do
 	-- re assign line
 	new.banode[1] = l
 	
+<<<<<<< HEAD
 	-- realign railclone
 -- 	new.transform = copy l.transform
 	new.disabled = on
@@ -26,6 +27,11 @@ for i = 2 to sel.Count do
 	redrawviews ()
 	
 
+=======
+	new.disabled = true
+	redrawviews ()
+	new.disabled = false
+>>>>>>> origin/master
 )
 
 
