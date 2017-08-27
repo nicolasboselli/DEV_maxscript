@@ -148,6 +148,7 @@ fn parentFN sel =
 -- 				if parentable ==  false then 
 			)
 			
+			if classof sel[i] == RailClone_Pro then  parentable = false
 			
 			if not parentInSel then
 			(

@@ -15,7 +15,6 @@ struct folderClass
 	name = "[ " + (toUpper nameAr[nameAr.count]) + " ]"
 )
 
-
 struct fileClass
 (
 	tmppath ,
@@ -92,7 +91,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	
 	fn refreshUI =
 	(
-		print currentFolder
+		format "currentFolder: %\n" currentFolder
 		pathET.text = currentFolder
 		scriptsListLB.items = for elt in allAr collect  elt.name
 	)
@@ -102,14 +101,17 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		folderAr = #()
 		append folderAr (folderClass "<<")
 		folderContent = getDirectories (onePath + "*")
+		
 		filesContent = getFiles (onePath + "*")
+		
 		for f in folderContent do
 		(
 			append folderAr (folderClass f)
 		)
 		filesAr = for f in filesContent  collect fileClass f
+			
 		local allAr = join folderAr filesAr 
-		return allAr
+		allAr
 -- 		scriptsListLB.items = for fold in folderAr collect (toUpper fold.name)
 	)
 	
@@ -206,7 +208,6 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		(
 			print "this is a folder. it can't be add to favorites"
 		)
-		
 	)
 	
 	on launchScriptBT pressed do
