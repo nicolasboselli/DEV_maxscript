@@ -153,13 +153,33 @@ fn collectMultiMatDef =
 -- refresh scenematerial
 fn updateSceneMaterials =
  (
--- 	 saveNodes #() "d:/temp.max"
--- 	 deleteFile "d:/temp.max"
-	saveNodes #() "j:/temp.max"
-	 deleteFile "j:/temp.max"
+	 -- teste drive
+	testAr = "jc"
+	local drive
+	 for i = 1 to testAr.count do
+	(
+		dir = getDirectories (testAr[i] + ":*")
+		
+		if dir.count > 0 then
+		(
+			drive = testAr[i]
+			exit
+		)
+	)
+	-- ecriture du filename
+	 str = stringstream ""
+	 format "%:/tmp.max" drive to: str
+	 str as string
+	
+	saveNodes #() (str as string)
+	deleteFile ()
+	
+-- 	saveNodes #() "c:/tmp.max"
+-- 	deleteFile "c:/tmp.max"
  )
 -- updateSceneMaterials()
 
+ 
 fn skinMultiMatdef s =
 (
 -- for one object

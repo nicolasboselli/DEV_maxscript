@@ -124,10 +124,18 @@ rollout vrMatRlt "VRay mat Lib"
 -- 		vrMatTmp.count
 
 		for m in matAr do append vrMatTmp m
+			
 		if doesfileexist vrLibPath then
 		(
 			res = saveTempMaterialLibrary  vrMatTmp vrLibPath
-			if res do (format "library saved: %\nlibrary saved: %\n" vrLibPath matAr) 
+			if res then (format "library saved: %, content: %\n" vrLibPath matAr) 
+			else (format "library NOT saved: %,  content: %\n" vrLibPath matAr)
+		)
+		else
+		(
+			res = saveTempMaterialLibrary  vrMatTmp vrLibPath
+			if res then (format "library saved: % , content: %\n" vrLibPath matAr) 
+			else (format "library NOT saved: %,  content: %\n" vrLibPath matAr)
 		)
 	)
 	
@@ -187,7 +195,11 @@ rollout vrMatRlt "VRay mat Lib"
 	on saveAsLibBT pressed do
 	(
 		tmpPath = getSaveFileName caption: "save material library" types: "mat(*.mat)|*.mat|All Files|*.*"
-		if tmpPath != undefined then writeLib tmpPath
+		if tmpPath != undefined then 
+		(
+			writeLib tmpPath
+			format "MatLib saved: %\n" tmpPath
+		)
 		else 	( format "path not valid: %\n" tmpPath )
 	)
 	

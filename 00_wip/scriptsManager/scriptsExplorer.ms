@@ -1,11 +1,21 @@
 /*
 maj:
- - add access to ini file
- - enter folder on double click
- - back folder in list
- - back folder on back touch
- - manager many set of favorites
+ x- add access to ini file
+ x- enter folder on double click
+ x- back folder in list
+ x- back folder on back touch
+
+ -- ajouter ds fonction au rc menu pour manager les scripts: copy, paste, rename, delete, bakup...
+ -- revoir la fonction pour trouver le dossier parent
+ -- enregister les preferences et la position
 */
+
+
+
+struct returnClass
+(
+	name = "[<<]"
+)	
 
 struct folderClass 
 (
@@ -19,14 +29,15 @@ struct fileClass
 (
 	tmppath ,
 	path = substituteString tmppath "\\" "/",
-	name = filenameFromPath path
+	name = filenameFromPath path,
+	typ = getFilenameType tmppath
 )
-
 
 try(destroyDialog scriptExplorerRLT)catch()
 
 rollout scriptExplorerRLT "Scripts Explorer"
 (
+	
 -- 	vars
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
@@ -34,13 +45,16 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local	root = substituteString tmpRroot "\\" "/"
 
 	local favAr = #()
+
+	local menuRC
 	
 -- 	local root = getFilenamePath  (getThisScriptFilename() )
 	local folderContent
-	local folderAr = #()
+-- 	local folderAr = #()
 	
-	local filesAr = #()
+-- 	local filesAr = #()
 	local allAr = #()
+	local toDisplay = #()
 	
 	local currentFolder
 	
@@ -48,92 +62,139 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	edittext pathET "current folder:" readonly: true 
 	button openFoldBT "open folder" across: 2
 	button accessIniBT "access ini"
+	checkbox onlyMs "collect maxscript files only" checked: true
+	 
 	listbox scriptsListLB "Scripts:" tooltip: "script list" height: 30 -- across: 2
 -- 	dotNetControl tv "TreeView"  height:450 visible: false
 	
-	group "navigation:"
+	group "actions:"
 	(
-		button enterFolderBT "enter folder" tooltip: "enter folder" across: 2
+		button enterFolderBT "enter folder" tooltip: "enter folder" across: 3
 		button backFolderBT "parent folder"
-	)
-	
-	group "utilities:"
-	(
+		button copyPathBT "copy path"
 		
 		button editScriptBT "edit script" across: 3
 		button launchScriptBT "launch script" 
-		button copyPathBT "copy path"
-	)
-	
-	group "favorites:"
-	(
 		button printPathBT "add to favorites"
 	)
-
 		
 -- 	functions
-
 	
-	/*
-	fn fillInTreeView tv =
+	fn copyPath =
 	(
--- 		tv.AllowDrop = true
-		theRoot = tv.Nodes.add "SCRIPT ROOT" --add parent node
-		rootNodes =  for elt in allAr collect  elt
-		for o in rootNodes do
-		(
-			newNode = theRoot.Nodes.add o.name
--- 			newNode.tag = dotNetMXSValue o
-		)
--- 		addChildren theRoot rootNodes --no need to pass theTreeView
+		pathTmp =  try(toDisplay[scriptsListLB.selection].path) catch()
+		setclipboardText pathTmp
 	)
-	*/
 	
+	
+	fn scanFolder onePath =
+	(
+		-- init de l'array
+-- 		allAr = #(returnClass ())
+		
+		-- collecte des dossiers
+		folderContent = getDirectories (onePath + "*")
+		folderAr = for fo in folderContent collect folderClass fo
+		
+		-- collecte des fichiers
+		filesContent = getFiles (onePath + "*")
+		filesAr = for f in filesContent  collect fileClass f
+		
+		format "scan done: %\n" onePath
+		#(returnClass ()) + folderAr +filesAr
+
+	)
+	
+	fn returnParentFolder folderPath =
+	(
+		splitFolder = filterString folderPath "/"
+		
+		sum = ""
+		for i = 1 to (splitFolder.count - 1) do
+		(
+-- 			print splitFolder[i]
+			sum = sum + splitFolder[i] + "/"
+		)
+		sum
+	)
+	
+	-- Vars dependant
+	
+	fn collectValues maxscriptOnly: false =
+	(
+		allAr = scanFolder currentFolder
+		
+		toDisplay =#()
+		for o in allAr do
+		(
+			if classof o == fileclass and maxscriptOnly then
+			(
+				if o.typ == ".ms" or o.typ == ".mse" then
+				(
+					append toDisplay o
+				)
+			)
+			else append toDisplay o
+		)
+	)
+	
+	
+	-- UI dependant
 	fn refreshUI =
 	(
 		format "currentFolder: %\n" currentFolder
 		pathET.text = currentFolder
-		scriptsListLB.items = for elt in allAr collect  elt.name
+		scriptsListLB.items = for elt in toDisplay collect  elt.name
 	)
 	
-	fn scanFolder onePath =
+	fn createRCMenu =
 	(
-		folderAr = #()
-		append folderAr (folderClass "<<")
-		folderContent = getDirectories (onePath + "*")
-		
-		filesContent = getFiles (onePath + "*")
-		
-		for f in folderContent do
+		rcmenu menuRC
 		(
-			append folderAr (folderClass f)
+			menuItem editIT "edit script" enabled: false
+			menuItem launchIT "launch script" enabled: false
+			separator sep3
+			menuItem copyIT "copy" enabled: false
+			menuItem pasteIT "paste"  enabled: false
+			menuItem delIT "delete"  enabled: false
+			separator sep2
+			menuItem renameIT "rename script" enabled: false
+			menuItem bakIT "backup script" enabled: false
+			menuItem debakIT "de-backup script" enabled: false
+			separator sep1
+			menuItem foldIT "open folder" enabled: false
+			menuItem pathIT "copy Path" 
+						
+			on pathIT picked do copyPath ()
 		)
-		filesAr = for f in filesContent  collect fileClass f
-			
-		local allAr = join folderAr filesAr 
-		allAr
--- 		scriptsListLB.items = for fold in folderAr collect (toUpper fold.name)
 	)
 	
 -- 	actions
+	
 	on accessIniBT pressed do
 	(
 		doscommand ("explorer " + (getFilenamePath maxIni))
 	)
-	
-	
+		
 	on openFoldBT pressed do 
 	(
 		foldToOpen = substituteString currentFolder "/" "\\"
 		doscommand ("explorer " +  foldToOpen)
 	)
-	
 
 	on scriptExplorerRLT open do
 	(
+		-- scan des dossiers
 		currentFolder = root
-		allAr = scanFolder root
+-- 		allAr = scanFolder root
+		collectValues maxscriptOnly: onlyMs.state
 		
+		-- creation du rcMenu
+		menuRC = createRCMenu()
+		
+		refreshUI()
+		
+		-- chargement des scripts favoris
 		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
 		(
 			favArStr = getINISetting armadasScriptsIni  "armadasScriptsFavorite" "armadasScriptsArray"
@@ -151,68 +212,79 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		else
 		(
 			favAr = #()
-			print "favorites array init"
 		)
-		
+		format "favorites array: %\n" favAr
+	)
+	
+	on onlyMs changed val do
+	(
+		collectValues maxscriptOnly: val
 		refreshUI()
--- 		fillInTreeView tv
-		
+	)
+	
+	on scriptsListLB doubleClicked arg do enterFolderBT.pressed()
+	
+	on scriptsListLB rightClick do
+	(
+		popUpMenu menuRC rollout: scriptExplorerRLT
 	)
 	
 	on enterFolderBT pressed do
 	(
+-- 		format "selection: %, selected: %\n" scriptsListLB.selection scriptsListLB.selected
 		num = scriptsListLB.selection
-		print num
 		if num > 0 do
 		(
-			obj = folderAr[num]
-			if classof obj == folderClass then
+			obj = toDisplay[num]
+-- 			format "classof: %\n"  obj
+			
+			if classof obj == returnClass then
+			(
+				currentFolder = returnParentFolder currentFolder
+-- 				allAr = scanFolder currentFolder
+				collectValues maxscriptOnly: onlyMs.state
+			)
+			else if classof obj == folderClass then
 			(
 				currentFolder = obj.path
-				allAr = scanFolder currentFolder
+				collectValues maxscriptOnly: onlyMs.state
+-- 				allAr = scanFolder currentFolder
 			)
-			else
+			else if classof obj == fileClass then
 			(
-				edit obj.path
--- 				print "this is not a folder"
+-- 				edit obj.path
 			)
+			else(print "damned!")
 		)
 		refreshUI()
 	)
 	
 	on backFolderBT pressed do
 	(
-		splitFolder = filterString currentFolder "/"
-		
-		sum = ""
-		for i = 1 to (splitFolder.count - 1) do
-		(
--- 			print splitFolder[i]
-			sum = sum + splitFolder[i] + "/"
-		)
-		currentFolder = sum
-		allAr = scanFolder currentFolder
+		currentFolder = returnParentFolder currentFolder
+		collectValues maxscriptOnly: onlyMs.state
+-- 		allAr = scanFolder currentFolder
 		refreshUI()
 	)
 	
 	on printPathBT pressed do
 	(
-		if classof allAr[scriptsListLB.selection] != folderClass then
+		if classof toDisplay[scriptsListLB.selection] != folderClass then
 		(
-			appendifunique  favAr allAr[scriptsListLB.selection].path 
+			appendifunique  favAr toDisplay[scriptsListLB.selection].path 
 -- 			favAr = makeuniquearray favAr
 			print favAr
 			setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" (with printAllElements on favAr as string)
 		)
 		else
 		(
-			print "this is a folder. it can't be add to favorites"
+			format "un dossier ne peut pas être ajouter aux favoris"
 		)
 	)
 	
 	on launchScriptBT pressed do
 	(
-		sel = allAr[scriptsListLB.selection]
+		sel = toDisplay[scriptsListLB.selection]
 		if classof sel == fileClass do
 		(
 			 filein (sel.path)
@@ -221,20 +293,17 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	
 	on editScriptBT pressed do
 	(
-		sel = allAr[scriptsListLB.selection]
+		sel = toDisplay[scriptsListLB.selection]
 		if classof sel == fileClass do
 		(
 			 edit (sel.path)
 		)
 	)
 			
-	on copyPathBT pressed do
-	(
-		pathTmp =  (allAr[scriptsListLB.selection].path)
-		setclipboardText pathTmp
-	)
+	on copyPathBT pressed do copyPath ()	
+	
 )
-
 createdialog scriptExplorerRLT width: 400
+
 
 

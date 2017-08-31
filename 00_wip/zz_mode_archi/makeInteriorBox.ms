@@ -35,21 +35,87 @@ fn roundNumber num =
 
 
 
-
+-- traitement sur la copie avant le deplacement
+-- préserver certains open edge
+lockedEdge = polyop.getEdgeSelection $.baseobject
+-- créer la copie
 interior = copy $
--- interior = $
+interior.name = $.name + "_IntBox"
 select interior
--- interior.material = undefined
-maxVert = polyop.getNumVerts interior
+
+-- delete open edge
+openEdge = polyop.getOpenEdges interior.baseobject
+edgeToDel = openEdge - lockedEdge
+polyop.deleteEdges interior.baseobject edgeToDel
+
+
+
+
+
+-- delete face horizontale
+maxFaces = polyop.getNumFaces interior.baseobject
+facesTodel = #()
+-- count = 0
+for f = 1 to maxFaces do
+(
+	nrl = polyop.getFaceNormal  interior f
+	if  close_enough nrl.z 1 3 or close_enough nrl.z -1 3  then
+	(
+		append facesToDel f
+-- 		count += 1
+		format "face: %, normale: %\n" f nrl
+	)
+)
+-- format "faces Horizontales: % \n" count
+polyop.deleteFaces interior.baseobject facesToDel
+
+-- flip normales
+max modify mode
+modPanel.setCurrentObject $.baseobject
+subObjectLevel = 4
+polyop.flipNormals $ #all
+subObjectLevel = 0
+
+-- delete face en vis a vis
+-- intersectRay <node> <ray> 
+s = $
+maxFaces = polyop.getNumFaces s
+
+facesToDel = #()
+for f = 1 to maxFaces do
+(
+	local 
+	test = ray (polyop.getFaceCenter s f) (polyop.getFaceNormal  s f)
+	impact = intersectRay s test
+	if impact != undefined then
+	(
+		dist = distance test.pos impact.pos
+		if dist < 30 and dist > 0 then
+		(
+			append facesToDel f
+			format "face: %, impact: %, distance: %\n" f impact dist
+		)
+	)
+)
+format "faces to del: % \n" facesToDel
+polyop.deleteFaces s facesToDel
+
+-- flip normales
+max modify mode
+modPanel.setCurrentObject $.baseobject
+subObjectLevel = 4
+polyop.flipNormals $ #all
+subObjectLevel = 0
 
 -- collect info vertex
+maxVert = polyop.getNumVerts interior.baseobject
 globalMoving = #()
 
 -- for each vertex
 for i = 1 to maxVert do
 (
 	deco = "##############"
-	format "\n% vertex: % %\n" deco i deco
+-- 	format "\n% vertex: % %\n" deco i deco
 	
 	-- get face by vertex
 	facBitAr = polyop.getFacesUsingVert interior #{i}	
@@ -138,6 +204,13 @@ for i = 1 to globalMoving.count do
 	for mov in globalMoving[i] do polyop.moveVert interior #{i} mov
 )
 
+
+-- flip normales
+max modify mode
+modPanel.setCurrentObject $.baseobject
+subObjectLevel = 4
+polyop.flipNormals $ #all
+subObjectLevel = 0
 
 
 

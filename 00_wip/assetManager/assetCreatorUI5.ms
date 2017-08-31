@@ -179,7 +179,7 @@ struct assetCreationClass
 		wipFile
 	),
 	
-	fn publishNewVersion =
+	fn publishNewVersion maxVers =
 	(
 		-- create new version folder
 		newFolder =  assetFolder +"\\" +  (returnDigit( lastVersion + 1))
@@ -190,8 +190,9 @@ struct assetCreationClass
 		
 		if folderCreated == true then
 		(
+-- 			maxVers = 2015
 			newFile =  newFolder + "\\" +  assetName + ".max" 
-			newfileCreated = saveMaxFile newFile useNewFile: false -- saveAsPrevious
+			newfileCreated = saveMaxFile newFile useNewFile: false saveAsVersion: maxVers
 			if newfileCreated then (format "Asset Publishing Done: % ; New Version Published: % \n" assetName newFile) else (format "Asset Publishing Fail: % \n" assetName)
 		)
 		
@@ -331,10 +332,11 @@ rollout createAssetRLT "create asset v3"
 		edittext nameET "name:" enabled: false across: 2
 		edittext versionET "version:" enabled: false readonly: true
 		
-		edittext statusET "status:" enabled: false
+		edittext statusET "status:" enabled: false across: 3
 -- 		edittext superclassET "superclass:" enabled: false
 -- 		edittext classET "class:"  enabled: false
 		edittext commentET "comment:"  enabled: false
+		dropdownlist maxVersDL "max vers:" items: #( "2015", "2017") selection: 1 width: 60
 	)
 	
 	group "asset sanity checking from scene:"
@@ -348,6 +350,7 @@ rollout createAssetRLT "create asset v3"
 		edittext fileCheckET "file exists:" readonly: true 
 		edittext assetFileInfoCheckET "asset info exists:" readonly: true
 		edittext versionFileInfoCheckET "version info exists:" readonly: true
+		
 	)
 	
 	group "sanity diagnostic:"
@@ -626,7 +629,14 @@ rollout createAssetRLT "create asset v3"
 	(
 		if mode == 1 then newAsset.createAssetFromScene()
 		else if mode == 2 then newAsset.createAssetFromSel()
-		else if mode == 3 then newAsset.publishNewVersion()
+		else if mode == 3 then 
+		(
+			local maxVers
+-- 			if maxVersDL.selection == 1 then maxVers = 2015 else if  maxVersDL.selection == 2 then maxVers = 2017
+			maxVers = maxVersDL.selected  as integer
+			format "max version: %\n" maxVers
+			newAsset.publishNewVersion maxVers
+		)
 			
 		if useWipCB.state then
 		(
@@ -639,5 +649,5 @@ rollout createAssetRLT "create asset v3"
 		destroydialog createAssetRLT
 	)
 )
-
+-- createdialog createAssetRLT width: 800
 

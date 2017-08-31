@@ -1,5 +1,11 @@
--- create script ini file near of 3dsmax ini file
+/*
+maj:
+	-- mettre en place un systeme de versionning des script et ouvrier la dernière version valide
+	-- créer deux méthodes générales pour enregistrer et charger les favoris
+	-- 
+*/
 
+-- create script ini file near of 3dsmax ini file
 fn installAmadasScripts =
 (
 	local maxIni = getMAXIniFile()
@@ -14,7 +20,7 @@ fn installAmadasScripts =
 	)
 	else
 	(
-		print "armada script still exists"
+		format  "armada script still exists: %\n" (getMAXIniFile())
 	)
 )
 installAmadasScripts()
@@ -102,7 +108,7 @@ macroScript ArmadasScriptAssetOpener
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	
-	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI.ms" )
+	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI_v4.ms" )
 )
 
 

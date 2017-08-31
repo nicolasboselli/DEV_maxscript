@@ -122,7 +122,7 @@ rollout edgeToShapeRLT "edge to shape"
 		checkbox collapseXformCB "collapse x form"
 	)
 	
-	group "reset x form (box oriennt):"
+	group "reset x form (normale):"
 	(
 		checkbox createBoxOrientCB "Create Box Orient"
 		checkbox xformOnBoxCB "reset x form"
