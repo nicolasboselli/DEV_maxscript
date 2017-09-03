@@ -1,16 +1,18 @@
 /*
 maj:
- x- add access to ini file
- x- enter folder on double click
- x- back folder in list
- x- back folder on back touch
-
- -- ajouter ds fonction au rc menu pour manager les scripts: copy, paste, rename, delete, bakup...
- -- revoir la fonction pour trouver le dossier parent
- -- enregister les preferences et la position
+	-- creer de nouveaux dossier
+	-- renommer des dossiers
+	-- prendre en compte des script du meme nom au copy/paste pour numeroteer les version
+	-- enregister les preferences et la position du script
+	-- toggle pour backupper/ debakkuper les fichiers
+ 
+ rebuild:
+	 -- revoir la fonction pour trouver le dossier parent
+	 -- revoir les fonction copy/paste/duplicate pour que duplicate execute un copy/paste
+	 -- faire fonctionner le rename de dossier avec le meme rollout que pour les scripts
+	 -- revoir le trie des fchiers: bakuper changer le onlyMxs en ignoreBak
+	 -- passer la selection folder ou script mode à l ouverture du rollout rename ET PAS pas des methodes init
 */
-
-
 
 struct returnClass
 (
@@ -33,8 +35,71 @@ struct fileClass
 	typ = getFilenameType tmppath
 )
 
-try(destroyDialog scriptExplorerRLT)catch()
 
+rollout renameRLT "rename" width: 400
+(
+	-- vars
+	local o 
+	
+	local oldPath 
+	local oldFilename 
+	local Typ 
+	
+	local folderMode = false
+	local scriptMode = false
+	
+	-- ui
+	edittext nameET "name:"
+-- 	edittext typeET "type:"
+	button okBT "ok"
+	
+	-- functions
+	fn initForScript =
+	(
+		o = scriptExplorerRLT.toDisplay[scriptExplorerRLT.scriptsListLB.selection]
+		
+		oldPath = getFilenamePath o.path
+		oldFilename = getFilenameFile o.path
+		Typ = getFilenameType o.path
+		
+		nameET.text = oldFilename + typ
+	)
+	
+	fn initforFolder =
+	(
+		format "je sais pas quoi faire"
+	)
+	
+	-- actions
+	on renameRLT open do
+	(
+		o = scriptExplorerRLT.toDisplay[scriptExplorerRLT.scriptsListLB.selection]
+		
+		if classof o == folderClass then folderMode = true
+		else if classof o == fileClass then scriptMode = true
+		else()
+	)
+	
+	
+	on nameET entered val do okBT.pressed()
+	
+	on okBT pressed do
+	(
+		oldname =  oldPath + oldFilename + Typ
+		newName = oldPath + nameET.text
+
+		format "rename: % >>> %\n" oldname newName
+		renameFile oldname newName
+		
+		destroyDialog renameRLT
+		
+		scriptExplorerRLT.collectValues maxscriptOnly: scriptExplorerRLT.onlyMs.state
+		scriptExplorerRLT.refreshUI()
+	)
+)
+
+
+try(destroyDialog scriptExplorerRLT)catch()
 rollout scriptExplorerRLT "Scripts Explorer"
 (
 	
@@ -47,6 +112,10 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local favAr = #()
 
 	local menuRC
+	
+	local fileToCopy
+	
+	local newName
 	
 -- 	local root = getFilenamePath  (getThisScriptFilename() )
 	local folderContent
@@ -62,7 +131,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	edittext pathET "current folder:" readonly: true 
 	button openFoldBT "open folder" across: 2
 	button accessIniBT "access ini"
-	checkbox onlyMs "collect maxscript files only" checked: true
+	checkbox onlyMs "ignore .bak" checked: true
 	 
 	listbox scriptsListLB "Scripts:" tooltip: "script list" height: 30 -- across: 2
 -- 	dotNetControl tv "TreeView"  height:450 visible: false
@@ -138,7 +207,35 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		)
 	)
 	
+		
+	fn collectValues2 ignoreBak: false =
+	(
+		allAr = scanFolder currentFolder
+		
+		toDisplay =#()
+		for o in allAr do
+		(
+			if classof o == fileclass and matchpattern o.path  then
+			(
+				if o.typ == ".ms" or o.typ == ".mse" then
+				(
+					append toDisplay o
+				)
+			)
+			else append toDisplay o
+		)
+	)
 	
+	fn duplicateFile =
+	(
+		o = toDisplay[scriptsListLB.selection]
+		PathOne = getFilenamePath o.path
+		FilenameOne = getFilenameFile o.path
+		Typ = getFilenameType o.path
+		
+		copyFile o.path (PathOne + FilenameOne + "_copy" + Typ)
+	)
+
 	-- UI dependant
 	fn refreshUI =
 	(
@@ -146,25 +243,98 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		pathET.text = currentFolder
 		scriptsListLB.items = for elt in toDisplay collect  elt.name
 	)
-	
+
 	fn createRCMenu =
 	(
 		rcmenu menuRC
 		(
-			menuItem editIT "edit script" enabled: false
-			menuItem launchIT "launch script" enabled: false
+			menuItem editIT "edit script" enabled: true
+			menuItem launchIT "launch script" enabled: true
 			separator sep3
-			menuItem copyIT "copy" enabled: false
-			menuItem pasteIT "paste"  enabled: false
-			menuItem delIT "delete"  enabled: false
+			menuItem copyIT "copy" enabled: true
+			menuItem pasteIT "paste"  enabled: true
+			menuItem dupIT "duplicate"  enabled: true
+			menuItem delIT "delete"  enabled: true
 			separator sep2
-			menuItem renameIT "rename script" enabled: false
-			menuItem bakIT "backup script" enabled: false
-			menuItem debakIT "de-backup script" enabled: false
+			menuItem renameIT "rename script" enabled: true
+			menuItem bakIT "backup script toggle" enabled: false
+			menuItem createFolderIT "create folder" enabled: false
+-- 			menuItem addToFavIT "add to favorites" enabled: false
 			separator sep1
 			menuItem foldIT "open folder" enabled: false
 			menuItem pathIT "copy Path" 
-						
+			
+			on editIT picked do editScriptBT.pressed()
+			on launchIT picked do launchScriptBT.pressed()
+			
+			on copyIT picked do
+			(
+				o = toDisplay[scriptsListLB.selection]
+				fileToCopy = o.path
+			)
+			
+			on pasteIT picked do
+			(
+				PathOne = getFilenamePath fileToCopy
+				FilenameOne = getFilenameFile fileToCopy
+				Typ = getFilenameType fileToCopy
+		
+				res = copyFile fileToCopy (currentFolder + FilenameOne + Typ)
+				format "copy done: %\n" res
+				
+				collectValues maxscriptOnly: onlyMs.state
+				refreshUI()
+			)
+			
+			on delIT picked do
+			(
+				o = toDisplay[scriptsListLB.selection]
+				PathOne = deleteFile o.path
+				
+				collectValues maxscriptOnly: onlyMs.state
+				refreshUI()
+			)
+			
+			on renameIT picked do
+			(
+				createdialog renameRLT
+				
+				o = toDisplay[scriptsListLB.selection]
+				
+				if classof o == fileClass then
+				(
+					
+					renameRLT.initForScript()
+				)
+				else if classof o == folderClass then
+				(
+					renameRLT.initForFolder()
+				)
+				else
+				(
+				)
+				
+-- 				format "newName:%\n" newName
+			)
+			
+			on dupIT picked do
+			(
+				o = toDisplay[scriptsListLB.selection]
+				
+				PathOne = getFilenamePath o.path
+				FilenameOne = getFilenameFile o.path
+				Typ = getFilenameType o.path
+		
+				res = copyFile o.path (PathOne + FilenameOne + "_copy" + Typ)
+-- 				format "copy done: %\n" res
+				
+				collectValues maxscriptOnly: onlyMs.state
+				refreshUI()
+			)
+			
+			
+			
+-- 			on foldIT picked do 
 			on pathIT picked do copyPath ()
 		)
 	)
