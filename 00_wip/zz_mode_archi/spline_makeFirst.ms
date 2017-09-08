@@ -1,6 +1,6 @@
 l =$
-
-if classof l == SplineShape then
+-- superclassof $
+if superclassof l == Shape then
 (
 	max modify mode
 	modPanel.setCurrentObject l.baseobject
