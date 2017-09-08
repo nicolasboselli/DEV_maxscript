@@ -46,6 +46,14 @@ fn sortMatbyname v1 v2 =
 	)
 )
 
+
+fn addUVWCube uvSize =
+(
+	local UvwSquare = Uvwmap  maptype: 4 length: uvSize width: uvSize  height: uvSize  axis: 0
+	modPanel.addModToSelection (UvwSquare) ui:on
+)
+
+
 struct matStruct 
 (
 	mat,
@@ -90,6 +98,18 @@ rollout vrMatRlt "VRay mat Lib"
 -- 		button replaceMatBT "replace material" enabled: false
 	)
 	
+	group "vray material:"
+	(
+		button createVrMtlBT "create vray material"
+	)
+	
+	group "uvw mapping box:"
+	(
+		button uv100 "100" across: 3
+		button uv250 "250"
+		button uv500 "500"
+	)
+	
 	/*
 	group "map material:"
 	(
@@ -105,7 +125,7 @@ rollout vrMatRlt "VRay mat Lib"
 		(
 			format "loading start\n"
 			vrLib = loadTempMaterialLibrary vrLibPath
-			matLibLoaded = true
+-- 			matLibLoaded = true
 			
 			matAr = for mat in vrLib collect mat
 			qsort matAr sortbyname
@@ -149,7 +169,7 @@ rollout vrMatRlt "VRay mat Lib"
 -- 	actions
 	on vrMatRlt open do
 	(
-		matLibLoaded = false
+-- 		matLibLoaded = false
 		
 		-- init library path
 		if vrLibPath == undefined then
@@ -170,10 +190,14 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	on vrMatRlt close do
 	(
-		-- save pref
-		setINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath" 	vrLibPath
-		-- save lib
-		writeLib vrLibPath
+-- 		format "vrLibPath: %\n" vrLibPath.count
+		if vrLibPath.count > 0 then
+		(
+			-- save pref
+			setINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath" 	vrLibPath
+			-- save lib
+			writeLib vrLibPath
+		)
 	)
 	
 	on openLibBT pressed do
@@ -262,6 +286,17 @@ rollout vrMatRlt "VRay mat Lib"
 		meditMaterials[activeMeditSlot] =  copy matAr[id]
 	)
 	
+	on createVrMtlBT pressed do
+	(
+		meditMaterials[activeMeditSlot] = vraymtl()
+	)
+	
+	on uv100 pressed do addUVWCube 100
+		
+	on uv250 pressed do addUVWCube 250
+		
+	on uv500 pressed do addUVWCube 500
+
 )
 createdialog vrMatRlt
 

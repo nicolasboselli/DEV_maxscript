@@ -1,17 +1,23 @@
 /*
-maj:
-	-- creer de nouveaux dossier
-	-- renommer des dossiers
-	-- prendre en compte des script du meme nom au copy/paste pour numeroteer les version
+todo:
+
 	-- enregister les preferences et la position du script
 	-- toggle pour backupper/ debakkuper les fichiers
+	-- ecrire les favoris dans le core; créé un fichier à part pour le core
+	
+	-- prendre en compte des script du meme nom au copy/pastee, au rename et à la creation  pour numeroteer les version
+	
+	-- prendre en compte des dossier du meme nom au copy/paste, au rename et à la creation pour numeroter les version
+	/- creer de nouveaux dossier
+	-- delete dossier: verifier que le dossier existe, verifier que le dossier est vide, supprimer le contenu du dossier
+	-- renommer des dossiers
  
  rebuild:
 	 -- revoir la fonction pour trouver le dossier parent
-	 -- revoir les fonction copy/paste/duplicate pour que duplicate execute un copy/paste
-	 -- faire fonctionner le rename de dossier avec le meme rollout que pour les scripts
-	 -- revoir le trie des fchiers: bakuper changer le onlyMxs en ignoreBak
-	 -- passer la selection folder ou script mode à l ouverture du rollout rename ET PAS pas des methodes init
+	 x- revoir les fonction copy/paste/duplicate pour que duplicate execute un copy/paste
+	 /- faire fonctionner le rename de dossier avec le meme rollout que pour les scripts
+	 -- revoir le tri des fchiers: bakuper changer le onlyMxs en ignoreBak
+	 x- passer la selection folder ou script mode à l ouverture du rollout rename ET PAS pas des methodes init: dans les methodes init à cause du modal
 */
 
 struct returnClass
@@ -35,7 +41,7 @@ struct fileClass
 	typ = getFilenameType tmppath
 )
 
-
+try(destroydialog renameRLT)catch()
 rollout renameRLT "rename" width: 400
 (
 	-- vars
@@ -45,8 +51,14 @@ rollout renameRLT "rename" width: 400
 	local oldFilename 
 	local Typ 
 	
+	local oldFoldPath
+	local oldFoldName
+	
 	local folderMode = false
 	local scriptMode = false
+	
+	local newName
+	local oldname
 	
 	-- ui
 	edittext nameET "name:"
@@ -56,6 +68,8 @@ rollout renameRLT "rename" width: 400
 	-- functions
 	fn initForScript =
 	(
+		renameRLT.title = "rename script"
+		
 		o = scriptExplorerRLT.toDisplay[scriptExplorerRLT.scriptsListLB.selection]
 		
 		oldPath = getFilenamePath o.path
@@ -67,7 +81,14 @@ rollout renameRLT "rename" width: 400
 	
 	fn initforFolder =
 	(
-		format "je sais pas quoi faire"
+		renameRLT.title = "rename folder"
+		
+		o = scriptExplorerRLT.toDisplay[scriptExplorerRLT.scriptsListLB.selection]
+		
+		oldFoldPath = o.path
+		oldFoldName = o.nameAr[o.nameAr.count]
+
+		nameET.text = oldFoldName
 	)
 	
 	-- actions
@@ -78,25 +99,35 @@ rollout renameRLT "rename" width: 400
 		if classof o == folderClass then folderMode = true
 		else if classof o == fileClass then scriptMode = true
 		else()
+		
+		if scriptMode then initForScript()
+		else if folderMode then initForFolder()
+		else()
 	)
-	
 	
 	on nameET entered val do okBT.pressed()
 	
 	on okBT pressed do
 	(
-		oldname =  oldPath + oldFilename + Typ
-		newName = oldPath + nameET.text
-
-		format "rename: % >>> %\n" oldname newName
-		renameFile oldname newName
-		
+		if scriptMode then
+		(
+			oldname =  oldPath + oldFilename + Typ
+			newName = oldPath + nameET.text
+		)
+		else if folderMode then
+		(
+			oldname = oldFoldPath + oldFoldName
+			newName = oldFoldPath + nameET.text
+		)
+		else
+		(
+		)
 		destroyDialog renameRLT
-		
-		scriptExplorerRLT.collectValues maxscriptOnly: scriptExplorerRLT.onlyMs.state
-		scriptExplorerRLT.refreshUI()
 	)
 )
+
+
+
 
 
 try(destroyDialog scriptExplorerRLT)catch()
@@ -114,6 +145,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	local menuRC
 	
 	local fileToCopy
+	local otoCopy
 	
 	local newName
 	
@@ -154,7 +186,13 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		pathTmp =  try(toDisplay[scriptsListLB.selection].path) catch()
 		setclipboardText pathTmp
 	)
-	
+		
+	fn deleteFolder folderPath: =
+	(
+		local sioDir = dotNetClass "System.IO.Directory"
+		if (SIODir.Exists folderPath) do SIODir.Delete (folderPath) true
+	)
+
 	
 	fn scanFolder onePath =
 	(
@@ -171,7 +209,6 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		
 		format "scan done: %\n" onePath
 		#(returnClass ()) + folderAr +filesAr
-
 	)
 	
 	fn returnParentFolder folderPath =
@@ -244,6 +281,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		scriptsListLB.items = for elt in toDisplay collect  elt.name
 	)
 
+	
 	fn createRCMenu =
 	(
 		rcmenu menuRC
@@ -258,7 +296,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			separator sep2
 			menuItem renameIT "rename script" enabled: true
 			menuItem bakIT "backup script toggle" enabled: false
-			menuItem createFolderIT "create folder" enabled: false
+			menuItem createFolderIT "create folder" enabled: true
 -- 			menuItem addToFavIT "add to favorites" enabled: false
 			separator sep1
 			menuItem foldIT "open folder" enabled: false
@@ -269,27 +307,64 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			
 			on copyIT picked do
 			(
+				otoCopy = toDisplay[scriptsListLB.selection]
 				o = toDisplay[scriptsListLB.selection]
+-- 				if classof o == filecla
 				fileToCopy = o.path
 			)
 			
 			on pasteIT picked do
 			(
-				PathOne = getFilenamePath fileToCopy
-				FilenameOne = getFilenameFile fileToCopy
-				Typ = getFilenameType fileToCopy
-		
-				res = copyFile fileToCopy (currentFolder + FilenameOne + Typ)
-				format "copy done: %\n" res
+				if classof otoCopy == fileclass then
+				(
+					local res 
+					
+					PathOne = getFilenamePath otoCopy.path
+					FilenameOne = getFilenameFile otoCopy.path
+					Typ = getFilenameType otoCopy.path
+					
+					-- tester le doublon avant la copy
+						-- créer une numerotation plutot que copy
+					if doesfileexist otoCopy.path then
+					(
+						res = copyFile otoCopy.path (PathOne + FilenameOne + "_copy" + Typ)
+					)
+					else
+					(
+						res = copyFile otoCopy.path (currentFolder + FilenameOne + Typ)
+					)
+					
+					format "copy done: %, %\n" res otoCopy.path
+				)
+				else if otoCopy == folderClass then
+				(
+					format "pas de copie de dossier pour le moment\n"
+				)
+				else()
 				
 				collectValues maxscriptOnly: onlyMs.state
 				refreshUI()
 			)
 			
+			on dupIT picked do
+			(
+				copyIT.picked()
+				pasteIT.picked()
+			)
+			
 			on delIT picked do
 			(
 				o = toDisplay[scriptsListLB.selection]
-				PathOne = deleteFile o.path
+				if classof o == fileClass then
+				(
+					deleteFile o.path
+				)
+				else if classof o == folderClass then
+				(
+					format "pas de suppression de dossier pour le moment\n"
+-- 					deleteFolder folderPath: o.path
+				)
+				else()
 				
 				collectValues maxscriptOnly: onlyMs.state
 				refreshUI()
@@ -297,42 +372,38 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			
 			on renameIT picked do
 			(
-				createdialog renameRLT
+				createdialog renameRLT modal: true escapeEnable: true
 				
-				o = toDisplay[scriptsListLB.selection]
+				if renameRLT.scriptMode then
+				(
+					local res = renameFile renameRLT.oldname renameRLT.newName
+					format "rename done: % : % >>> %\n" res renameRLT.oldname renameRLT.newName
+				)
+				else if renameRLT.folderMode then
+				(
+					format "rename: % >>> %\n" renameRLT.oldname renameRLT.newName
+					format "pas de rename de dossier pour le moment\n"
+-- 					format "folder rename fail\n"
+				)
+				else()
 				
-				if classof o == fileClass then
-				(
-					
-					renameRLT.initForScript()
-				)
-				else if classof o == folderClass then
-				(
-					renameRLT.initForFolder()
-				)
-				else
-				(
-				)
-				
--- 				format "newName:%\n" newName
+				collectValues maxscriptOnly: onlyMs.state
+				refreshUI()
 			)
 			
-			on dupIT picked do
+			on createFolderIT picked do
 			(
-				o = toDisplay[scriptsListLB.selection]
-				
-				PathOne = getFilenamePath o.path
-				FilenameOne = getFilenameFile o.path
-				Typ = getFilenameType o.path
-		
-				res = copyFile o.path (PathOne + FilenameOne + "_copy" + Typ)
--- 				format "copy done: %\n" res
+				-- prendre en compte le doublan
+				-- proposer un rename
+				makeDir (currentFolder + "new_folder")
 				
 				collectValues maxscriptOnly: onlyMs.state
 				refreshUI()
 			)
 			
 			
+			
+
 			
 -- 			on foldIT picked do 
 			on pathIT picked do copyPath ()

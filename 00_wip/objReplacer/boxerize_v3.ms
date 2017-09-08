@@ -1,3 +1,8 @@
+-- maj:
+	-- proposer des options pour l'orientation du pivot
+	
+
+
 fn detach_face_fenetre s =
 (
 
@@ -42,6 +47,7 @@ fn pivotOnFAce s =
 	theX = normalize ((polyop.getFaceNormal s 1)*-1)
 	theY = normalize (cross [0,0,1] theX )
 	theZ= normalize (cross theX theY)
+	
 	localTM = matrix3   theX theY theZ posCenter
 
 	s.transform = localTM

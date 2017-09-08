@@ -26,6 +26,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local renderSize
 	
 	local camArray = #()
+	local camToRender = #()
 	
 	local outputPath
 	local outputPathFolder
@@ -54,28 +55,13 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 -- 	extrait une seule camera à partir de la selection dans la mutibox
 	fn oneCamSelectedFN multiBoxVar =
 	(
-		oneCamSelected = undefined
+		local oneCamSelected
 		multiCamSel = (multiBoxVar.selection as array)
 -- 		print (multiCamSel as string)
 		if multiCamSel.count ==1 then oneCamSelected = multiCamSel[1] 
 		
 		oneCamSelected
 	)
-
-
-	fn collectCamFN =
-	(
-		CamSel = for c in cameras where classof c != Targetobject collect c
-		CamSel
-	)
-	
--- 	rafraichis les elements d'une listbox
-	fn refreshItemsFN listboxname itemsArray =
-	(
-		listboxname.items = for o in itemsArray collect o.name
-	)
-	
-	fn cam_filt obj = classof obj == freecamera
 
 	fn sortbyname v1 v2 =
 	(
@@ -95,18 +81,26 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			default: 0
 		)
 	)
+	
+	fn collectCamFN =
+	(
+		local camCollected = for c in cameras where classof c != Targetobject collect c
+		qsort camCollected sortbyname
+		camCollected
+	)
+-- 	fn cam_filt obj = classof obj == freecamera
+
+
 
 	-- def ui
-
-	
-	group "Gestion Liste de Cameras"
+	group "Camera Manager"
 	(
 		
-		Multilistbox Cam2Render "Cameras:"  
-		button sortCamName "Classer par nom" across: 2
-		button RebootCamBT "Reinitialiser"
+		Multilistbox SceneCamsMLT "Scene Cameras:"  
+-- 		button sortCamName "Classer par nom" across: 2
+		button RebootCamBT "Refresh" across:4
 		
-		pickbutton PickCam "Piquer une Camera"  filter: cam_filt across: 4
+-- 		pickbutton PickCam "Piquer une Camera"  filter: cam_filt across: 4
 		button addCamSelect "Ajout de Cameras" 
 		button delCamSelect "Supprimer selection"
 		button delOtherCamBT "Supprimer les autres"
@@ -151,14 +145,19 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 -- 	button testNameBT "Test Name"
 	
 	-- actions
-
+	
+-- 	functions UI dependant
+	fn refreshUI =
+	(
+		SceneCamsMLT.items = for o in camArray collect o.name
+	)
 	
 	
--- 	ouverture
+-- Actions
 	on Pt2vue_renderer_UI open do
 	(
 		camArray = collectCamFN ()
-		refreshItemsFN Cam2Render camArray
+		refreshUI()
 		
 		savepath.text = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
 		format  "outputPathFolder: %\n" savepath.text
@@ -183,11 +182,10 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 	)
 	
-	on Cam2Render selectionEnd do
+	on SceneCamsMLT selectionEnd do
 	(
-		print "youhou"
-		oneCamSelected = oneCamSelectedFN Cam2Render
-		print oneCamSelected
+		oneCamSelected = oneCamSelectedFN SceneCamsMLT
+		format "camera selected: %\n" oneCamSelected
 		
 		if oneCamSelected != undefined then	
 		(	
@@ -200,11 +198,11 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 		else
 		(
-			RenameCamEdit.text = ""
+			RenameCamEdit.text = "[SELECTION MULTIPLE]"
 		)
 	)
 	
-	on Cam2Render doubleClicked oneCam do
+	on SceneCamsMLT doubleClicked oneCam do
 	(
 		viewport.setCamera camArray[oneCamSelected]
 		select  camArray[oneCamSelected]
@@ -219,43 +217,29 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 -- 	gestion camera	
 
-	
-	on sortCamName pressed do
-	(
-		qsort camArray sortbyname
--- 		camArray = sort camArray
-		refreshItemsFN Cam2Render camArray
-	)
+
 	
 	on RebootCamBT pressed do
 	(
 		camArray = collectCamFN ()
-		refreshItemsFN Cam2Render camArray
+		refreshUI()
 	)
-	
 	
 	on addCamSelect pressed do 
 	(
 		CamTempSet = selection as array
 		for o in CamTempSet do append camArray o
 		camArray = makeuniqueArray camArray
-		refreshItemsFN Cam2Render camArray
+		refreshUI()
 	)
 	
 	on delCamSelect pressed do
 	(
-		for i=(Cam2Render.selection as array).count to 1 by -1  do
+		for i=(SceneCamsMLT.selection as array).count to 1 by -1  do
 		(			
-			deleteItem camArray (Cam2Render.selection as array)[i]
+			deleteItem camArray (SceneCamsMLT.selection as array)[i]
 		)
-		refreshItemsFN Cam2Render camArray
-	)
-	
-	on PickCam picked obj do
-	(
-		append camArray obj
-		camArray = makeuniqueArray camArray
-		refreshItemsFN Cam2Render camArray
+		refreshUI()
 	)
 	
 	
@@ -264,10 +248,10 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		if oneCamSelected != undefined then
 		(
-		select camArray[oneCamSelected]
-		copyCamTemp = copy camArray[oneCamSelected]
-		append camArray copyCamTemp
-		refreshItemsFN Cam2Render camArray
+			select camArray[oneCamSelected]
+			copyCamTemp = copy camArray[oneCamSelected]
+			append camArray copyCamTemp
+			refreshUI()
 		)
 		else
 		(
@@ -281,7 +265,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		(
 		delete camArray[oneCamSelected]
 		deleteitem camArray oneCamSelected
-		refreshItemsFN Cam2Render camArray
+		refreshUI()
 		)
 		else 
 		(
@@ -319,7 +303,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		if oneCamSelected != undefined then
 		(		
 			camArray[oneCamSelected].name = NewNameString
-			refreshItemsFN Cam2Render CamArray
+			refreshUI()
 		)
 		else
 		(
@@ -349,7 +333,6 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	on MaqRenderCB changed thestate do
 	(
 		vr.options_overrideMtl_on = thestate
-
 		setActive AtmosVRtoon thestate
 	)
 	
@@ -378,7 +361,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			)
 			*/
 			
-			camAr = (Cam2Render.selection) as array
+			camAr = (SceneCamsMLT.selection) as array
 			
 			for i = 1 to camAr.count do
 			(

@@ -34,7 +34,7 @@ rollout VrayRenderRLT "Vray Options"
 	gi_secondary_type: 3  lightcache_subdivs: 400 lightcache_storeDirectLight: 0 lightcache_showCalcPhase: 1 \
 	colorMapping_type: 0 colorMapping_darkMult: 1.0 colorMapping_brightMult: 1.0 colorMapping_gamma: 2.2 colorMapping_linearWorkflow: false --colorMapping_adaptationOnly: (colorMapTest())
 
-	local vrayExp = vray_exposure_control shutter: 250 f_number: 11 iso: 100 wb_preset: 1 white_balance: [1,1,1]
+	local vrayExp = vray_exposure_control shutter: 150 f_number: 9 iso: 100 wb_preset: 1 white_balance: [1,1,1]
 
 -- 	functions
 	fn createInfiniteGround =
@@ -79,7 +79,7 @@ rollout VrayRenderRLT "Vray Options"
 		-- vray sun
 -- 			dummy_target = dummy name: "vraysuntarget" 
 			dummy_target = Targetobject wirecolor: yellow
-			vraySunVar = VRaySun name:"VRaySun001" pos:[val,val,val] isSelected:on enabled:on turbidity: 2.0 ozone: 0 sky_model: 1 target: dummy_target
+			vraySunVar = VRaySun name:"VRaySun001" pos:[val,val,val] isSelected:on size_multiplier: 4 enabled:on turbidity: 2.5 ozone: 0.35 sky_model: 0 target: dummy_target
 			-- enviraonnement
 		)
 		
