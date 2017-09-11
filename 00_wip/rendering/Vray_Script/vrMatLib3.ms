@@ -49,7 +49,7 @@ fn sortMatbyname v1 v2 =
 
 fn addUVWCube uvSize =
 (
-	local UvwSquare = Uvwmap  maptype: 4 length: uvSize width: uvSize  height: uvSize  axis: 0
+	local UvwSquare = Uvwmap  maptype: 4 length: uvSize width: uvSize  height: uvSize  axis: 2
 	modPanel.addModToSelection (UvwSquare) ui:on
 )
 

@@ -63,7 +63,7 @@ for f = 1 to maxFaces do
 	(
 		append facesToDel f
 -- 		count += 1
-		format "face: %, normale: %\n" f nrl
+-- 		format "face: %, normale: %\n" f nrl
 	)
 )
 -- format "faces Horizontales: % \n" count
@@ -93,7 +93,7 @@ for f = 1 to maxFaces do
 		if dist < 30 and dist > 0 then
 		(
 			append facesToDel f
-			format "face: %, impact: %, distance: %\n" f impact dist
+-- 			format "face: %, impact: %, distance: %\n" f impact dist
 		)
 	)
 )

@@ -1,3 +1,12 @@
+-- maj:
+
+	-- faire fonctionner les actions sur les cameras sur une selection multiple
+	-- sauver les informations du renderu de points de vue dans la scene
+		
+	-- créer les états de camera du soleil pour chaque vue(scene state)
+	-- créer les lignes de batch render pour chaque camera à rendre
+	
+	-- proposer la position du soleil en fonction de la camera(droite, gauche)
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
@@ -9,7 +18,7 @@ fn convertToVrCam s =
 (
 	if classof s == TargetCamera or classof s == FreeCamera or classof s == Physical then
 	(
-		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 150 f_number: 9 	whiteBalance_preset: 2 whiteBalance: color 191.25 226.023 255
+		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 150 f_number: 9 	whiteBalance_preset: 2 whiteBalance: (color 191.25 226.023 255)
 		s.name = s.name + "_bak"
 		vrCam.specify_fov = false
 	)
@@ -26,7 +35,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local renderSize
 	
 	local camArray = #()
-	local camToRender = #()
+	global camToRender -- = #()
 	
 	local outputPath
 	local outputPathFolder
@@ -35,6 +44,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			
 	local camSel 
 	local oneCamSelected = undefined
+	
+	local Pt2vueNode
 	
 	-- vars maquette materials
 	/*
@@ -48,21 +59,9 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local OverMatVitre = VRayMtl name: "over_vitre" diffuse:  (color 92 175 196 ) 
 	*/
 -- 	vars bakup
-	local Pt2vueNode
+
 		
 	-- functions
-	
--- 	extrait une seule camera à partir de la selection dans la mutibox
-	fn oneCamSelectedFN multiBoxVar =
-	(
-		local oneCamSelected
-		multiCamSel = (multiBoxVar.selection as array)
--- 		print (multiCamSel as string)
-		if multiCamSel.count ==1 then oneCamSelected = multiCamSel[1] 
-		
-		oneCamSelected
-	)
-
 	fn sortbyname v1 v2 =
 	(
 	-- 	vars
@@ -98,80 +97,83 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		
 		Multilistbox SceneCamsMLT "Scene Cameras:"  
 -- 		button sortCamName "Classer par nom" across: 2
-		button RebootCamBT "Refresh" across:4
+		button RebootCamBT "Refresh"
 		
--- 		pickbutton PickCam "Piquer une Camera"  filter: cam_filt across: 4
-		button addCamSelect "Ajout de Cameras" 
-		button delCamSelect "Supprimer selection"
-		button delOtherCamBT "Supprimer les autres"
-	)
-	
-	group "Gestion Cameras dans la Scene"
-	(
-		button selectCamBT "Selectionner" across: 3
+		button selectCamBT "Select Cam" across: 3
 		button CamViewBT "Camera View"
 		button vrCamBT "convert to vr cam" enabled: true
+		
 
-		button duplicateCamSelBT "Dupliquer" across:2
-		button deleteReelCamBT "Supprimer"
+		button duplicateCamSelBT "Clone Cam" across: 3
+		button deleteReelCamBT "Del Cam"
 		
-		edittext RenameCamEdit "Renommer" 
-		button test
-	)
-	
-	group "chemin d'enregistrement"
-	(
-		edittext savepath  "Folder:" text: "" readonly: true
+		button addCamSelect "Add to Render" across: 2
 		
-		edittext suffixNameEdit "File Name :"  text: "" readonly: false across: 2
-		edittext fileNameType "Type: " text: "" readonly: true
+		edittext RenameCamEdit "Rename" 
 		
-		button SelectPathFile "..."
-	)
-	
-	/*
-	group "render options:"
-	(
-		checkbox MaqRenderCB "Rendu Maquette" across: 3
-		checkbox NetRenderCB "Net Render" 
-		radiobuttons RenderSizeRB "Render Size:" labels: #("1350x750", "2700x1500")
+-- 		pickbutton PickCam "Piquer une Camera"  filter: cam_filt across: 4
 
 	)
-	*/
-	
-	button rendCamSelBT "Render Cameras Selectionnées"		
--- 	button rendAllCamBT "Render All Cam v2" 
-	
--- 	button testNameBT "Test Name"
-	
-	-- actions
+		
+	group "Point de vue renderer"
+	(
+
+-- 		button delOtherCamBT "Supprimer les autres"
+		
+		Multilistbox CamsRenderMLT "Render Cameras:"  
+		
+		
+		button delCamSelect "Remove Cam" across: 3
+		button saveLigthStateBT "Save Light State"
+		button loadLigthStateBT "Load Light State"
+		
+		
+		edittext savepath  "Path:" text: "" readonly: true
+		
+-- 		edittext suffixNameEdit "File Name :"  text: "" readonly: false across: 2
+-- 		edittext fileNameType "Type: " text: "" readonly: true
+		
+		button SelectPathFile "..." across: 2
+		button createBatchRenderBT "Generate Batch Render"
+-- 		button rendCamSelBT "Render Selection"		
+	)
 	
 -- 	functions UI dependant
 	fn refreshUI =
 	(
+		-- refresh scene cameras
 		SceneCamsMLT.items = for o in camArray collect o.name
+		
+		if isvalidnode camSel then 
+		(
+			RenameCamEdit.text = camSel.name 
+			if classof camSel != VRayPhysicalCamera then vrCamBT.enabled = true else vrCamBT.enabled = false
+		)
+		else 
+		(
+			RenameCamEdit.text = "[SELECTION INCORRECTE]"
+		)
+		
+		-- refresh render cameras
+		if camToRender.count > 0 then 
+		(
+			CamsRenderMLT.items = for o in camToRender collect o.name
+		)
+		else
+		(
+			CamsRenderMLT.items = #()
+		)
 	)
+
 	
-	
--- Actions
+-- Scene Camera actions
 	on Pt2vue_renderer_UI open do
 	(
 		camArray = collectCamFN ()
 		refreshUI()
 		
 		savepath.text = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
-		format  "outputPathFolder: %\n" savepath.text
--- 		application materiau maquette override
--- 		vr.options_overrideMtl_on = true
--- 		vr.options_overrideMtl_mtl = OverMatMaquette
-		
--- 		addAtmospheric  AtmosVRtoon
--- 		setActive AtmosVRtoon true
-		
--- 		MaqRenderCB.state = true
-		
--- 		taille du rendu
-		
+		format  "outputPathFolder: %\n" savepath.text		
 	)
 	
 	on Pt2vue_renderer_UI close do
@@ -184,131 +186,140 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	on SceneCamsMLT selectionEnd do
 	(
-		oneCamSelected = oneCamSelectedFN SceneCamsMLT
-		format "camera selected: %\n" oneCamSelected
+		local oneCamSelected
+		multiCamSel = (SceneCamsMLT.selection as array)
 		
-		if oneCamSelected != undefined then	
-		(	
+		if multiCamSel.count ==1 then 
+		(
+			oneCamSelected = multiCamSel[1] 
 			camSel = camArray[oneCamSelected]
-			
-			RenameCamEdit.text = camSel.name
-			
-			if classof camSel != VRayPhysicalCamera then vrCamBT.enabled = true
-			else vrCamBT.enabled = false
+			format "camera selected: %\n" camSel.name
+		)
+		else if multiCamSel.count > 1 then
+		(
+			for id in multiCamSel do
+			(
+				append 
+			)
 		)
 		else
 		(
-			RenameCamEdit.text = "[SELECTION MULTIPLE]"
+			oneCamSelected == undefined
+			camSel = undefined 
+			format "multi camera selection: %\n" multiCamSel
 		)
+		
+		refreshUI()
 	)
 	
 	on SceneCamsMLT doubleClicked oneCam do
 	(
-		viewport.setCamera camArray[oneCamSelected]
-		select  camArray[oneCamSelected]
+		viewport.setCamera camSel
+		select  camSel
 	)		
 
-	on vrCamBT pressed do
-	(
--- 		print "youhou"
--- 		print camSel
-		convertToVrCam camSel
-	)
-	
--- 	gestion camera	
-
-
-	
 	on RebootCamBT pressed do
 	(
 		camArray = collectCamFN ()
 		refreshUI()
 	)
 	
-	on addCamSelect pressed do 
-	(
-		CamTempSet = selection as array
-		for o in CamTempSet do append camArray o
-		camArray = makeuniqueArray camArray
-		refreshUI()
-	)
-	
-	on delCamSelect pressed do
-	(
-		for i=(SceneCamsMLT.selection as array).count to 1 by -1  do
-		(			
-			deleteItem camArray (SceneCamsMLT.selection as array)[i]
-		)
-		refreshUI()
-	)
-	
-	
-	-- Events gestion cameras dans la scene
-	on duplicateCamSelBT pressed do
-	(
-		if oneCamSelected != undefined then
-		(
-			select camArray[oneCamSelected]
-			copyCamTemp = copy camArray[oneCamSelected]
-			append camArray copyCamTemp
-			refreshUI()
-		)
-		else
-		(
-			print "selectionnez une seule camera"
-		)
-	)
-	
-	on deleteReelCamBT pressed do
-	(
-		if oneCamSelected != undefined then
-		(
-		delete camArray[oneCamSelected]
-		deleteitem camArray oneCamSelected
-		refreshUI()
-		)
-		else 
-		(
-			print "selectionnez une seule camera"
-		)
-	)
-	
+		
 	on selectCamBT pressed do
 	(
-		if oneCamSelected != undefined then
-		(
-			select camArray[oneCamSelected]
-		)
-		else 
-		(
-			print "selectionnez une seule camera"
-		)
+		if camsel != undefined then select camsel else format "SELECTION INCORRECTE"
 	)
 	
 	on CamViewBT pressed do
 	(
-		if oneCamSelected != undefined then 
+		if isvalidnode camSel then
 		(
-			viewport.setCamera camArray[oneCamSelected]
+			viewport.setCamera camsel 
 		)
-		else 
-		(
-			print "selectionnez une seule camera"
-		)
+		else format "SELECTION INCORRECTE"
 	)
 	
+	on vrCamBT pressed do
+	(
+		if isvalidnode camSel then
+		(
+			convertToVrCam camSel
+			
+			camArray = collectCamFN ()
+			refreshUI()
+		)
+		else format "SELECTION INCORRECTE"
+	)
+		
+	on duplicateCamSelBT pressed do
+	(
+		if isvalidnode camSel then
+		(
+			copy camsel
+			
+			camArray = collectCamFN ()
+			refreshUI()
+		)
+		else format "SELECTION INCORRECTE"
+	)
+		
+	on deleteReelCamBT pressed do
+	(
+		if isvalidnode camSel then
+		(
+			delete camsel
+			
+			camArray = collectCamFN ()
+			refreshUI()
+		)
+		else format "SELECTION INCORRECTE"
+	)
 	
 	on RenameCamEdit entered NewNameString do 
 	(
-		if oneCamSelected != undefined then
-		(		
-			camArray[oneCamSelected].name = NewNameString
+		if isvalidnode camSel then
+		(
+			camsel.name = NewNameString
+			
+			camArray = collectCamFN ()
 			refreshUI()
 		)
-		else
+		else format "SELECTION INCORRECTE"
+	)
+	
+
+	on addCamSelect pressed do 
+	(
+		if isvalidnode camsel then
 		(
-			print "selectionner un seul element"
+			appendifunique camToRender camsel
 		)
+		else format "SELECTION INCORRECTE"
+		
+		refreshUI()
+	)
+	
+-- Render Camera actions
+	on delCamSelect pressed do
+	(
+		cameToRemoveID = CamsRenderMLT.selection as array
+		
+		
+		for i = cameToRemoveID.count to  1 by -1 do
+		(
+			format "cams to remove: %\n" camToRender[i].name
+			deleteitem camToRender i
+-- 			format "cams to remove: %\n" camToRender[i].name
+		)
+		
+-- 		format "cams to remove: %\n" cameToRemove
+		/*
+		for i=(SceneCamsMLT.selection as array).count to 1 by -1  do
+		(			
+			deleteItem camToRender (SceneCamsMLT.selection as array)[i]
+		)
+		*/
+		refreshUI()
 	)
 	
 -- 	chemin enregistrement
