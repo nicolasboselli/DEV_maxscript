@@ -3,6 +3,7 @@ todo:
 
 	-- enregister les preferences et la position du script
 	-- toggle pour backupper/ debakkuper les fichiers
+	
 	-- ecrire les favoris dans le core; créé un fichier à part pour le core
 	
 	-- prendre en compte des script du meme nom au copy/pastee, au rename et à la creation  pour numeroteer les version
@@ -125,9 +126,6 @@ rollout renameRLT "rename" width: 400
 		destroyDialog renameRLT
 	)
 )
-
-
-
 
 
 try(destroyDialog scriptExplorerRLT)catch()
@@ -514,7 +512,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		(
 			appendifunique  favAr toDisplay[scriptsListLB.selection].path 
 -- 			favAr = makeuniquearray favAr
-			print favAr
+			format "favorites script: %\n" favAr
 			setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" (with printAllElements on favAr as string)
 		)
 		else

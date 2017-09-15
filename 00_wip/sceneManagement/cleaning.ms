@@ -25,7 +25,6 @@ select sel
 
 for o in objs where classof o.baseobject == railclone_pro do
 (
-	
 	converttopoly o
 	format "convert done:%\n" o.name
 )
@@ -37,11 +36,16 @@ for o in objs where classof o.baseobject == railclone_pro do
 objs = objects as array
 for o in objs where o.modifiers.count >= 1 do
 (
+	local atLeastOneConvertion = false
 	for m in o.modifiers where classof m == sweep do
 	(
+		atLeastOneConvertion = true
 		format "obj: %, mod: %\n" o m
 		converttopoly o
 	)
+	
+	if not atLeastOneConvertion then format "Pas de modifiers clone à collapser."
+
 )
 
 -- collapse clone 
@@ -49,14 +53,18 @@ sel = #()
 objs = objects as array
 for o in objs where o.modifiers.count >= 1 do
 (
+	local atLeastOneConvertion = false
 	for m in o.modifiers where classof m == clone do
 	(
+		atLeastOneConvertion = true
 		format "obj: %, mod: %\n" o m
 		append sel o
 		converttopoly o
 	)
+	
+	if not atLeastOneConvertion then format "Pas de modifiers clone à collapser."
 )
-select sel
+-- select sel
 
 -- find edit poly
 col= #()
@@ -69,12 +77,12 @@ for o in objs where o.modifiers.count >= 1 do
 		append col o
 	)
 )
-select col
+-- select col
 
 
 -- VRayEdgesTex ()
 -- meditMaterials[21].texmap_bump.widthType = 0
 -- meditMaterials[21].texmap_bump.thickness = 0.2
 
-vrEdge = VRayEdgesTex widthType: 0 thickness: 0.2
-meditMaterials[activeMeditSlot].texmap_bump = vrEdge
+-- vrEdge = VRayEdgesTex widthType: 0 thickness: 0.2
+-- meditMaterials[activeMeditSlot].texmap_bump = vrEdge

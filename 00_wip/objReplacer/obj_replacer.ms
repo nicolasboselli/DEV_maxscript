@@ -1,3 +1,11 @@
+-- maj:
+	-- freezer les axe de scale
+	-- faire fonctionner sur une selection d'objet en respectant la hierarchie
+
+-- bug:
+	-- l'asset panneau solaire ne supporte pas le replac et je ne sais pas pourquoi
+
+
 filein "objReplacerDef2.ms"
 
 try(destroydialog objReplacerRLT)catch()
@@ -33,7 +41,7 @@ rollout objReplacerRLT "objects replacer"
 		)
 		else 
 		(
-			"correct your selection"
+			print "correct your selection"
 		)
 	)
 	

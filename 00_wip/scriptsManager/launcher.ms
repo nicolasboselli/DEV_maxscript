@@ -6,6 +6,10 @@
 	-- add selection set:
 		-- default/all is "armadasScriptsArray=#"
 		-- create set, delete set, add script to selected set remove script from selected set
+		
+-- rebuild:
+	/- creer une methode pour loader les favoris du core depuis un fichier externes(ini)
+	
 */
 
 -- with printAllElements on propArVal as string
@@ -49,7 +53,6 @@ struct favFileClass
 		)
 	)
 )
-
 
 rollout mxsLaunchRLT "maxscript launcher"
 (
@@ -164,6 +167,40 @@ rollout mxsLaunchRLT "maxscript launcher"
 		coreScriptArray
 	)
 	
+	fn loadCore2 = 
+	(
+		local coreScriptArrayStr = #()
+		local coreScriptArray = #()
+		
+		-- recuperer le fichier ini
+		iniCoreFileName = root + "/scriptsManager/scriptListCore.ini"
+		format "ini file: %\n" iniCoreFileName
+		
+		-- collect clean list
+		if doesfileexist iniCoreFileName then
+		(
+			coreArStr = getINISetting iniCoreFileName  "coreScriptList" "scriptArray"
+			coreArStrTmp = execute coreArStr
+			format "scriptList: %\n" coreArStrTmp
+			
+			-- test if file exist
+			for onePath in coreArStrTmp do
+			(
+				if doesFileExist (root + onePath) then
+				(
+					appendifunique coreScriptArrayStr (root + onePath)
+				)else(format "obsolete path: %\n" (root + onePath))
+			)
+		)
+		else 	(format "ini file doesn't exist: %\n" iniCoreFileName)
+		
+		coreScriptArray = for script in coreScriptArrayStr collect (favFileClass script)
+		
+-- 		format "script list: %\n" coreScriptArray
+		-- recuperer la liste de script du fichier ini
+		coreScriptArray
+	)
+	
 	fn writeFavorite =
 	(
 -- 		print "bye, favorites writting soon!"
@@ -225,8 +262,12 @@ rollout mxsLaunchRLT "maxscript launcher"
 	
 	on loadHardCoresBT pressed do
 	(
-		fileClassArray = loadCore()
+-- 		loadCore2 ()
+		fileClassArray = loadCore2()
+		format "fileClassArray:%\n" fileClassArray
+-- 		fileClassArray = loadCore()
 		displayAr = fileClassArray
+		format "displayAr:%\n" displayAr
 		refreshList()
 	)
 	

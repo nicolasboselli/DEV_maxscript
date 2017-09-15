@@ -8,18 +8,17 @@ add button to view plan in xnview
 add button to select plan in scene
 
 x- function to extract part of a plan (transfer uv)
-	- detach poly
-	- copy uvwap
-	- add scaler
 
 -- rendre l'application de plan "plane independant"
 x- remplacer le dialog box de choix ce fichier par choix de folder
 -- rendre la fenetre de path editable pour rentrer directement le chemin d'accés
+
+x- classer les plans par ordre alphbetique
 */
 
 -- InstanceMgr.GetInstances tp &instances
 -- InstanceMgr.GetInstances (Bitmaptexture()) &toto
-bmpAr = getClassInstances  Bitmaptexture
+-- bmpAr = getClassInstances  Bitmaptexture target: scenematerials
 -- bmpAr[1].fileName
 
 
@@ -78,9 +77,6 @@ fn copyPlan sel =
 	)
 )
 
--- sel = selection as array
--- copyPlan sel
-
 struct planClass
 (
 	path,
@@ -88,21 +84,13 @@ struct planClass
 	fn checkinscene  =
 	(
 		local inscene = False
-		for mat in scenematerials do 
+		local bmpAr = getClassInstances  Bitmaptexture target: scenematerials
+		
+		for oneBmp in  bmpAr do
 		(
-			bitMapFile = undefined
-			try
+			if oneBmp.filename != undefined do
 			(
-				bitMapFile = mat.diffuseMap.bitmap.filename
-			)
-			catch
-			(
-				bitMapFile = undefined
-			)
-			
-			if bitMapFile != undefined do
-			(
-				if bitMapFile == path do
+				if oneBmp.filename == path do
 				(
 					inscene =  true
 					break
@@ -152,6 +140,7 @@ rollout createPlaneRLT "create plane"
 	edittext pathToSearchET"path: "readOnly: false width: 400 pos: [10,10]
 	button searchBT "..."  pos: [420,10]
 	button openFoldBT "open" pos: [450,10]
+	button refreshFoldBT "refresh" pos: [490,10]
 	listbox jpgListBox "jpg list:"
 	
 	button createPlaneBT "create"  pos:[ 50 , lastLine]
@@ -173,13 +162,34 @@ rollout createPlaneRLT "create plane"
 	)
 	*/
 	
+	-- functions
+	fn sortbyname v1 v2 =
+	(
+		-- 	vars
+		local d
+		
+		if ( v1.name < v2.name) then
+			d=-1
+		else
+			d=1
+		
+		--compare les numeros entre eux et les classe	
+		case of
+		(
+			(d < 0.): -1
+			(d > 0.): 1
+			default: 0
+		)
+	)
+	/*
 	fn returnJpgList oneJpg =
 	(
 		jpgDir = getFilenamePath  oneJpg
 		jpgListTmp = getFiles (jpgDir + "*.jpg")
 
-		return jpgListTmp
+		jpgListTmp
 	)
+	*/
 	
 	fn returnJpgList2 oneFolder = 
 	(
@@ -235,7 +245,7 @@ rollout createPlaneRLT "create plane"
 		tmpMaterial.showInViewport =on
 		-- 	assign material on plane
 		onePlane.material = tmpMaterial
-		return onePlane
+		onePlane
 	)
 
 	
@@ -270,27 +280,12 @@ rollout createPlaneRLT "create plane"
 			-- refresh vars
 			jpgList = returnJpgList2 root
 			planObjList = initPlanClass jpgList
+			qsort planObjList sortbyname
 			
 			-- refresh ui
 			pathToSearchET.text = root
 			jpgListBox.items = for jpg in planObjList collect jpg.name
 		)
-		
-		/*
-		openFileName = getOpenFileName caption: "test" filename:root types: "jpg(*.jpg)|*.jpg|All Files|*.*"
-		
-		if openFileName != undefined then
-		(
-			root = getFilenamePath openFileName
-			
-			pathToSearchET.text = root
-			jpgList = returnJpgList openFileName
-			planObjList = initPlanClass jpgList
-			
-			
-			jpgListBox.items = for jpg in planObjList collect jpg.name
-		)
-		*/
 	)
 	
 	on openFoldBT pressed do
@@ -299,8 +294,6 @@ rollout createPlaneRLT "create plane"
 		format "root: %\n" root
 		doscommand ("explorer " + root)
 	)
-	
-	 
 	
 	on createPlaneBT pressed do
 	(
@@ -317,6 +310,7 @@ rollout createPlaneRLT "create plane"
 		
 		-- update listbox
 		planObjList = initPlanClass jpgList
+		qsort planObjList sortbyname
 		jpgListBox.items = for jpg in planObjList collect jpg.name
 		
 		select mapPlane
@@ -337,6 +331,8 @@ rollout createPlaneRLT "create plane"
 			
 			-- update listbox
 			planObjList = initPlanClass jpgList
+			qsort planObjList sortbyname
+			
 			jpgListBox.items = for jpg in planObjList collect jpg.name
 		)
 	)
@@ -354,8 +350,9 @@ rollout createPlaneRLT "create plane"
 		)
 	)
 	
-	on createPlaneRLT open do
+	on refreshFoldBT pressed do
 	(
+		
 		-- load ini file
 -- 		rootIni = getINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath"
 		try
@@ -373,11 +370,18 @@ rollout createPlaneRLT "create plane"
 			root = rootIni
 			
 			jpgList = returnJpgList2 root
+			
 			planObjList = initPlanClass jpgList
+			qsort planObjList sortbyname
 			
 			pathToSearchET.text = root
 			jpgListBox.items = for jpg in planObjList collect jpg.name
 		)
+	)
+	
+	on createPlaneRLT open do
+	(
+		refreshFoldBT.pressed()
 	)
 	
 	on createPlaneRLT close do
@@ -405,5 +409,5 @@ rollout createPlaneRLT "create plane"
 )
 
 
-createDialog createPlaneRLT width: 500 style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
+createDialog createPlaneRLT width: 550 style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 

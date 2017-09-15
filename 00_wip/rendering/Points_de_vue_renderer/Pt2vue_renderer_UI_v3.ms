@@ -2,11 +2,19 @@
 
 	-- faire fonctionner les actions sur les cameras sur une selection multiple
 	-- sauver les informations du renderu de points de vue dans la scene
+	-- faire fonctionner le rename à la selection de camera dans la liste
+
+	-- creer vraycam avec target
+	-- faire la selection de camera sur les camera tous render
 		
-	-- créer les états de camera du soleil pour chaque vue(scene state)
+	-- créer les états de camera du soleil pour chaque vue (scene state)
 	-- créer les lignes de batch render pour chaque camera à rendre
 	
 	-- proposer la position du soleil en fonction de la camera(droite, gauche)
+	
+-- bug:
+	-- à la suppression ou à la creation de camera la selection est incorrecte, backuper la selection pour la reactiver au refresh
+	-- faire un callback pour detecter la creation de camera et faire un refresh ou le changement de selection de camera dans la scene
 
 Global re = maxOps.GetCurRenderElementMgr ()
 
@@ -18,9 +26,27 @@ fn convertToVrCam s =
 (
 	if classof s == TargetCamera or classof s == FreeCamera or classof s == Physical then
 	(
-		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: false specify_fov: true fov: s.fov vignetting: false shutter_speed: 150 f_number: 9 	whiteBalance_preset: 2 whiteBalance: (color 191.25 226.023 255)
+-- 		vrCam = VRayPhysicalCamera transform: s.transform name: s.name targeted: true specify_fov: true fov: s.fov vignetting: false shutter_speed: 150 f_number: 9 	whiteBalance_preset: 2 whiteBalance: (color 191.25 226.023 255)
+		
+		local vrayCam = vrayCreateVRayPhysicalCamera ()
+		
+		vrayCam.transform = s.transform
+		vrayCam.name = s.name
+		
+		vrayCam.targeted = true
+		
+		vrayCam.specify_fov = true
+		vrayCam.fov = s.fov
+		
+		vrayCam.vignetting = false
+
+		vrayCam.shutter_speed = 150
+		vrayCam.f_number = 9
+
+		vrayCam.whiteBalance_preset = 2
+		vrayCam.whiteBalance = color 191.25 226.023 255
+		
 		s.name = s.name + "_bak"
-		vrCam.specify_fov = false
 	)
 	else(format "camera inconvertible: %\n" s)
 )
@@ -35,7 +61,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local renderSize
 	
 	local camArray = #()
-	global camToRender -- = #()
+	local camToRender = #()
 	
 	local outputPath
 	local outputPathFolder
@@ -59,7 +85,6 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local OverMatVitre = VRayMtl name: "over_vitre" diffuse:  (color 92 175 196 ) 
 	*/
 -- 	vars bakup
-
 		
 	-- functions
 	fn sortbyname v1 v2 =
@@ -85,9 +110,31 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		local camCollected = for c in cameras where classof c != Targetobject collect c
 		qsort camCollected sortbyname
+		
+		-- collect cam to render
+		camToRender = #()
+		for cam in camCollected do
+		(
+			res = getUserProp cam "camToRender"
+			if res != undefined then
+			(
+				if res then 
+				(
+-- 					format "cam to render: %\n" cam.name
+					append camToRender cam
+				)
+				else
+				(
+-- 					format "cam to not render: %\n" cam.name
+				)
+			)
+		)
+		
+-- 		format "cam to render: %\n" camToRender
 		camCollected
 	)
 -- 	fn cam_filt obj = classof obj == freecamera
+
 
 
 
@@ -165,12 +212,46 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 	)
 
+	fn getCamSelection =
+	(
+		local oneCamSelected
+		multiCamSel = (SceneCamsMLT.selection as array)
+		
+		format "selection: %, count: %\n" multiCamSel multiCamSel.count
+		if multiCamSel.count ==1 then 
+		(
+			oneCamSelected = multiCamSel[1] 
+			camSel = camArray[oneCamSelected]
+			format "camera selected: %\n" camSel.name
+		)
+		else if multiCamSel.count > 1 then
+		(
+-- 			print "youpi" 
+			oneCamSelected == undefined
+			camSel = undefined 
+		)
+		else
+		(
+			oneCamSelected == undefined
+			camSel = undefined 
+			format "multi camera selection: %\n" multiCamSel
+		)
+	)
 	
 -- Scene Camera actions
 	on Pt2vue_renderer_UI open do
 	(
 		camArray = collectCamFN ()
+		outputPath = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
+		
 		refreshUI()
+		
+		if camArray.count > 0 then
+		(
+			SceneCamsMLT.selection = #{1}
+			getCamSelection()
+			refreshUI()
+		)
 		
 		savepath.text = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
 		format  "outputPathFolder: %\n" savepath.text		
@@ -186,34 +267,15 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	on SceneCamsMLT selectionEnd do
 	(
-		local oneCamSelected
-		multiCamSel = (SceneCamsMLT.selection as array)
-		
-		if multiCamSel.count ==1 then 
-		(
-			oneCamSelected = multiCamSel[1] 
-			camSel = camArray[oneCamSelected]
-			format "camera selected: %\n" camSel.name
-		)
-		else if multiCamSel.count > 1 then
-		(
-			for id in multiCamSel do
-			(
-				append 
-			)
-		)
-		else
-		(
-			oneCamSelected == undefined
-			camSel = undefined 
-			format "multi camera selection: %\n" multiCamSel
-		)
-		
+		getCamSelection()		
 		refreshUI()
 	)
 	
 	on SceneCamsMLT doubleClicked oneCam do
 	(
+		format "onecam: %\n" oneCam
+		
+		getCamSelection()		
 		viewport.setCamera camSel
 		select  camSel
 	)		
@@ -246,6 +308,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			convertToVrCam camSel
 			
 			camArray = collectCamFN ()
+			getCamSelection()	
 			refreshUI()
 		)
 		else format "SELECTION INCORRECTE"
@@ -258,6 +321,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			copy camsel
 			
 			camArray = collectCamFN ()
+			getCamSelection()	
 			refreshUI()
 		)
 		else format "SELECTION INCORRECTE"
@@ -270,6 +334,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			delete camsel
 			
 			camArray = collectCamFN ()
+			getCamSelection()	
 			refreshUI()
 		)
 		else format "SELECTION INCORRECTE"
@@ -282,6 +347,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			camsel.name = NewNameString
 			
 			camArray = collectCamFN ()
+			getCamSelection()	
 			refreshUI()
 		)
 		else format "SELECTION INCORRECTE"
@@ -292,6 +358,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		if isvalidnode camsel then
 		(
+			setUserProp camsel "camToRender" true
 			appendifunique camToRender camsel
 		)
 		else format "SELECTION INCORRECTE"
@@ -307,8 +374,10 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		
 		for i = cameToRemoveID.count to  1 by -1 do
 		(
+			
 			format "cams to remove: %\n" camToRender[i].name
 			deleteitem camToRender i
+			setUserProp camToRender[i] "camToRender" false
 -- 			format "cams to remove: %\n" camToRender[i].name
 		)
 		
@@ -326,13 +395,15 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	on SelectPathFile pressed do
 	(
-		outputPath = getBitmapSaveFileName filename: savepath.text
+		outputPath = getSavePath caption: "Select \"point de vue\" folder" -- initialDir: pathToSearchET.text
+		
+-- 		outputPath = getBitmapSaveFileName filename: savepath.text
 		
 		if outputPath != undefined then
 		(
-			savepath.text = getFilenamePath outputPath
-			suffixNameEdit.text = getFilenameFile outputPath
-			fileNameType.text = getFilenameType outputPath
+			savepath.text = outputPath
+-- 			suffixNameEdit.text = ".jpg"
+-- 			fileNameType.text = getFilenameType outputPath
 		)
 		else
 		(
@@ -340,12 +411,43 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 	)
 	
+	
+	on saveLigthStateBT pressed do
+	(
+		sceneStateMgr.Capture camSel.name #{2}
+	)
+	
+	on createBatchRenderBT pressed do
+	(
+		-- prevoir les exception avec un find view
+		local check = batchRenderMgr.FindView camSel.name
+		if check == 0 then
+		(
+			local batch = batchRenderMgr.CreateView camSel
+			batch.name = camSel.name
+			local filename = outputPath + "\\" + camSel.name + ".jpg"
+			format "path: %\n" filename
+			
+	-- 		test.sceneStateName = ""
+			batch.outputFilename = filename
+		)else(format "batch render deja existant: %\n" camSel.name)
 
+	)
+	
+
+)
+createdialog Pt2vue_renderer_UI
+
+
+	/*
 	on MaqRenderCB changed thestate do
 	(
 		vr.options_overrideMtl_on = thestate
 		setActive AtmosVRtoon thestate
 	)
+	*/
+	
+	/*
 	
 -- 	render
 	on rendCamSelBT pressed do
@@ -364,13 +466,13 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 		else
 		(
-			/*
+
 			renderSize = case RenderSizeRB.state of
 			(
 				1: 750
 				2: 1500
 			)
-			*/
+
 			
 			camAr = (SceneCamsMLT.selection) as array
 			
@@ -409,24 +511,9 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			)
 		)
 	)
+	*/
 	
 
-)
-
-createdialog Pt2vue_renderer_UI
-
-
-
---------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------
--- ameliorations:
-
--- parametrer la taille de l'image
-
-	-- conserver plusieurs asset de camera
-
-
-	-- ajouter directement la date et le nom du rendu au rendu (script photoshop)
 
 
 

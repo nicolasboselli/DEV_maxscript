@@ -1,26 +1,26 @@
 /*
 maj:
 	-- debug:
-		x- save doens't work
 		-- open max file crash
 	
 	-- maj: 
-		-- save matlib after addition or deletion
-		-- mark material edited
+		/- save matlib after addition or deletion
 		x- sort material by name
-		-- proposer un replace lorsqu'on veut enregistrer un materiau avec un nom deja existant
+		x- proposer un replace lorsqu'on veut enregistrer un materiau avec un nom deja existant
 		
 		-- versioning material library file
 		-- add thumbnail
 		-- collect texture
+		
+		-- fonction search
 	
 	-- dev: 
-		-- mat structure
+		x- mat structure
 			-- mat
 			-- name
 			
-		-- collect material from libray to array of structure on openning
-		-- rebuilt libray from array on save
+		x- collect material from libray to array of structure on openning
+		x- rebuilt libray from array on save
 		-- separate materials collected  from materials displayed		
 
 */
@@ -74,8 +74,8 @@ rollout vrMatRlt "VRay mat Lib"
 	local matColAr = #()
 	local matDispAr = #()
 	
-	local vrLib = materiallibrary()
-	global matAr = #()
+	local	vrLib = materiallibrary()
+	local matAr = #()
 	
 -- 	UI
 	group "library file:"
@@ -126,6 +126,8 @@ rollout vrMatRlt "VRay mat Lib"
 			format "loading start\n"
 			vrLib = loadTempMaterialLibrary vrLibPath
 -- 			matLibLoaded = true
+-- 			getclassinstances  target: vrLib 
+			format "vrLib: %\n" vrLib
 			
 			matAr = for mat in vrLib collect mat
 			qsort matAr sortbyname
