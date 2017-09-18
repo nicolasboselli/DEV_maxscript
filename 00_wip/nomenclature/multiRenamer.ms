@@ -33,7 +33,9 @@ rollout renameRLT "Multi Renamer" width: 400
 	group "basename:"
 	(
 		edittext baseNameET "basename:" 
+		button replaceBasenameBT "replace" across: 2
 		button addBasenameBT "add"
+
 	)
 	
 	group "add suffix:"
@@ -201,6 +203,19 @@ rollout renameRLT "Multi Renamer" width: 400
 			)
 		)
 -- 		s.name = basename + "_" + s.name
+		refreshUI()
+	)
+	
+	on replaceBasenameBT pressed do
+	(
+		if basename != undefined then
+		(
+			for i in namesMLB.selection do
+			(
+				sel[i].name = basename 
+			)
+		)
+	
 		refreshUI()
 	)
 	

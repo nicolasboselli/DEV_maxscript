@@ -1,14 +1,6 @@
 -- asset opener
 
 /*
-memo:
-	-- fonctionnalité	
-		-- create asset from sel
-		-- create asset from scene
-		-- publish asset version
-		-- merge asset
-		-- edit asset
-
 maj:
 	x- filter by name
 		x- add * add begining and end of search	
@@ -16,7 +8,7 @@ maj:
 	-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore archive
 	
-	-- choix de la version de max à l'enregistrement en option
+	/- choix de la version de max à l'enregistrement en option
 	
 	x- fuse "assetCreatorUI" and "assetCreatorFromSelectionUI2"
 	
@@ -26,41 +18,51 @@ maj:
 		x- update wip name after publishing
 
 	x- clean wip folder
-	-- clean old version (work only with first and last version)
+	-- clean old version (garder seuelement la première et la dernière version)
 	-- add comments
 	x- add history in repository
 	-- delete/ rename asset
 	
-	x- ouvrir l'asset dans une autre instance de 3ds max
 	
 	x- au merge eviter le cache layer et les sun
 		
 	-- proposer merge ou xref scene ou xref object
 	-- ouvrir le dialogbox du merge en option
 	
-	x- faire apparaitre version de max du fichier: getMaxFileVersionData filename
-	
 	x- enregister le fichier courant dans le wip
-	x- ouvrir le dernier wip 
+	/- ouvrir le dernier wip 
 	
 	x- renommer la dialog box lors de la creation d'assets de maniere approprié
-
+	
+	-- publier un version "merge ready" à coté du dossier d'asset
+		-- supprimer les sun, cam et cache_layer
+	
+	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
+		-- proposer d'ouvrir la version la plus recente
+		
+	-- ajouter une fonction "substitute"
+	-- ajouter une fonction "merge picker"
+	-- ajouter créer un asset vide
+	
+	x- faire apparaitre la prévue dans une fenetre separée
+		-- afficher le nom de l'asset dans la barre de titre
+	
+-- (asset explorer: update tools v2)
 	-- prendre en charge les asset node
 		-- checker les asset node de la scene
 		-- compter les instances
 		-- importer le nouvel asset
 		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
-		
-	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
-		-- proposer d'ouvrir la version la plus recente
-	-- ajouter une fonction "substitute"
-	-- ajouter une fonction "merge picker"
+	
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection
 	-- error quand enregistre asset et que le path selectionner ne correspond pas
 	-- error: "rollouts"
-	-- error quand on ne choisi pas comme repository le dossier parent des asset
+	-- merge impossible quand on ne choisi pas comme repository le dossier parent des asset
+	
+rebuild:
+	-- tester la fenetre de publish des asset comme modal
 		
 */
 
@@ -132,6 +134,23 @@ rollout externalToolsRLT "asset tools"
 	on updateToolsBT pressed do filein "updateAssetTool2.ms"
 )
 
+rollout openThumbRLT "Thumb"
+(
+	bitmap assetBMP "asset thumbnail" width: 256 height: 256
+	
+	on openThumbRLT open do
+	(
+		assetEditorRLT.bmpOpened = true
+	)
+	
+	on openThumbRLT close do
+	(
+		assetEditorRLT.bmpOpened = false
+	)
+)
+
+openThumbRLT
+
 rollout assetEditorRLT "assets editor v2"
 (
 	local maxIni = getMAXIniFile()
@@ -147,6 +166,9 @@ rollout assetEditorRLT "assets editor v2"
 	
 	local statusAr = #("all","none","approved","wip","retake", "archive" )
 	local currentAsset
+	
+	local bmpOpened = false
+	
 -- 	UI
 -- 	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
 	group "Assets Repository:"
@@ -180,7 +202,8 @@ rollout assetEditorRLT "assets editor v2"
 	group "Assets List:"
 	(
 		listbox assetsBL "Assets:"
-		button collectAssetBT "refresh"
+		button collectAssetBT "refresh" across: 2
+		button openThumbBT "Thumbnail"
 	)
 -- 	rof.rollouts[2].assetsList[1].name
 	group "Merging:"
@@ -224,7 +247,7 @@ rollout assetEditorRLT "assets editor v2"
 		button newMaxBT2 "edit in new max instance v2" width: 160
 		button cleanWipFolderBT  "clean wip folder" width: 160
 		
-		bitmap assetBMP "asset thumbnail" width: 256 height: 256
+-- 		bitmap assetBMP "asset thumbnail" width: 256 height: 256 visible: true
 		
 -- 		button updateBT "update"
 	)
@@ -259,11 +282,16 @@ rollout assetEditorRLT "assets editor v2"
 -- 		refresh thumbnail
 		thumbFile =  asset.assetFolder + "\\" + "assetThumb.jpg"
 		
-		if doesfileexist thumbFile == true then assetBMP.filename = thumbFile
+		if doesfileexist thumbFile == true then
+		(
+-- 			assetBMP.filename = thumbFile
+			if bmpOpened then openThumbRLT.assetBMP.filename = thumbFile
+		)
 		else 
 		(
 -- 			print "no thumbnail"
-			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
+-- 			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
+			if bmpOpened then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
 		
 -- 		refresh status
@@ -429,7 +457,11 @@ rollout assetEditorRLT "assets editor v2"
 		refreshListBoxNew assetsToDisplay
 	)
 	
-	on assetEditorRLT close do updateIni()
+	on assetEditorRLT close do 
+	(
+		updateIni()
+		try(destroydialog openThumbRLT)catch()
+	)
 	
 	on findFolderBT pressed do
 	(
@@ -490,6 +522,8 @@ rollout assetEditorRLT "assets editor v2"
 		)
 	)
 	
+
+	
 	/*
 	on createAssetBT pressed do filein "assetCreatorUI5.ms"
 		
@@ -545,6 +579,11 @@ rollout assetEditorRLT "assets editor v2"
 		assetsToDisplay = filterAssetsList assetsList
 		-- display list
 		refreshListBoxNew assetsToDisplay
+	)
+	
+	on openThumbBT pressed do
+	(
+		createdialog openThumbRLT width: 300
 	)
 	
 	on nameSearchET changed val do
