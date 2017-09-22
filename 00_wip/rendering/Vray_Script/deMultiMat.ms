@@ -381,11 +381,13 @@ fn collectMatFromSel sel=
 	if matAr.count < 25 then
 	(
 		for i = 1 to matAr.count do meditMaterials[i] = matAr[i]
+		
 	)
 	else
 	(
 		for i = 1 to 24 do meditMaterials[i] = matAr[i]
 	)
+	format "material count:%\n" matAr.count
 )
 
 

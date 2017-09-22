@@ -164,12 +164,7 @@ fn parentFN sel =
 					format "i: %, groupHead: %, groupmember: %, parent: %, parentable:%, parentinsel: % \n" sel[i].name (isGroupHead sel[i])  (isGroupMember sel[i]) sel[i].parent parentable parentInSel
 					sel[i].parent = daddy
 				)
-			)catch(format "FAIL: % , ERROR: %\n"  sel[i].name (getcurrentexception()))
-			
-
-
-			
-
+			)catch(format "FAIL: % , ERROR: %\n"  sel[i].name (getcurrentexception())
 		)
 	)
 )

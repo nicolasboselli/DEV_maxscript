@@ -12,7 +12,9 @@ todo:
 	/- creer de nouveaux dossier
 	-- delete dossier: verifier que le dossier existe, verifier que le dossier est vide, supprimer le contenu du dossier
 	-- renommer des dossiers
- 
+	
+	-- ajouter fonction pour ajouter les scripts au core et pour visualiser la liste de core pour management
+	
  rebuild:
 	 -- revoir la fonction pour trouver le dossier parent
 	 x- revoir les fonction copy/paste/duplicate pour que duplicate execute un copy/paste

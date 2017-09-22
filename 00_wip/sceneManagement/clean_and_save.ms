@@ -1,3 +1,12 @@
+-- save current version as autoback
+pathConfig.getCurrentProjectFolder() 
+num  = pathConfig.getProjectSubDirectoryCount() 
+for i = 1 to num do format "%\n"(pathConfig.getProjectSubDirectory i)
+-- apply maxscript
+-- save cleanversion
+-- back to  autoback
+
+
 -- collapse railclone
 objs = objects as array
 -- objs = selection as array
@@ -62,25 +71,3 @@ for o in objs where o.modifiers.count >= 1 do
 )
 -- select sel
 
--- find edit poly
-/*
-col= #()
-objs = objects as array
-for o in objs where o.modifiers.count >= 1 do
-(
-	for m in o.modifiers where classof m == edit_poly do
-	(
-		format "obj: %, mod: %\n" o m
-		append col o
-	)
-)
-*/
--- select col
-
-
--- VRayEdgesTex ()
--- meditMaterials[21].texmap_bump.widthType = 0
--- meditMaterials[21].texmap_bump.thickness = 0.2
-
--- vrEdge = VRayEdgesTex widthType: 0 thickness: 0.2
--- meditMaterials[activeMeditSlot].texmap_bump = vrEdge

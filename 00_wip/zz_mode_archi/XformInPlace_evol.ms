@@ -1,3 +1,30 @@
+/*
+debug: 
+	-- saute à la déparenté aprés le xform in place dans certain cas 
+			-- solution: realigner la spline sur le boxorient aorés la déparenté
+				-- passer par la matrice
+				$Plane001_shape005.rotation = $Box008.rotation
+
+				$.rotation = (quat 0.439232 0.437431 0.191528 0.760951)
+
+				$.rotation = (quat -0.707087 0.00528271 0.707087 0.00528461) as eulerangles
+
+				$.rotation = (quat -0.707087 0.00528271 0.707087 0.00528461) -- valeur qui pose probleme
+				$.rotation = (quat 0 0 0 1)
+				isIdentity  (quat -0.707087 0.00528271 0.707087 0.00528461)
+				
+				pos = $.position
+				-- $.rotation = (quat -0.707087 0.00528271 0.707087 0.00528461)
+				-- $.rotation = (quat 0 0 0 1)
+				mat =  (quat -0.707087 0.00528271 0.707087 0.00528461) as matrix3
+				mat.row4 = pos
+				$.transform = mat
+				
+			-- voir fichier debug_xform sur bureau
+
+*/
+
+
 fn resetInPlaceFN sel=
 (
 	bakPos = sel.position
@@ -39,6 +66,7 @@ fn resetInPlace2 s tmpParent =
 	
 	s.parent = bakparent
 	
+	s.rotation = tmpParent.rotation
 -- 	delete tmpParent
 )
 
@@ -132,7 +160,7 @@ rollout xformRLT "xform in place V2"
 				resetInPlace2 s tmpParent
 				delete tmpParent
 			)
-			else
+			else 
 			(
 -- 				tmpParent = point transform: s.transform
 				resetInPlace2 s ref
@@ -148,3 +176,6 @@ rollout xformRLT "xform in place V2"
 )
 
 createdialog xformRLT
+
+
+

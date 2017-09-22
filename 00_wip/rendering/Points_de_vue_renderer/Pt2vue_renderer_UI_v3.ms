@@ -1,21 +1,23 @@
+/*
 -- maj:
-
+	--  pendre en charge les scene state pour les différents points de vue plutot que les cameras multiples
+	
 	-- faire fonctionner les actions sur les cameras sur une selection multiple
-	-- sauver les informations du renderu de points de vue dans la scene
-	-- faire fonctionner le rename à la selection de camera dans la liste
+	-- sauver les informations du rendeur de points de vue dans la scene
+	/- faire fonctionner le rename à la selection de camera dans la liste
 
-	-- creer vraycam avec target
-	-- faire la selection de camera sur les camera tous render
+	/- creer vraycam avec target
+	-- sync la selection de camera sur les camera to render
 		
-	-- créer les états de camera du soleil pour chaque vue (scene state)
-	-- créer les lignes de batch render pour chaque camera à rendre
+	-- créer les états de camera et de soleil pour chaque vue (scene state)
+	/- créer les lignes de batch render pour chaque camera à rendre
 	
 	-- proposer la position du soleil en fonction de la camera(droite, gauche)
 	
 -- bug:
 	-- à la suppression ou à la creation de camera la selection est incorrecte, backuper la selection pour la reactiver au refresh
 	-- faire un callback pour detecter la creation de camera et faire un refresh ou le changement de selection de camera dans la scene
-
+*/
 Global re = maxOps.GetCurRenderElementMgr ()
 
 maxVers = getFileVersion "$max/3dsmax.exe"
@@ -62,6 +64,10 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	local camArray = #()
 	local camToRender = #()
+	
+	local statesAr = #()
+	local stateSel
+	local stateSelAr = ()
 	
 	local outputPath
 	local outputPathFolder
@@ -135,7 +141,13 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	)
 -- 	fn cam_filt obj = classof obj == freecamera
 
-
+	fn collectSceneStates =
+	(
+		local num = sceneStateMgr.GetCount()   
+		statesAr = for i = 1 to num collect sceneStateMgr.GetSceneState i
+		sort statesAr
+		format "statesAr: %\n" statesAr
+	)
 
 
 	-- def ui
@@ -144,17 +156,17 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		
 		Multilistbox SceneCamsMLT "Scene Cameras:"  
 -- 		button sortCamName "Classer par nom" across: 2
-		button RebootCamBT "Refresh"
+		button RebootCamBT "Refresh" across: 3 width: 120
 		
-		button selectCamBT "Select Cam" across: 3
-		button CamViewBT "Camera View"
-		button vrCamBT "convert to vr cam" enabled: true
+		button selectCamBT "Select Cam" width: 120
+		button CamViewBT "Camera View" width: 120
+		button vrCamBT "convert to vr cam" enabled: true across: 3 width: 120
 		
 
-		button duplicateCamSelBT "Clone Cam" across: 3
-		button deleteReelCamBT "Del Cam"
+		button duplicateCamSelBT "Clone Cam"  width: 120
+		button deleteReelCamBT "Del Cam" width: 120
 		
-		button addCamSelect "Add to Render" across: 2
+-- 		button addCamSelect "Add to Render" width: 120 -- across: 2 
 		
 		edittext RenameCamEdit "Rename" 
 		
@@ -162,27 +174,27 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 
 	)
 		
-	group "Point de vue renderer"
+	group "Scene States"
 	(
 
 -- 		button delOtherCamBT "Supprimer les autres"
-		
-		Multilistbox CamsRenderMLT "Render Cameras:"  
-		
-		
-		button delCamSelect "Remove Cam" across: 3
-		button saveLigthStateBT "Save Light State"
-		button loadLigthStateBT "Load Light State"
+		edittext sceneStateET "new scene state:" pos:[15,310] width: 420
+		button newSceneStateBT "create" pos:[440, 310]
+		Multilistbox CamsRenderMLT "scene states:"  
 		
 		
+		
+		button saveLigthStateBT "Save Scene State" width: 120 across: 3	
+		button loadLigthStateBT "Load Scene State" width: 120
+		button delCamSelect "Del Scene State Cam" width: 120 
+	)
+	
+	group "Batch Render"
+	(
 		edittext savepath  "Path:" text: "" readonly: true
-		
--- 		edittext suffixNameEdit "File Name :"  text: "" readonly: false across: 2
--- 		edittext fileNameType "Type: " text: "" readonly: true
-		
-		button SelectPathFile "..." across: 2
-		button createBatchRenderBT "Generate Batch Render"
--- 		button rendCamSelBT "Render Selection"		
+		button SelectPathFile "..." across: 3
+		button createBatchRenderBT "Batch from Cam"
+		button batchFromStateBT "Batch from State"
 	)
 	
 -- 	functions UI dependant
@@ -190,6 +202,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		-- refresh scene cameras
 		SceneCamsMLT.items = for o in camArray collect o.name
+		
+		CamsRenderMLT.items = for o in statesAr collect o
 		
 		if isvalidnode camSel then 
 		(
@@ -202,6 +216,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		)
 		
 		-- refresh render cameras
+		/*
 		if camToRender.count > 0 then 
 		(
 			CamsRenderMLT.items = for o in camToRender collect o.name
@@ -210,6 +225,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		(
 			CamsRenderMLT.items = #()
 		)
+		*/
 	)
 
 	fn getCamSelection =
@@ -222,7 +238,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		(
 			oneCamSelected = multiCamSel[1] 
 			camSel = camArray[oneCamSelected]
-			format "camera selected: %\n" camSel.name
+			if isvalidnode camSel then format "camera selected: %\n" camSel.name
 		)
 		else if multiCamSel.count > 1 then
 		(
@@ -243,6 +259,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		camArray = collectCamFN ()
 		outputPath = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
+		
+		collectSceneStates()
 		
 		refreshUI()
 		
@@ -353,45 +371,51 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		else format "SELECTION INCORRECTE"
 	)
 	
-
-	on addCamSelect pressed do 
+	on CamsRenderMLT selectionend do
 	(
-		if isvalidnode camsel then
-		(
-			setUserProp camsel "camToRender" true
-			appendifunique camToRender camsel
-		)
-		else format "SELECTION INCORRECTE"
+		local sel = CamsRenderMLT.selection as array
 		
+		if sel.count == 1 then
+		(
+			stateSel = CamsRenderMLT.items[sel[1]]
+			stateSelAr = for i in CamsRenderMLT.selection collect CamsRenderMLT.items[i]
+		)
+		else if sel.count > 1 then
+		(
+			stateSel = undefined
+			stateSelAr = for i in CamsRenderMLT.selection collect CamsRenderMLT.items[i]
+		)
+		else
+		(
+			stateSel = undefined
+			stateSelAr = undefined
+		)
+		
+		format "stateSel: %, stateSelAr:%\n" stateSel stateSelAr
+	)
+	
+	on newSceneStateBT pressed do
+	(
+		sceneStateMgr.Capture sceneStateET.text #{1,2,4,5}
+		
+		collectSceneStates()
 		refreshUI()
 	)
 	
--- Render Camera actions
-	on delCamSelect pressed do
+	on saveLigthStateBT pressed do
 	(
-		cameToRemoveID = CamsRenderMLT.selection as array
+		-- retrouver la selection du scene state
 		
+		sceneStateMgr.Capture stateSel #{1,2,4,5}
 		
-		for i = cameToRemoveID.count to  1 by -1 do
-		(
-			
-			format "cams to remove: %\n" camToRender[i].name
-			deleteitem camToRender i
-			setUserProp camToRender[i] "camToRender" false
--- 			format "cams to remove: %\n" camToRender[i].name
-		)
-		
--- 		format "cams to remove: %\n" cameToRemove
-		/*
-		for i=(SceneCamsMLT.selection as array).count to 1 by -1  do
-		(			
-			deleteItem camToRender (SceneCamsMLT.selection as array)[i]
-		)
-		*/
+		collectSceneStates()
 		refreshUI()
 	)
 	
--- 	chemin enregistrement
+	on loadLigthStateBT pressed do
+	(
+		sceneStateMgr.Restore  stateSel #{1,2,4,5}
+	)
 	
 	on SelectPathFile pressed do
 	(
@@ -410,12 +434,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			print "Fail"
 		)
 	)
-	
-	
-	on saveLigthStateBT pressed do
-	(
-		sceneStateMgr.Capture camSel.name #{2}
-	)
+
 	
 	on createBatchRenderBT pressed do
 	(
@@ -434,87 +453,82 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 
 	)
 	
+	on batchFromStateBT pressed do
+	(
+-- 		cam = $Camera001
+-- 		outputPath = @"T:\BPD Marignan\SoBlagnac_0917\Perspectives\Perspectives\ptsdevue"
+		num = sceneStateMgr.GetCount()   
+
+		for i = 1 to num do
+		(
+			local oneName = sceneStateMgr.GetSceneState i
+			
+				-- prevoir les exception avec un find view
+			local check = batchRenderMgr.FindView oneName
+			if check == 0 then
+			(
+				local batch = batchRenderMgr.CreateView undefined
+				batch.name = oneName
+				batch.camera = camSel
+-- 				format "outputPathFolder: %, outputPath: %\n" outputPathFolder outputPath
+				local filename = outputPath + "\\" + oneName + ".jpg"
+				format "path: %\n" filename
+				
+				batch.sceneStateName = oneName
+				batch.outputFilename = filename
+			)else(format "batch render deja existant: %\n" oneName)
+		)
+	)
 
 )
 createdialog Pt2vue_renderer_UI
 
 
+
+
+
+
+
+
 	/*
-	on MaqRenderCB changed thestate do
+	on addCamSelect pressed do 
 	(
-		vr.options_overrideMtl_on = thestate
-		setActive AtmosVRtoon thestate
+		
+		if isvalidnode camsel then
+		(
+			setUserProp camsel "camToRender" true
+			appendifunique camToRender camsel
+			setUserProp camToRender[i] "camToRender" true
+		)
+		else format "SELECTION INCORRECTE"
+		
+		refreshUI()
 	)
 	*/
 	
+-- Render Camera actions
 	/*
-	
--- 	render
-	on rendCamSelBT pressed do
+	on delCamSelect pressed do
 	(
-		if savepath.text =="" then
+		cameToRemoveID = CamsRenderMLT.selection as array
+		
+		
+		for i = cameToRemoveID.count to  1 by -1 do
+		(
+			
+			format "cams to remove: %\n" camToRender[i].name
+			deleteitem camToRender i
+			setUserProp camToRender[i] "camToRender" false
+-- 			format "cams to remove: %\n" camToRender[i].name
+		)
+		
+-- 		format "cams to remove: %\n" cameToRemove
+		
+		for i=(SceneCamsMLT.selection as array).count to 1 by -1  do
 		(			
-			messagebox "définir un chemin d'enregistrement"
+			deleteItem camToRender (SceneCamsMLT.selection as array)[i]
 		)
-		else if suffixNameEdit.text == "" then 
-		(
-			messagebox "définir un chemin d'enregistrement"
-		)
-		else if fileNameType.text == "" then
-		(
-			messagebox "définir un chemin d'enregistrement"
-		)
-		else
-		(
-
-			renderSize = case RenderSizeRB.state of
-			(
-				1: 750
-				2: 1500
-			)
-
-			
-			camAr = (SceneCamsMLT.selection) as array
-			
-			for i = 1 to camAr.count do
-			(
-				renderSceneDialog.close ()	
-				
-				outputPathNameDef = (savepath.text + suffixNameEdit.text + "_" + CamArray[camAr[i]].name + fileNameType.text)
-			
-				bakOutput = rendOutputFilename
-				bakWidth = renderWidth
-				bakHeight = renderHeight
-				 
--- 				rendTimeType = 1
-				rendSaveFile = true
--- 				rendusenet = NetRenderCB.state
-				rendOutputFilename =  outputPathNameDef
-				
--- 				renderWidth = 1500
--- 				renderHeight = 1000
-				
-				
-				re.setElementsActive false
-				
--- 				CleanOutEltsFN ()
-				viewport.setCamera CamArray[camAr[i]]
-
-				renderSceneDialog.commit()
-				max quick render
-
-				rendOutputFilename = bakOutput
-				renderWidth = bakWidth
-				renderHeight = bakHeight
-				
-
-			)
-		)
+		
+		refreshUI()
 	)
 	*/
-	
-
-
-
-
-

@@ -1,6 +1,9 @@
 /*
 maj
 add param:  center pivot,  add uvwmap, add mat, setup sweep, 
+
+debug:
+sur des murs orienter en z l estract de spline est décalé
 */
 
 fn createBoxOrient s =
@@ -35,6 +38,9 @@ fn writeRolloutPref rlt =
 fn resetInPlace2 s tmpParent =
 (
 	bakparent = s.parent
+	
+-- 	tmpParent = point transform: s.transform
+
 	tmpParent.scale = [1,1,1]
 
 	s.parent = tmpParent
@@ -42,7 +48,16 @@ fn resetInPlace2 s tmpParent =
 	resetxform s
 	
 	s.parent = bakparent
+	
+	/*
+	bakPos = s.pos
+	s.rotation = tmpParent.rotation
+	s.pos = bakPos
+	*/
 )
+
+
+
 
 fn removeEdgeAndVerticesFN sel =
 (
@@ -191,7 +206,7 @@ rollout edgeToShapeRLT "edge to shape"
 				)else()
 				
 				
-				if delBoxOrientCB.state then delete boxorient
+				if delBoxOrientCB.state and  isvalidnode boxorient then delete boxorient
 				
 				-- option: remove edge
 				if removeEdgeCB.state == True do removeEdgeAndVerticesFN s
@@ -241,21 +256,29 @@ rollout edgeToShapeRLT "edge to shape"
 	(
 		collapseXformCB.state = state
 		
-		createBoxOrientCB.state = not state
-		xformOnBoxCB.state = not state
-		collapseXformCB2.state = not state
-		delBoxOrientCB.state = not state
+		if state then
+		(
+			createBoxOrientCB.state = not state
+			xformOnBoxCB.state = not state
+			collapseXformCB2.state = not state
+			delBoxOrientCB.state = not state
+		)
+
 	)
 	
 	on xformOnBoxCB changed state do
 	(
-		resetXformCB.state = not state
-		collapseXformCB.state = not state
+		if state then
+		(
+			resetXformCB.state = not state
+			collapseXformCB.state = not state
+		)
 		
 		createBoxOrientCB.state =  state
 -- 		xformOnBoxCB.state =  state
 		collapseXformCB2.state =  state
 		delBoxOrientCB.state =  state
+
 	)
 	
 	on addSweepCB changed theState do

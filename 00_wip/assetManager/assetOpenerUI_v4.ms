@@ -583,6 +583,8 @@ rollout assetEditorRLT "assets editor v2"
 	
 	on openThumbBT pressed do
 	(
+		try(destroydialog openThumbRLT)catch()
+		bmpOpened = true
 		createdialog openThumbRLT width: 300
 	)
 	

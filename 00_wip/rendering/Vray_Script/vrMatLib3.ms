@@ -9,12 +9,14 @@ maj:
 		x- proposer un replace lorsqu'on veut enregistrer un materiau avec un nom deja existant
 		
 		-- versioning material library file
+		-- enregistrer les library en fonction de la verions de max, un dossier par version de max
 		-- add thumbnail
 		-- collect texture
 		
 		-- fonction search
 	
 	-- dev: 
+		-- optimiser l'enregistrement
 		x- mat structure
 			-- mat
 			-- name

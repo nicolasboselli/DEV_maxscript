@@ -1,8 +1,10 @@
 /*
 maj:
+	/- loader une methode au startup qui retourne le root plutot que rappeler l'ini à chaque fois
 	-- mettre en place un systeme de versionning des script et ouvrier la dernière version valide
 	-- créer deux méthodes générales pour enregistrer et charger les favoris
-	-- 
+	--  nettoyer les macroscript
+	/- créer un fichier dans le startup de max qui load les methodes souhaité (filein "lasparent.ms")
 */
 
 -- create script ini file near of 3dsmax ini file
@@ -65,6 +67,35 @@ fn copyBmpIcons =
 	)
 )
 copyBmpIcons()
+
+-- copy du fichier filein type
+
+
+-- trouver l'adresse du fichiers a copier
+fn getRoot =
+(
+	local maxIni = getMAXIniFile()
+	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+)
+fileInFileSource = (getRoot() +  "armadesFileIn.ms")
+
+-- trouver l'adresse de destination
+	-- soit dans le fichier plugin soit ajouter une adresse dans les fichier user "pluginpaths"
+count = pluginPaths.count()
+for j = 1 to count do format " % : %\n" j (pluginPaths.get j)
+
+
+-- fileInFileDest = ((GetDir #startupScripts) + "/" + "armadesFileIn.ms")
+fileInFileDest = ((GetDir #maxData) + "/scripts/startup/" + "armadesFileIn.ms")
+
+-- suppression du fichier existant
+deleteFile fileInFileDest
+-- copie
+copyFile  fileInFileSource fileInFileDest
+
+format "copy: % to: %\n>>>" fileInFileSource fileInFileDest
+
 
 -- install macroscript
 
@@ -139,3 +170,16 @@ macroScript ArmadasScriptMaterialsUtilities
 	filein (root +"\\" + "rendering" + "\\" + "Vray_Script" + "\\" + "deMultiMat.ms" )
 )
 -- "C:/repo_github/DEV_maxscript/00_wip/rendering/Vray_Script/deMultiMat.ms"
+
+macroScript ArmadasScriptLastParent
+	category:"ArmadasScripts"
+	buttonText: "lastParent"
+	toolTip:""
+-- 	icon: #("ArmadasScriptMaterialsUtilities",1)
+(
+	on execute do
+	(
+		local sel = selection as array
+		lastParent sel
+	)
+)

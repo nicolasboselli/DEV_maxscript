@@ -55,7 +55,7 @@ openfaces = #()
 for i in openedgesAr do 
 (
 	faces =  polyop.getEdgeFaces $ i
-	format "edge: %, faces: %\n" i faces
+-- 	format "edge: %, faces: %\n" i faces
 	for f in faces do appendifunique openfaces f
 )
 
