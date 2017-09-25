@@ -1,3 +1,4 @@
+
 -- collapse railclone
 objs = objects as array
 -- objs = selection as array
@@ -49,7 +50,7 @@ sel = #()
 objs = objects as array
 for o in objs where o.modifiers.count >= 1 do
 (
-	local atLeastOneConvertion = false
+-- 	local atLeastOneConvertion = false
 	for m in o.modifiers where classof m == clone do
 	(
 		atLeastOneConvertion = true
@@ -58,8 +59,11 @@ for o in objs where o.modifiers.count >= 1 do
 		converttopoly o
 	)
 	
-	if not atLeastOneConvertion then format "Pas de modifiers clone à collapser."
+-- 	if not atLeastOneConvertion then 
 )
+if sel.count == 0 then format "Pas de modifiers clone à collapser.\n"
+	
+
 -- select sel
 
 -- find edit poly
