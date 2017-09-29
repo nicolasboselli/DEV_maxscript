@@ -32,7 +32,8 @@ fn writeRolloutPref rlt =
 		else format "UNKNOWN?____ % \n" c
 	)
 )
--- writeRolloutPref edgeToShapeRLT
+
+
 
 
 fn resetInPlace2 s tmpParent =
@@ -55,9 +56,6 @@ fn resetInPlace2 s tmpParent =
 	s.pos = bakPos
 	*/
 )
-
-
-
 
 fn removeEdgeAndVerticesFN sel =
 (
@@ -90,8 +88,10 @@ try(destroyDialog edgeToShapeRLT)catch()
 rollout edgeToShapeRLT "edge to shape"
 (
 -- 	vars
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+-- 	local maxIni = getMAXIniFile()
+-- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
+	
 -- 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	
 	local extSize  = 100
@@ -308,10 +308,10 @@ rollout edgeToShapeRLT "edge to shape"
 		-- load ini file
 		try
 		(
-			print "check1"
+-- 			print "check1"
 -- 			print edgeToShapeRLT.name
 			loadPosition edgeToShapeRLT
-			print "check2"
+-- 			print "check2"
 			cat = edgeToShapeRLT.name
 
 			

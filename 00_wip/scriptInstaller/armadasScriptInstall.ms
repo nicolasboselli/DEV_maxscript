@@ -1,47 +1,71 @@
 /*
 maj:
 	/- loader une methode au startup qui retourne le root plutot que rappeler l'ini à chaque fois
-	-- mettre en place un systeme de versionning des script et ouvrier la dernière version valide
+	-- mettre en place un systeme de versionning des script et ouvrir la dernière version valide
 	-- créer deux méthodes générales pour enregistrer et charger les favoris
-	--  nettoyer les macroscript
 	/- créer un fichier dans le startup de max qui load les methodes souhaité (filein "lasparent.ms")
+	-- pre load des script avant macro script:
+		-- soit dans le fichier plugin soit ajouter une adresse dans les fichier user "pluginpaths": ajouter le chemin au plugin path
+
+	-- déplacer ce script dans le dossier startup pour créer un update à chaque démarrage:
+		-- nettoyer les macroscripts existants dans le #maxdata
+		-- nettoyer le dossier startup de "armadasfilein.ms"
+
+		-- updater le root dans l'armadas script.ini
+		-- updater les icons
+		-- updater le pluginpath.ini
 */
 
--- create script ini file near of 3dsmax ini file
-fn installAmadasScripts =
+fn returnParentFolder folderPath =
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-
-	if doesFileExist armadasScriptsIni == false then
+	local splitFolder = filterString folderPath "/"
+	
+	local sum = ""
+	for i = 1 to (splitFolder.count - 1) do
 	(
-		-- get root path
-		modeArchiScriptRoot = getFilenamePath  (getThisScriptFilename() )
+-- 			print splitFolder[i]
+		sum = sum + splitFolder[i] + "/"
+	)
+	sum
+)
+
+-- crée l'armadaScript.ini dans le dossier de 3dsmax et écrit le root des scripts
+fn initArmadasScripts =
+(
+	-- determination du fichier ini de destination
+-- 	local maxIni = getMAXIniFile()
+-- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
+	-- determination du root des scripts
+	local armadaScriptsRoot = returnParentFolder (getFilenamePath  (getThisScriptFilename()))
+	
+	-- determination du dossier max data
+	local maxDataDir = GetDir #maxData
+	local armadasScriptsIni = maxDataDir + "armadasScriptsIni.ini"
+	
+	-- 
+	if doesFileExist armadasScriptsIni == false then
+	(		
 		-- write init
-		setINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot" modeArchiScriptRoot
+-- 		setINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot" modeArchiScriptRoot
 	)
 	else
 	(
-		format  "armada script still exists: %\n" (getMAXIniFile())
+		format  "armada script ini still exists: %\n" armadasScriptsIni
 	)
 )
-installAmadasScripts()
+initArmadasScripts()
 
--- iconsFolder = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
--- doscommand ("explorer "+ maxIni)
-
-
+-- copy les icones dans le dossier user
 fn copyBmpIcons =
 (
-	-- copy icon
-	-- get icon
-	
+	-- determine le dossier source
 	maxIni = getMAXIniFile()
 	armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	iconsArray = getfiles (scriptRoot + "icons\*.bmp")
 	
-	-- get icon root folder
+	-- determine les dossiers de destination
 -- 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
 	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "ui\\usericons"
 	iconsRoot2 = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
@@ -50,19 +74,21 @@ fn copyBmpIcons =
 	if existence.count == 0 then makedir iconsRoot all:true 
 	
 	-- make copy
-	for icon in iconsArray do
+	for ic in iconsArray do
 	(
-		print icon
-		print  (iconsRoot + "\\"+ (filenameFromPath icon))
+-- 		print icon
+-- 		format "icon: %\n"  (iconsRoot + "\\"+ (filenameFromPath ic))
 		
-		res = copyFile  icon (iconsRoot + "\\"+ (filenameFromPath icon))
+		local res = copyFile  ic (iconsRoot + "\\"+ (filenameFromPath ic))
+		local res2 = copyFile  ic (iconsRoot2 + "\\"+ (filenameFromPath ic))
 		
 			
-		if res == true then print "copy done"
-		else print "copy fail"
+		if res == true then format "copy in \"ui\\usericons\" done : %\n" ic
+		else format "copy in \"ui\\usericons\" fail: %\n" ic
 		
-		res2 = copyFile  icon (iconsRoot2 + "\\"+ (filenameFromPath icon))
-		if res2 == true then print "copy done" else print "copy fail"
+		if res == true then format "copy in \"usericons\" done : %\n" ic
+		else format "copy in \"usericons\" fail: %\n" ic
+		
 	-- 	copyFile  icon iconsRoot 
 	)
 )
@@ -71,30 +97,39 @@ copyBmpIcons()
 -- copy du fichier filein type
 
 
--- trouver l'adresse du fichiers a copier
+-- trouver l'adresse du dossier à loader au démarage a copier
 fn getRoot =
 (
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 )
-fileInFileSource = (getRoot() +  "armadesFileIn.ms")
 
+-- aout de la lecture du dossier startup au démarrage de max (avant macroscript):
+fn initArmadasStartupDir =
+(
+	startupDir = (getRoot() + "scriptInstaller/startup")
+
+	-- ajout du dossier startup 
+	ini_file = if (maxversion())[1] < 12000 then "plugin.ini" else "plugin.userSettings.ini"
+	setINISetting (getdir #maxdata + ini_file) #directories "Armadas Scripts Startup"startupDir
+)
+initArmadasStartupDir()
+
+/*
+-- fileInFileSource = (getRoot() + "scriptInstaller/armadesFileIn.ms")
 -- trouver l'adresse de destination
 	-- soit dans le fichier plugin soit ajouter une adresse dans les fichier user "pluginpaths"
-count = pluginPaths.count()
-for j = 1 to count do format " % : %\n" j (pluginPaths.get j)
-
 
 -- fileInFileDest = ((GetDir #startupScripts) + "/" + "armadesFileIn.ms")
-fileInFileDest = ((GetDir #maxData) + "/scripts/startup/" + "armadesFileIn.ms")
+fileInFileDest = ((GetDir #maxData) + "scripts/startup/" + "armadesFileIn.ms")
 
 -- suppression du fichier existant
-deleteFile fileInFileDest
+if doesfileexist fileInFileDest then deleteFile fileInFileDest
 -- copie
-copyFile  fileInFileSource fileInFileDest
-
-format "copy: % to: %\n>>>" fileInFileSource fileInFileDest
+copyDone = copyFile  fileInFileSource fileInFileDest
+format "copy: % to: %\ncopy done: %\n" fileInFileSource fileInFileDest copyDone
+*/
 
 
 -- install macroscript
@@ -106,10 +141,7 @@ macroScript ArmadasScriptExplorer
 	toolTip:""
 	icon: #("armadasScriptsExplorer",1)
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	
+	local root = getroot()
 	filein (root +"\\" + "scriptsManager" + "\\" + "scriptsExplorer.ms" )
 )
 
@@ -120,10 +152,7 @@ macroScript ArmadasScriptLauncher
 	toolTip:""
 	icon: #("armadasScriptsFavorites",1)
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	
+	local root = getroot()	
 	filein (root +"\\" + "scriptsManager" + "\\" + "launcher.ms" )
 )
 
@@ -135,10 +164,7 @@ macroScript ArmadasScriptAssetOpener
 	toolTip:""
 	icon: #("armadasScriptsAssetOpener",1)
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	
+	local root = getroot()
 	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI_v4.ms" )
 )
 
@@ -149,10 +175,7 @@ macroScript ArmadasScriptModelingUtilities
 	toolTip:""
 	icon: #("ArmadasScriptModelingUtilities",1)
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	
+	local root = getroot()
 	filein (root +"\\" + "zz_mode_archi" + "\\" + "misc.ms" )
 )
 -- "C:/repo_github/DEV_maxscript/00_wip/zz_mode_archi/misc.ms"
@@ -163,10 +186,7 @@ macroScript ArmadasScriptMaterialsUtilities
 	toolTip:""
 	icon: #("ArmadasScriptMaterialsUtilities",1)
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	
+	local root = getroot()
 	filein (root +"\\" + "rendering" + "\\" + "Vray_Script" + "\\" + "deMultiMat.ms" )
 )
 -- "C:/repo_github/DEV_maxscript/00_wip/rendering/Vray_Script/deMultiMat.ms"

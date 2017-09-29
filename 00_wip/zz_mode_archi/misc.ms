@@ -128,6 +128,7 @@ fn updateSceneMaterials =
 -- attach object select in the same object
 fn cleancombine grp =
 (
+	local master
 	undo on
 	(
 		master = grp[1]
@@ -140,7 +141,7 @@ fn cleancombine grp =
 		-- 	print sel[i]
 		)
 	)
-	return master
+	master
 )
 
 
@@ -216,7 +217,6 @@ rollout miscRLT "Modeling utilities"
 (
 -- 	vars
 	local sourceInstance
-	
 	
 -- 	functions
 	local maxIni = getMAXIniFile()
@@ -298,7 +298,6 @@ rollout miscRLT "Modeling utilities"
 			selectmore res
 		)
 	)
-	
 	
 	on goutteBT pressed do goutteDeauFN $	
 	on debordBT pressed do debordFN $
@@ -396,5 +395,4 @@ rollout miscRLT "Modeling utilities"
 	)
 )
 createDialog miscRLT --style: #(#style_minimizebox, #style_titlebar ,#style_border , #style_sysmenu,#style_maximizebox )
-
 

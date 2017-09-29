@@ -3,22 +3,32 @@ todo:
 
 	-- enregister les preferences et la position du script
 	-- toggle pour backupper/ debakkuper les fichiers
+	-- memoriser le dernier dossier ouvert
 	
-	-- ecrire les favoris dans le core; créé un fichier à part pour le core
+	x- ecrire les favoris dans le core; créé un fichier à part pour le core
 	
-	-- prendre en compte des script du meme nom au copy/pastee, au rename et à la creation  pour numeroteer les version
+	-- prendre en compte des script du meme nom au copy/pastee et au rename pour numeroter les version
 	
-	-- prendre en compte des dossier du meme nom au copy/paste, au rename et à la creation pour numeroter les version
 	/- creer de nouveaux dossier
-	-- delete dossier: verifier que le dossier existe, verifier que le dossier est vide, supprimer le contenu du dossier
-	-- renommer des dossiers
+		-- proposer un rename a l acreation
+		-- prendre en compte les doublons pour numéroter les copies
+	/- delete dossier: verifier que le dossier existe, verifier que le dossier est vide, supprimer le contenu du dossier
+		-- alerter si le dossier est vide
+		-- proposer de delete le dossier avec sont contenu
+	/- renommer des dossiers:
+		-- alerter si le nom existe deja
+	-- copier/coller ou déplacer les dossiers
 	
+	-- faire fonctionner le copy/paste sur selection multiple
 	-- ajouter fonction pour ajouter les scripts au core et pour visualiser la liste de core pour management
+	
+debug:
+	-- le copy/paste crée toujours une version *_copy. Comparer l'ancien et le nouveau chemin pour faire la copie
 	
  rebuild:
 	 -- revoir la fonction pour trouver le dossier parent
 	 x- revoir les fonction copy/paste/duplicate pour que duplicate execute un copy/paste
-	 /- faire fonctionner le rename de dossier avec le meme rollout que pour les scripts
+	 x- faire fonctionner le rename de dossier avec le meme rollout que pour les scripts
 	 -- revoir le tri des fchiers: bakuper changer le onlyMxs en ignoreBak
 	 x- passer la selection folder ou script mode à l ouverture du rollout rename ET PAS pas des methodes init: dans les methodes init à cause du modal
 */
@@ -88,7 +98,7 @@ rollout renameRLT "rename" width: 400
 		
 		o = scriptExplorerRLT.toDisplay[scriptExplorerRLT.scriptsListLB.selection]
 		
-		oldFoldPath = o.path
+		oldFoldPath = scriptExplorerRLT.returnParentFolder o.path
 		oldFoldName = o.nameAr[o.nameAr.count]
 
 		nameET.text = oldFoldName
@@ -120,7 +130,7 @@ rollout renameRLT "rename" width: 400
 		else if folderMode then
 		(
 			oldname = oldFoldPath + oldFoldName
-			newName = oldFoldPath + nameET.text
+			newName = nameET.text
 		)
 		else
 		(
@@ -324,10 +334,10 @@ rollout scriptExplorerRLT "Scripts Explorer"
 					Typ = getFilenameType otoCopy.path
 					
 					-- tester le doublon avant la copy
-						-- créer une numerotation plutot que copy
+					-- créer une numerotation plutot que copy
 					if doesfileexist otoCopy.path then
 					(
-						res = copyFile otoCopy.path (PathOne + FilenameOne + "_copy" + Typ)
+						res = copyFile otoCopy.path (currentFolder + FilenameOne + "_copy" + Typ)
 					)
 					else
 					(
@@ -361,8 +371,12 @@ rollout scriptExplorerRLT "Scripts Explorer"
 				)
 				else if classof o == folderClass then
 				(
-					format "pas de suppression de dossier pour le moment\n"
--- 					deleteFolder folderPath: o.path
+					local str = stringstream ""
+					format "rd \"%\" \npause\n" o.path to: str
+					order = str as string
+					DOSCommand order
+					
+					format "order: % \n" order
 				)
 				else()
 				
@@ -381,9 +395,12 @@ rollout scriptExplorerRLT "Scripts Explorer"
 				)
 				else if renameRLT.folderMode then
 				(
-					format "rename: % >>> %\n" renameRLT.oldname renameRLT.newName
-					format "pas de rename de dossier pour le moment\n"
--- 					format "folder rename fail\n"
+					local str = stringstream ""
+					format "rename \"%\" \"%\" \npause\n" renameRLT.oldname renameRLT.newName to: str
+					order = str as string
+
+					format "order: % \n" order
+					DOSCommand order
 				)
 				else()
 				
@@ -392,20 +409,20 @@ rollout scriptExplorerRLT "Scripts Explorer"
 			)
 			
 			on createFolderIT picked do
-			(
+			(	
 				-- prendre en compte le doublan
-				-- proposer un rename
+
 				makeDir (currentFolder + "new_folder")
 				
 				collectValues maxscriptOnly: onlyMs.state
 				refreshUI()
+				
+				-- proposer un rename
+-- 				createdialog renameRLT modal: true escapeEnable: true
+-- 				renameRLT.initforFolder ()
 			)
 			
-			
-			
-
-			
--- 			on foldIT picked do 
+			-- 			on foldIT picked do 
 			on pathIT picked do copyPath ()
 		)
 	)
@@ -545,6 +562,5 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	
 )
 createdialog scriptExplorerRLT width: 400
-
 
 

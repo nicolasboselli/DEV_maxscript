@@ -70,7 +70,8 @@ rollout mxsLaunchRLT "maxscript launcher"
 -- 	local favAr = #()
 	
 -- 	local root = modeArchiScriptRoot
--- 	local scriptArray = #()
+	local scriptArray = #()
+	/*
 	local scriptArray = #( "planificator\create_Plane_UI.ms", \
 		"XformInPlace.ms", \
 		"extractFaces2.ms", \
@@ -86,8 +87,9 @@ rollout mxsLaunchRLT "maxscript launcher"
 		"grid_manager.ms", \
 -- 		"demultiMat.ms", \
 		"Plan_resizer.ms")
-	
+	*/
 	local fileClassArray = #()
+	local fileClassCoreArray = #()
 	local displayAr = #()
 		
 	-- functions
@@ -158,7 +160,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 		)
 		posBak
 	)
-	
+	/*
 	fn loadCore =
 	(
 -- 		convert script selection 
@@ -166,7 +168,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 		coreScriptArray = for script in scriptArray collect (favFileClass (root + "\\" + "zz_mode_archi" + "\\" +  script))
 		coreScriptArray
 	)
-	
+	*/
 	fn loadCore2 = 
 	(
 		local coreScriptArrayStr = #()
@@ -201,25 +203,62 @@ rollout mxsLaunchRLT "maxscript launcher"
 		coreScriptArray
 	)
 	
+	fn writeFavToCore =
+	(
+		iniCoreFileName = root + "/scriptsManager/scriptListCore.ini"
+		
+		if doesfileexist iniCoreFileName then
+		(
+			format "fileClassArray: %\n" fileClassArray
+			local scriptsPathesAr = #()
+			for script in fileClassArray do
+			(
+				pathEnd = substitutestring script.path root ""
+				append scriptsPathesAr pathEnd
+			)			
+			
+			local coreData = with printAllElements on scriptsPathesAr as string
+			format "core data: %\n" coreData
+			coreArStr = setINISetting iniCoreFileName  "coreScriptList" "scriptArray" coreData
+		)
+		else 	(format "ini file doesn't exist: %\n" iniCoreFileName)
+	)
+	
+	fn writeCorToFav =
+	(
+		fileClassArray = loadCore2()
+		writeFavorite()
+	)
+	
 	fn writeFavorite =
 	(
 -- 		print "bye, favorites writting soon!"
-		scriptsPathesAr  = for script in fileClassArray collect script.path
+		local scriptsPathesAr  = for script in fileClassArray collect script.path
 -- 		print scriptsPathesAr
 		-- for each fav instance collect path
 		-- write pathes in array
-		data = with printAllElements on scriptsPathesAr as string
+		local favData = with printAllElements on scriptsPathesAr as string
 
-		res1 = setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" data
+		res1 = setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" favData
 		resPos = writePosition "armadasScriptsFavorite"
-		
+		format "favorites data: %\n" favData
 		format  "ScriptLauncher favorites saved: %\n" res1
 	)
 	
 -- 	UI
-	button loadFavoritesBT "load favorites" across: 3
-	button loadHardCoresBT "load core"
-	button sortListBT  "sort by name"
+	group "favorites:"
+	(
+		button loadFavoritesBT "load" across: 2
+		button deleteBT "remove"
+	)
+	
+	group "scripts actions:"
+	(
+		button launchBT "launch"  across: 2
+		button editBT "edit"  
+	)
+
+-- 	button sortListBT  "sort by name"
 		
 	listbox scriptArrayLB "scripts list:"  height: 30
 	
@@ -229,10 +268,17 @@ rollout mxsLaunchRLT "maxscript launcher"
 	button openFolder "open scripts folder"  pos:[120,btnLine1]
 	*/
 	
-	button launchBT "launch"  across: 3
-	button editBT "edit"  
-	button openFolder "open scripts folder" 
-	button deleteBT "delete"
+
+-- 	button openFolder "open scripts folder" 
+	
+		
+	group "core:"
+	(
+		button loadHardCoresBT "load core" across: 3
+		button favToCoreBT "fav to core" 
+		button coreToFavBT "core to fav"
+	)
+
 	
 --  ui functions relative
 	fn refreshList =
@@ -257,26 +303,38 @@ rollout mxsLaunchRLT "maxscript launcher"
 		fileClassArray = loadFavorites()
 		displayAr = fileClassArray
 		refreshList()
-
+	)
+	
+	on favToCoreBT pressed do
+	(
+		writeFavToCore ()
+	)
+	
+	on coreToFavBT pressed do
+	(
+		fileClassArray = loadCore2()
+		writeFavorite()
+		refreshList()
 	)
 	
 	on loadHardCoresBT pressed do
 	(
 -- 		loadCore2 ()
-		fileClassArray = loadCore2()
-		format "fileClassArray:%\n" fileClassArray
+		fileClassCoreArray = loadCore2()
+		format "fileClassArray:%\n" fileClassCoreArray
 -- 		fileClassArray = loadCore()
-		displayAr = fileClassArray
+		displayAr = fileClassCoreArray
 		format "displayAr:%\n" displayAr
 		refreshList()
 	)
 	
-	
+	/*
 	on sortListBT pressed do
 	(
 		qsort displayAr sortbyname
 		refreshList()
 	)
+	*/
 	
 	on launchBT pressed do filein (fileClassArray[scriptArrayLB.selection].path)
 	
@@ -286,13 +344,15 @@ rollout mxsLaunchRLT "maxscript launcher"
 	)
 	
 	on editBT pressed do edit (fileClassArray[scriptArrayLB.selection].path)
-		
+	
+	/*
 	on openFolder pressed do 
 	(
 		foldToOpen = substituteString root "/" "\\"
 -- 		print root
 		doscommand ("explorer " + foldToOpen)
 	)
+	*/
 	
 	on deleteBT pressed do
 	(

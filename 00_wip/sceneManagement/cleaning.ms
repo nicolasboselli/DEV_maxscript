@@ -1,4 +1,3 @@
-
 -- collapse railclone
 objs = objects as array
 -- objs = selection as array
@@ -21,7 +20,7 @@ for o in objs where classof o.baseobject == railclone_pro do
 (
 	append sel o
 )
-select sel
+-- select sel
 
 for o in objs where classof o.baseobject == railclone_pro do
 (
