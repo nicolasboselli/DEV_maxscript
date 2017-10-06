@@ -16,5 +16,8 @@ fn getRoot =
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 )
 
--- function pour parenter comme dans maya
+-- load function pour parenter comme dans maya
 filein ((getRoot ()) + "Rig/lastParent_def.ms")
+
+-- load function pour enregistrer et loader les préferences
+filein ((getRoot ()) + "rollout_pref/rollout_pref.ms")

@@ -10,10 +10,19 @@ maj:
 		
 		-- versioning material library file
 		-- enregistrer les library en fonction de la verions de max, un dossier par version de max
+			-- enregistrer des fichiers materials library en version précedentes de max
 		-- add thumbnail
 		-- collect texture
+	
 		
 		-- fonction search
+		x- add autosave toggle
+		
+		-- gestion de bitmaps
+			-- proposer en option le relinks des fichiers manquants sur un dossier donné
+			-- proposer un ressource collector sur un dossier donné
+			-- publier les bitmap manquants dans l'editeur de materiaux
+			
 	
 	-- dev: 
 		-- optimiser l'enregistrement
@@ -26,7 +35,6 @@ maj:
 		-- separate materials collected  from materials displayed		
 
 */
-
 
 fn sortMatbyname v1 v2 =
 (
@@ -87,6 +95,7 @@ rollout vrMatRlt "VRay mat Lib"
 		button openLibBT "..." across: 3
 		button saveLibBT "save"
 		button saveAsLibBT "save as"
+		checkbox autosaveCB "save on close"
 	)
 	
 	group "manage library:"
@@ -94,7 +103,7 @@ rollout vrMatRlt "VRay mat Lib"
 		button addMatBT "add mat"
 		button delMatBT "delete mat" enabled: true
 -- 		button upLibBT "refresh lib"
-		listbox matLB "materials list:"
+		listbox matLB "materials list:" height: 30
 		button editMatBT "edit material"
 -- 		button copyMatBT "copy material"
 -- 		button replaceMatBT "replace material" enabled: false
@@ -111,6 +120,12 @@ rollout vrMatRlt "VRay mat Lib"
 		button uv250 "250"
 		button uv500 "500"
 	)
+	
+	group "bitmap"
+	(
+		button scanBT "scan"
+	)
+	
 	
 	/*
 	group "map material:"
@@ -194,14 +209,18 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	on vrMatRlt close do
 	(
+		autosaveCB
+		
 -- 		format "vrLibPath: %\n" vrLibPath.count
-		if vrLibPath.count > 0 then
+		
+		if vrLibPath.count > 0 and autosaveCB.state then
 		(
 			-- save pref
-			setINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath" 	vrLibPath
+			setINISetting armadasScriptsIni "vrMatLib" "DefaultMatLibPath" vrLibPath
 			-- save lib
 			writeLib vrLibPath
 		)
+		
 	)
 	
 	on openLibBT pressed do
@@ -216,7 +235,13 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	on saveLibBT pressed do
 	( 
-		if doesfileexist vrLibPath then writeLib vrLibPath
+		if doesfileexist vrLibPath then 
+		(
+			writeLib vrLibPath
+			loadLib vrLibPath
+		
+			refreshUI()
+		)
 		else 	( format "path not valid: %\n" vrLibPath )
 	)
 	
@@ -300,7 +325,42 @@ rollout vrMatRlt "VRay mat Lib"
 	on uv250 pressed do addUVWCube 250
 		
 	on uv500 pressed do addUVWCube 500
+	
+	on scanBT pressed do
+	(
 
+		
+		local bmpAr = getclassinstances bitmaptexture target: vrLib
+		for b in bmpAr do
+		(
+			if doesfileexist b.filename then
+			(
+				if matchpattern b.filename pattern: "M:*" or matchpattern b.filename pattern: "R:*" or matchpattern b.filename pattern: "N:*"then format "FOUND filename: %\n" b.filename
+				else if matchpattern b.filename pattern: "D:\RESSOURCES*" then
+				(
+-- 					format "RE MAP filename: %\n" b.filename
+					newFIleName = substitutestring b.filename "D:\RESSOURCES" "N:\Ressources_Nico"
+					if doesfileexist newFIleName then 
+					(
+						b.filename = newFIleName
+						format "RE MAP filename: % >>> newName:%\n" b.filename newFIleName
+					)
+					else format "NOT CONFORM filename: %\n" b.filename
+-- 					meditMaterials[activeMeditSlot] = b
+				)
+				else 
+				(
+					format "NOT CONFORM filename: %\n" b.filename
+				)
+			)
+			else
+			(
+				format "NOT FOUND filename: %\n" b.filename
+-- 				meditMaterials[activeMeditSlot] = b
+			)
+		)
+-- 		format "bmpAr: %\n" bmpAr
+	)
 )
 createdialog vrMatRlt
 

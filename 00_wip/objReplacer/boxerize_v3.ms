@@ -1,6 +1,11 @@
+/*
 -- maj:
 	-- proposer des options pour l'orientation du pivot
 	
+-- rebuilt:
+	-- ecrire une nouvelle fonction pivot on face qui propose l'orientation en X, Y,Z
+	/- faire une fonction qui ne nécessite pas un reset xform avant d'être utilisé
+*/
 
 
 fn detach_face_fenetre s =
@@ -38,12 +43,13 @@ fn explodeObject s =
 	delete s
 	detached
 )
+-- explodeObject $
 
 fn pivotOnFAce s = 
 (
-
 	posCenter = s.center
-
+	bakTM = s.transform
+	
 	theX = normalize ((polyop.getFaceNormal s 1)*-1)
 	theY = normalize (cross [0,0,1] theX )
 	theZ= normalize (cross theX theY)
@@ -54,10 +60,13 @@ fn pivotOnFAce s =
 	
 	addmodifier s (xform ())
 
-	s.modifiers[#xform].gizmo.rotation = in coordsys local localTM.rotation
+-- 	s.modifiers[#xform].gizmo.rotation = in coordsys local localTM.rotation
+	s.modifiers[#xform].gizmo.rotation = localTM.rotationpart - bakTM.rotationpart
 	s.modifiers[#xform].gizmo.position = (in coordsys local s.center)* -1
 )
--- pivotOnFAce $
+
+
+
 
 fn boxerize2 selAr amount: 28 =
 (
@@ -67,8 +76,8 @@ fn boxerize2 selAr amount: 28 =
 		for s in selAr do
 		(
 			-- reset x form on selection!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			resetxform s
-			converttopoly s
+-- 			resetxform s
+-- 			converttopoly s
 			
 			select s
 			$.outlineAmount = 2
@@ -158,3 +167,75 @@ rollout boxerizeRLT "Boxerize"
 	)
 )
 createdialog boxerizeRLT
+
+
+/*
+
+pivotOnFAce $
+
+
+posCenter = $.center
+
+theX = normalize ((polyop.getFaceNormal $ 1)*-1)
+theY = normalize (cross [0,0,1] theX )
+theZ= normalize (cross theX theY)
+
+localTM = matrix3   theX theY theZ posCenter
+
+bakTM = $.transform
+
+$.transform = localTM
+
+addmodifier $ (xform ())
+$.modifiers[#xform].gizmo.rotation =  localTM.rotationpart - bakTM.rotationpart
+$.modifiers[#xform].gizmo.position = (in coordsys local $.center)* -1
+
+bakPos = $.pos
+in coordsys local $.center 
+
+
+$.transform = inverse $.transform
+
+in coordsys bakTM localTM.position
+xformMat  bakTM localTM 
+
+in coordsys local $.center
+localTM.translationpart + bakTM.translationpart
+localTM.rotationpart
+	
+[173.524,1956.8,688.602]
+
+[538.901,2615.82,864.095]
+[-455.711,921.731,175.493]
+
+
+localTM.rotationpart - bakTM.rotationpart
+
+b1 = $Box021.transform
+b2 = $Box022.transform
+
+xformMat  b1 b2
+
+
+b1 = $Box021
+b2 = $Box022
+about b1 rotate b2 30 z_axis
+
+
+$.objectTransform
+$.transform
+	
+localTM 
+-- pt = point transform: localTM
+b1 * b2 * inverse(b1)
+
+
+$.modifiers[#xform].gizmo.rotation = in coordsys local localTM.rotation
+$.modifiers[#xform].gizmo.position = (in coordsys local $.center)* -1
+
+resetxform $
+converttopoly $
+pivotOnFAce $
+
+boxerize2 #($)
+*/

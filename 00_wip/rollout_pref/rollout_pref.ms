@@ -1,4 +1,10 @@
-
+/*
+edgeParams = #("pos","size","addExtrusionCB", "addSweepCB", "extSizeSP", "addExtrusionCB", \
+		"removeEdgeCB", "resetXformCB", "collapseXformCB", \
+		"createBoxOrientCB", "xformOnBoxCB", 	"collapseXformCB2", \
+		"delBoxOrientCB", "keepSelCB")
+*/
+		
 fn writeRolloutParams rlt params =
 (
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
@@ -38,17 +44,24 @@ fn writeRolloutParams rlt params =
 					format "name: %, value: %\n" p.name p.value
 				)
 				else(format "UNKNOWN_param: %, classof: %\n" p (classof p))
-				
 			)
 			-- collect variable
+			else if classof p == Array then
+			(
+				local completeArray = with printAllElements on p as string
+				setINISetting armadasScriptsIni rlt n completeArray
+			)
 			else
 			(
-				setINISetting armadasScriptsIni cat n p
-				format "name: %, value: %\n" n p
+-- 				setINISetting armadasScriptsIni cat n p
+				format "name: %, classof: %, value: %n" n (classof p) p
 			)
 		)
 	)
 )
+-- writeRolloutParams edgeToShapeRLT edgeParams
+
+
 
 fn loadRolloutParams rlt params =
 (
@@ -61,31 +74,43 @@ fn loadRolloutParams rlt params =
 		(
 			local posStr
 			try(posStr = getINISetting armadasScriptsIni cat "pos")catch(format "*** % ***\n" (getCurrentException()))
-			if SposStr.count > 0 then setDialogPos rlt (execute posStr)
+			if posStr.count > 0 then setDialogPos rlt (execute posStr)
 		)
 		else if n == "size" then
 		(
-			sizeStr = getINISetting armadasScriptsIni cat "size"
+			try(posStr = getINISetting armadasScriptsIni cat "size")catch(format "*** % ***\n" (getCurrentException()))
+-- 			format "name: size, value: %\n"  (GetDialogSize rlt)
 		)
 		else
 		(
+			-- load controls properties
 			p = getProperty  rlt n
+			
 			if superclassof p == RolloutControl then
 			(
-				try(val = getINISetting armadasScriptsIni cat p)catch(format "*** % ***\n" (getCurrentException()))
-				format "name: %, value: %\n" n p
+				local val
+				try(val = getINISetting armadasScriptsIni cat n)catch(format "*** % ***\n" (getCurrentException()))
+				format "name: %, value: %\n" n val
+				
+				if classof p == checkboxcontrol and val.count > 0 then 		
+				(
+					p.state = val as BooleanClass
+				)
+				else if classof p == SpinnerControl and  val.count > 0 then
+				(
+					p.value = val as float
+				)
+				
 			)
 			else
 			(
-				getINISetting armadasScriptsIni cat n 
-				format "name: %, value: %\n" n p
+				-- load variable
+				local val = getINISetting armadasScriptsIni cat n 
+				format "name: %, value: %\n" n val
 			)
 		)
 	)		
 )
 
-edgeParams = #("pos","size","addExtrusionCB", "addSweepCB", "extSizeSP", "addExtrusionCB", "removeEdgeCB", "resetXformCB", "collapseXformCB")
+-- loadRolloutParams edgeToShapeRLT edgeParams
 
-writeRolloutParams edgeToShapeRLT edgeParams
-
-loadRolloutParams edgeToShapeRLT edgeParams

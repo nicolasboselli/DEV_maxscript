@@ -108,6 +108,39 @@ fn replaceObject ref target =
 	copyRef
 )
 
+
+fn replaceObject2 ref target  rescaleX: true rescaleY: true rescaleZ: true =
+(
+	-- get ref size
+	refSize = returnBBsize2 ref
+	
+	-- get target size:
+	targetSize = returnBBsize2 target
+	
+	-- copy ref 
+	maxOps.cloneNodes ref cloneType:#instance newNodes:&copyRef
+	-- create point at center of ref 
+	ctrlTmp = createOneCtrl 27 copyRef true
+	
+	-- calculate ratio ref/target
+	ratio = targetSize/refSize
+
+	-- align point on box ref center
+	ctrlTmp.rotation = target.rotation
+	ctrlTmp.position = target.position
+	-- rescale point
+	ctrlTmp.scale.x = if rescaleX then ratio.x else 1
+	ctrlTmp.scale.y = if rescaleY then ratio.y else 1
+	ctrlTmp.scale.z = if rescaleZ then ratio.z else 1
+	
+	-- delete point
+	delete ctrlTmp
+	
+	for h in copyRef where isOpenGroupHead h do setGroupOpen h false
+	copyRef
+)
+
+
 /*
 hlps = helpers as array
 for h in hlps where isOpenGroupHead h do setGroupOpen  h false

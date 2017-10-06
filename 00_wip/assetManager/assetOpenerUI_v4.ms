@@ -134,10 +134,12 @@ rollout externalToolsRLT "asset tools"
 	on updateToolsBT pressed do filein "updateAssetTool2.ms"
 )
 
+
 rollout openThumbRLT "Thumb"
 (
 	bitmap assetBMP "asset thumbnail" width: 256 height: 256
 	
+	/*
 	on openThumbRLT open do
 	(
 		assetEditorRLT.bmpOpened = true
@@ -147,9 +149,9 @@ rollout openThumbRLT "Thumb"
 	(
 		assetEditorRLT.bmpOpened = false
 	)
+	*/
 )
 
-openThumbRLT
 
 rollout assetEditorRLT "assets editor v2"
 (
@@ -285,13 +287,14 @@ rollout assetEditorRLT "assets editor v2"
 		if doesfileexist thumbFile == true then
 		(
 -- 			assetBMP.filename = thumbFile
-			if bmpOpened then openThumbRLT.assetBMP.filename = thumbFile
+			if openThumbRLT.open then openThumbRLT.assetBMP.filename = thumbFile
+-- 			if bmpOpened then openThumbRLT.assetBMP.filename = thumbFile
 		)
 		else 
 		(
 -- 			print "no thumbnail"
 -- 			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
-			if bmpOpened then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
+			if openThumbRLT.open  then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
 		
 -- 		refresh status
@@ -460,7 +463,8 @@ rollout assetEditorRLT "assets editor v2"
 	on assetEditorRLT close do 
 	(
 		updateIni()
-		try(destroydialog openThumbRLT)catch()
+		if openThumbRLT.open then destroydialog openThumbRLT
+-- 		try(destroydialog openThumbRLT)catch()
 	)
 	
 	on findFolderBT pressed do
@@ -584,7 +588,7 @@ rollout assetEditorRLT "assets editor v2"
 	on openThumbBT pressed do
 	(
 		try(destroydialog openThumbRLT)catch()
-		bmpOpened = true
+-- 		bmpOpened = true
 		createdialog openThumbRLT width: 300
 	)
 	
@@ -678,6 +682,8 @@ rollout assetEditorRLT "assets editor v2"
 		refreshEditGroup asset
 	)
 )
+
+
 
 -- try(destroyDialog assetEditorRLT)catch()
 try(closeRolloutFloater  rof)catch()

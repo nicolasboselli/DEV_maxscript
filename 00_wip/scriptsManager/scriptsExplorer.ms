@@ -145,8 +145,10 @@ rollout scriptExplorerRLT "Scripts Explorer"
 (
 	
 -- 	vars
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+-- 	local maxIni = getMAXIniFile()
+-- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
+	
 	local tmpRroot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 	local	root = substituteString tmpRroot "\\" "/"
 
@@ -431,7 +433,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	
 	on accessIniBT pressed do
 	(
-		doscommand ("explorer " + (getFilenamePath maxIni))
+		doscommand ("explorer " + armadasScriptsIni)
 	)
 		
 	on openFoldBT pressed do 
@@ -533,6 +535,7 @@ rollout scriptExplorerRLT "Scripts Explorer"
 -- 			favAr = makeuniquearray favAr
 			format "favorites script: %\n" favAr
 			setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" (with printAllElements on favAr as string)
+			setINISetting armadasScriptsIni "mxsLaunchRLT" "favScriptAr" (with printAllElements on favAr as string)
 		)
 		else
 		(
