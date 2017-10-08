@@ -18,41 +18,30 @@ maj:
 
 fn returnParentFolder folderPath =
 (
-	local splitFolder = filterString folderPath "/"
+	local splitFolder = filterString folderPath "\\"
 	
 	local sum = ""
 	for i = 1 to (splitFolder.count - 1) do
 	(
 -- 			print splitFolder[i]
-		sum = sum + splitFolder[i] + "/"
+		sum = sum + splitFolder[i] + "\\"
 	)
 	sum
 )
 
+
 -- crée l'armadaScript.ini dans le dossier de 3dsmax et écrit le root des scripts
 fn initArmadasScripts =
 (
-	-- determination du fichier ini de destination
--- 	local maxIni = getMAXIniFile()
--- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	
 	-- determination du root des scripts
-	local armadaScriptsRoot = returnParentFolder (getFilenamePath  (getThisScriptFilename()))
-	
+	local armadasScriptsRoot = returnParentFolder (getFilenamePath  (getThisScriptFilename()))
+	armadasScriptsRoot = substituteString armadasScriptsRoot "\\" "/"
+	format "armadasScriptsRoot: %\n" armadasScriptsRoot
+		
 	-- determination du dossier max data
-	local maxDataDir = GetDir #maxData
-	local armadasScriptsIni = maxDataDir + "armadasScriptsIni.ini"
-	
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
 	-- 
-	if doesFileExist armadasScriptsIni == false then
-	(		
-		-- write init
--- 		setINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot" modeArchiScriptRoot
-	)
-	else
-	(
-		format  "armada script ini still exists: %\n" armadasScriptsIni
-	)
+	setINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot" armadasScriptsRoot
 )
 initArmadasScripts()
 

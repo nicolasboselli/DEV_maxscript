@@ -11,6 +11,7 @@
 		
 -- rebuild:
 	/- creer une methode pour loader les favoris du core depuis un fichier externes(ini)
+	-- utiliser les methodes externes pour enregistrer les préferences
 	
 */
 
@@ -140,6 +141,11 @@ rollout mxsLaunchRLT "maxscript launcher"
 		
 	)
 	
+	fn loadfavorites2 =
+	(
+		
+	)
+	
 	/*
 	fn writePosition cat =
 	(
@@ -149,7 +155,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 		format  "ScriptLauncher position saved: %\n" res
 	)
 	*/
-	
+	/*
 	fn writeFavorite =
 	(
 -- 		print "bye, favorites writting soon!"
@@ -167,7 +173,7 @@ rollout mxsLaunchRLT "maxscript launcher"
 		format "favorites scripts saved: % List: %\n" res1 favData
 -- 		format  "ScriptLauncher favorites saved: %\n" res1
 	)
-
+*/
 	/*
 	fn loadPosition cat =
 	(
@@ -291,12 +297,14 @@ rollout mxsLaunchRLT "maxscript launcher"
 
 	on mxsLaunchRLT open do
 	(
+		loadRolloutParams mxsLaunchRLT rltParams
+		format "favScriptAr: %\n" favScriptAr 
+		
 		fileClassArray = loadFavorites()
 		displayAr = fileClassArray
 		refreshList()
 		
-		loadRolloutParams mxsLaunchRLT rltParams
-		
+
 -- 		posBak = loadPosition "armadasScriptsFavorite"
 -- 		SetDialogPos mxsLaunchRLT posBak
 	)
@@ -343,11 +351,11 @@ rollout mxsLaunchRLT "maxscript launcher"
 		id = scriptArrayLB.selection
 		-- find selection in original array
 		res = finditem fileClassArray displayAr[id] 
-		format "remove: %\n" displayAr[id] 
+-- 		format "remove: %\n" displayAr[id] 
 		-- delete selection
-		format "fileClassArrayCount: % \n"  fileClassArray.count
+-- 		format "fileClassArrayCount: % \n"  fileClassArray.count
 		deleteItem fileClassArray res
-		format "fileClassArrayCount: % \n"  fileClassArray.count
+-- 		format "fileClassArrayCount: % \n"  fileClassArray.count
 -- 		format "count1: % count2:%\n" test.count fileClassArray.count
 		favScriptAr  = for script in fileClassArray collect script.path
 		-- write array list in ini

@@ -49,7 +49,7 @@ fn writeRolloutParams rlt params =
 			else if classof p == Array then
 			(
 				local completeArray = with printAllElements on p as string
-				setINISetting armadasScriptsIni rlt n completeArray
+				setINISetting armadasScriptsIni cat n completeArray
 			)
 			else
 			(
@@ -90,7 +90,7 @@ fn loadRolloutParams rlt params =
 			(
 				local val
 				try(val = getINISetting armadasScriptsIni cat n)catch(format "*** % ***\n" (getCurrentException()))
-				format "name: %, value: %\n" n val
+-- 				format "name: %, value: %\n" n val
 				
 				if classof p == checkboxcontrol and val.count > 0 then 		
 				(
@@ -101,6 +101,24 @@ fn loadRolloutParams rlt params =
 					p.value = val as float
 				)
 				
+			)
+			else if classof p == Array then
+			(
+				local val = getINISetting armadasScriptsIni cat n
+				if val.count > 1 then
+				(
+-- 					format "val: %, classof: %\n" val (classof val)
+					local cleanAr = #()
+					local tmpAr = execute val
+-- 					format "tmpAr: %\n" tmpAr
+					cleanAr  = for f in tmpAr where doesfileexist f collect f
+-- 					setProperty  rlt n cleanAr
+				)
+				else 
+				(
+					setProperty  rlt n #()
+				)
+-- 				format "n:%, val:%\n" n rlt.p
 			)
 			else
 			(
