@@ -3,6 +3,7 @@
 -- save cleanversion
 -- back to  autoback
 
+-- maxFilePath + "\\" + maxfilename
 -- OU
 -- save version 
 	-- get scenes folder
@@ -12,18 +13,30 @@
 	
 -- créer un point bat qui lance une nouvelle instance de max (ouvre le fichier sauvegardé précedemment) et passe un script en parametres
 	maxVers = "C:\\Program Files\\Autodesk\\3ds Max 2015\\3dsmax.exe"
-	script = "D:\\githubDEV_maxscript\\00_wipsceneManagement\\testLoadScript.ms"
-	batFile = sceneFolder + "\\" + "test.bat" 
+	maxfile = "C:\\Users\\Visiolab\\Desktop\\boxes.max"
+	script = "D:\\github\\DEV_maxscript\\00_wip\\sceneManagement\\testLoadScript.ms"
+
+-- creation du bat file : methode ok, manque silent à l'ouverture
+	batFile = sceneFolder + "\\" + "test3.bat" 
 	
 	str = createFile batFile
 	close  str
 	
 	str = openFile batFile mode: "w+"
-	format  " \"%\" -U MAXScript \"%\"  pause" maxVers script to:str
+-- 	format  "\"%\" \"%\" -U MAXScript \"%\"  pause" maxVers maxfile script to:str
+	format  "\"%\" \"%\" -U MAXScript \"%\" " maxVers maxfile script to:str
+-- 	format  "\"%\" -U MAXScript \"%\" " maxVers script to:str
 	close  str
-	
+		
 -- lancer un .bat qui ouvre max avec le fichier à traiter et qui passse le script de traitement en parametres
-	ShellLaunch "D:/github/DEV_maxscript/00_wip/sceneManagement/testMax.bat" ""
+	ShellLaunch batFile ""
+	
+-- 	ShellLaunch maxVers maxfile
+	
+-- DOSCOMMAND ne passe pas les scripts
+	str2 = "start \"" + maxVers + "\" \"" + maxfile + "\" -U MAXScript \"" + script + "\""
+	str2 = "\"" + maxVers + "\" \"" + maxfile + "\" -U MAXScript \"" + script + "\""
+	doscommand str2 
 
 -- sauver la version aprés le traitement
 
@@ -38,69 +51,4 @@
 	3dsmax -u MAXScript "D:/github/DEV_maxscript/00_wip/sceneManagement/testLoadScript.ms"
 */
 
-
-
--- collapse railclone
-objs = objects as array
--- objs = selection as array
-
-i = 0
-for o in objs where classof o.baseobject == railclone_pro do
-(
-	format "railclone:%\n" o.name
-	o.rendermode = off
-	o.weld = off
-	o.weldth = 0
-
-	o.vmesh = 0
-	o.faceType = 1
-	i = i +1
-)
-
-sel = #()
-for o in objs where classof o.baseobject == railclone_pro do
-(
-	append sel o
-)
-select sel
-
-for o in objs where classof o.baseobject == railclone_pro do
-(
-	converttopoly o
-	format "convert done:%\n" o.name
-)
-
--- collapse sweep
-objs = objects as array
-for o in objs where o.modifiers.count >= 1 do
-(
-	local atLeastOneConvertion = false
-	for m in o.modifiers where classof m == sweep do
-	(
-		atLeastOneConvertion = true
-		format "obj: %, mod: %\n" o m
-		converttopoly o
-	)
-	
-	if not atLeastOneConvertion then format "Pas de modifiers clone à collapser."
-
-)
-
--- collapse clone 
-sel = #()
-objs = objects as array
-for o in objs where o.modifiers.count >= 1 do
-(
-	local atLeastOneConvertion = false
-	for m in o.modifiers where classof m == clone do
-	(
-		atLeastOneConvertion = true
-		format "obj: %, mod: %\n" o m
-		append sel o
-		converttopoly o
-	)
-	
-	if not atLeastOneConvertion then format "Pas de modifiers clone à collapser."
-)
--- select sel
 

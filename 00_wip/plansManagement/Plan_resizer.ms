@@ -99,6 +99,9 @@ fn createScalerSys =
 
 )
 
+-- GetDialogPos planResizerRLT
+
+try(destroydialog planResizerRLT)catch()
 rollout planResizerRLT "blueprint resizer" width: 250
 (
 -- 	vars
@@ -311,7 +314,7 @@ rollout planResizerRLT "blueprint resizer" width: 250
 			refreshDistResize_pb.enabled = true
 		)
 	)
-	
+	/*
 	fn writePosition cat rlt =
 	(
 		posBak = GetDialogPos planResizerRLT
@@ -335,14 +338,16 @@ rollout planResizerRLT "blueprint resizer" width: 250
 		format  "position load: %, %\n" posBak posLoad
 		SetDialogPos planResizerRLT posBak
 	)
-
+*/
 -- 	actions
 	on planResizerRLT open do
 	(
 		scalerArray = createScalerSys()
 		scalerArray = checkScalerDef()
 		
-		loadPosition "planResizerRLT" planResizerRLT
+		loadRolloutParams planResizerRLT #("pos")
+
+-- 		loadPosition "planResizerRLT" planResizerRLT
 		refreshUI()
 		
 		sel = selection as array
@@ -359,8 +364,10 @@ rollout planResizerRLT "blueprint resizer" width: 250
 	
 	on planResizerRLT close do
 	(
+		writeRolloutParams planResizerRLT #("pos")
+
 		try(delete scalerArray)catch(print "nothing to delete")
-		writePosition "planResizerRLT" planResizerRLT
+-- 		writePosition "planResizerRLT" planResizerRLT
 	)
 	
 	on createScaler_bt pressed do
@@ -577,14 +584,14 @@ rollout planResizerRLT "blueprint resizer" width: 250
 			print "correct your selection"
 		)
 	)
-	
 )
 
-
+/*
 try(closeRolloutFloater planResizerRF)catch()
 planResizerRF = newRolloutFloater "Blueprint Tools" 300 400 
 -- addRollout opaRLT theNewFloater
 addRollout planResizerRLT planResizerRF
+*/
 
 createdialog planResizerRLT style: #(#style_resizing,#style_titlebar, #style_border, #style_sysmenu,#style_minimizebox, #style_maximizebox )
 

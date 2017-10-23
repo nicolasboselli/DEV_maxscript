@@ -1,22 +1,26 @@
 /*
 -- maj:
-	--  pendre en charge les scene state pour les différents points de vue plutot que les cameras multiples
+	/-  pendre en charge les scene state pour les différents points de vue plutot que les cameras multiples
 	
-	-- faire fonctionner les actions sur les cameras sur une selection multiple
-	-- sauver les informations du rendeur de points de vue dans la scene
+	--convertir un selection de camera en camera avec scene state
+	-- convertir une serie de scene state en multiples cameras
+	
+	-- faire fonctionner le "batch from cam" sur une selection multiple de cameras
 	/- faire fonctionner le rename à la selection de camera dans la liste
 
 	/- creer vraycam avec target
-	-- sync la selection de camera sur les camera to render
 		
-	-- créer les états de camera et de soleil pour chaque vue (scene state)
+	/- créer les états de camera et de soleil pour chaque vue (scene state)
 	/- créer les lignes de batch render pour chaque camera à rendre
+	-- créer des batch render depuis les scene state
+		-- faire focntionner sur la selection
 	
 	-- proposer la position du soleil en fonction de la camera(droite, gauche)
 	
 -- bug:
-	-- à la suppression ou à la creation de camera la selection est incorrecte, backuper la selection pour la reactiver au refresh
-	-- faire un callback pour detecter la creation de camera et faire un refresh ou le changement de selection de camera dans la scene
+	/- à la suppression ou à la creation de camera la selection est incorrecte, backuper la selection pour la reactiver au refresh
+	-- faire un callback pour detecter la creation de camera
+	-- faire un callback au changement de selection de camera dans la scene
 */
 Global re = maxOps.GetCurRenderElementMgr ()
 
@@ -76,6 +80,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			
 	local camSel 
 	local oneCamSelected = undefined
+	
+	local camSelAr
 	
 	local Pt2vueNode
 	
@@ -230,7 +236,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 
 	fn getCamSelection =
 	(
-		local oneCamSelected
+		oneCamSelected
 		multiCamSel = (SceneCamsMLT.selection as array)
 		
 		format "selection: %, count: %\n" multiCamSel multiCamSel.count
@@ -239,19 +245,27 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			oneCamSelected = multiCamSel[1] 
 			camSel = camArray[oneCamSelected]
 			if isvalidnode camSel then format "camera selected: %\n" camSel.name
+			camSelAr = #(camSel)
 		)
 		else if multiCamSel.count > 1 then
 		(
 -- 			print "youpi" 
 			oneCamSelected == undefined
 			camSel = undefined 
+-- 			format "multi camera selection: %\n" multiCamSel
+			camSelAr = for id in  multiCamSel collect camArray[id]
+			
 		)
 		else
 		(
 			oneCamSelected == undefined
 			camSel = undefined 
-			format "multi camera selection: %\n" multiCamSel
+			camSelAr= #()
+			format "none camera selection: %\n" multiCamSel
 		)
+		
+		format "camSelAr: %\n" camSelAr
+		
 	)
 	
 -- Scene Camera actions
@@ -438,6 +452,11 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	on createBatchRenderBT pressed do
 	(
+		for c in camselAr do
+		(
+			
+		)
+		
 		-- prevoir les exception avec un find view
 		local check = batchRenderMgr.FindView camSel.name
 		if check == 0 then

@@ -51,10 +51,14 @@ fn writeRolloutParams rlt params =
 				local completeArray = with printAllElements on p as string
 				setINISetting armadasScriptsIni cat n completeArray
 			)
+			else if classof p == string then
+			(
+				setINISetting armadasScriptsIni cat n p
+			)
 			else
 			(
 -- 				setINISetting armadasScriptsIni cat n p
-				format "name: %, classof: %, value: %n" n (classof p) p
+				format "NOT SAVED name: %, classof: %, value: %n" n (classof p) p
 			)
 		)
 	)
@@ -120,6 +124,11 @@ fn loadRolloutParams rlt params =
 				)
 -- 				format "n:%, val:%\n" n rlt.p
 			)
+			else if classof p == string then
+			(
+				local val = getINISetting armadasScriptsIni cat n
+				setProperty  rlt n val
+			)
 			else
 			(
 				-- load variable
@@ -129,6 +138,8 @@ fn loadRolloutParams rlt params =
 		)
 	)		
 )
+
+
 
 -- loadRolloutParams edgeToShapeRLT edgeParams
 

@@ -119,10 +119,13 @@ struct planClass
 	
 )
 
+-- getProperty createPlaneRLT "root"
+
 try(destroyDialog createPlaneRLT)catch()
 -- global createPlaneRLT
 rollout createPlaneRLT "create plane"
 (
+	local params = #("pos", "root")
 	
 -- 	vars
 	local maxIni = getMAXIniFile()
@@ -190,19 +193,37 @@ rollout createPlaneRLT "create plane"
 		jpgListTmp
 	)
 	*/
-	
+	/*
 	fn returnJpgList2 oneFolder = 
 	(
 		jpgTmpList = getFiles (oneFolder + "*.jpg")
 		jpgTmpList
 	)
-	
+	*/
+	/*
 	fn initPlanClass jpgList =
 	(
 		planObjList = for oneJpg in jpgList collect (planClass oneJpg)
 		format "planObjList: %\n" planObjList
 		planObjList
 	)
+	*/
+	fn collectPlansList =
+	(
+		if root != undefined and root != "C:\\" then 
+		(
+-- 			root = rootIni
+			
+			jpgList = getFiles (root + "*.jpg")
+			
+-- 			planObjList = initPlanClass jpgList
+			planObjList = for oneJpg in jpgList collect (planClass oneJpg)
+			
+			qsort planObjList sortbyname
+		)
+		else(format "pas de root\n")
+	)
+	
 	
 -- 	create plane and add plan material
 	fn createMappedPlane oneJpg = 
@@ -269,22 +290,24 @@ rollout createPlaneRLT "create plane"
 	
 
 	
+	fn refreshUI =
+	(
+		pathToSearchET.text = root
+		jpgListBox.items = for jpg in planObjList collect jpg.name
+	)
+
+	
 -- 	collect jpg
 	on searchBt pressed do
 	(
 		plansFolder = getSavePath caption: "Select plans folder" initialDir: pathToSearchET.text
 
 		if plansFolder != undefined then
-		(		
+		(	
 			root = plansFolder + "\\"
-			-- refresh vars
-			jpgList = returnJpgList2 root
-			planObjList = initPlanClass jpgList
-			qsort planObjList sortbyname
 			
-			-- refresh ui
-			pathToSearchET.text = root
-			jpgListBox.items = for jpg in planObjList collect jpg.name
+			collectPlansList() 
+			refreshUI()			
 		)
 	)
 	
@@ -309,10 +332,9 @@ rollout createPlaneRLT "create plane"
 		lay.addnode mapPlane
 		
 		-- update listbox
-		planObjList = initPlanClass jpgList
-		qsort planObjList sortbyname
-		jpgListBox.items = for jpg in planObjList collect jpg.name
-		
+		collectPlansList() 
+		refreshUI()	
+
 		select mapPlane
 	)
 	
@@ -330,10 +352,9 @@ rollout createPlaneRLT "create plane"
 			ajustUVWmap mapPlane
 			
 			-- update listbox
-			planObjList = initPlanClass jpgList
-			qsort planObjList sortbyname
-			
-			jpgListBox.items = for jpg in planObjList collect jpg.name
+			collectPlansList() 
+			refreshUI()	
+
 		)
 	)
 	
@@ -352,43 +373,20 @@ rollout createPlaneRLT "create plane"
 	
 	on refreshFoldBT pressed do
 	(
-		
-		-- load ini file
--- 		rootIni = getINISetting (modeArchiScriptRoot + "scriptMode.ini") "planCreator" "jpgPath"
-		try
-		(
-			rootIni = getINISetting armadasScriptsIni "planCreator" "jpgPath"
-			format "load root: %\n" rootIni
-		)
-		catch
-		(
-			format "*** % ***\n" (getCurrentException())
-		)
-		
-		if rootIni != undefined and rootIni != "C:\\" do 
-		(
-			root = rootIni
-			
-			jpgList = returnJpgList2 root
-			
-			planObjList = initPlanClass jpgList
-			qsort planObjList sortbyname
-			
-			pathToSearchET.text = root
-			jpgListBox.items = for jpg in planObjList collect jpg.name
-		)
+		collectPlansList()
+		refreshUI()
 	)
 	
 	on createPlaneRLT open do
 	(
-		refreshFoldBT.pressed()
+		loadRolloutParams createPlaneRLT params
+		collectPlansList()
+		refreshUI()
 	)
 	
 	on createPlaneRLT close do
 	(
-		-- maj ini file
-		root = setINISetting armadasScriptsIni "planCreator" "jpgPath" root
-		format "write root: %\n" root
+		writeRolloutParams createPlaneRLT params 
 	)
 	
 	on createPlaneRLT resized size do

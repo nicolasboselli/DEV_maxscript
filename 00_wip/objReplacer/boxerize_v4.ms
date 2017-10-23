@@ -70,8 +70,6 @@ fn pivotOnFAce s =
 
 fn pivotOnFAce3  s normal: 1 flipNormal: true upnode: 3 flipUpnode: false = 
 (
--- 	local copyS = copy s
-	
 	local theX, theY, theZ
 	local invNormal, invUpnode
 	local theOrder = #(0,0,0)
@@ -83,8 +81,8 @@ fn pivotOnFAce3  s normal: 1 flipNormal: true upnode: 3 flipUpnode: false =
 	if flipNormal then invNormal = -1 else invNormal = 1
 	if flipUpnode then invUpnode = -1 else invUpnode = 1
 	
-	posCenter = s.center
-	bakTM = s.transform
+	local posCenter = s.center
+	local bakTM = s.transform
 	
 	theNormal = normalize ( ( polyop.getFaceNormal s 1) * invNormal )
 	theOther = normalize ( cross   ( [0,0,1] * invUpnode ) theNormal)
@@ -94,24 +92,18 @@ fn pivotOnFAce3  s normal: 1 flipNormal: true upnode: 3 flipUpnode: false =
 	theOrder[Other] = theOther
 	theOrder[upnode] = theUpnode
 	
-	localTM = matrix3   theOrder[1] theOrder[2] theOrder[3] posCenter
+	local localTM = matrix3   theOrder[1] theOrder[2] theOrder[3] posCenter
 	
--- 	point transform: localTM size: 90 wirecolor: green
 	s.transform = localTM
--- 	copyS.transform = localTM
 	
 	addmodifier s (xform ())
-
--- 	s.modifiers[#xform].gizmo.rotation = in coordsys local localTM.rotation
-	s.modifiers[#xform].gizmo.rotation = localTM.rotationpart - bakTM.rotationpart
-	s.modifiers[#xform].gizmo.position = (in coordsys local s.center)* - 1
+	s.modifiers[#xform].gizmo.transform = bakTM * inverse(localTM)
 )
-
 
 -- pivotOnFAce3  $ normal: 2 flipNormal: false upnode: 3 flipUpnode: false 
 
 -- $.scale
-
+/*
 fn boxerize2 selAr amount: 28 =
 (
 	wireAr = #(green, red, blue, orange, yellow, brown)
@@ -155,7 +147,7 @@ fn boxerize2 selAr amount: 28 =
 		)
 	)
 )
-
+*/
 -- myShell = undefined
 
 -- boxerizeRLT.upnodeRB.enabled = true
@@ -163,23 +155,38 @@ fn boxerize2 selAr amount: 28 =
 try(destroydialog boxerizeRLT)catch()
 rollout boxerizeRLT "Boxerize"
 (
+	local wireAr = #(green, red, blue, orange, yellow, brown)
+	
 	group "faces:"
 	(
 		button createFacesBT "create faces"
 	)
 	
-	group "boxerize:"
+	group "eplode:"
 	(
-		spinner boxSizeSP "Size:" type: #worldunits range:[0,1000,28]
-		
+		button explodeBT "explode element"
+	)
+	
+	group "pivot settings:"
+	(
 		radiobuttons normalRB "normal:" labels: #("x", "y", "z")  across: 2 default: 1
 		checkbox flipNormalBT "flip nomal" checked: true
 		radiobuttons upnodeRB "upnode:" labels: #("x", "y", "z")  across: 2  default: 3
 		checkbox flipUpnodeBT "flip upnode" 
 		
-		button testBT "Test"
-		button boxBT "Create Box"
+		button testBT "Pivot on face"
 	)
+		
+	group "boxerize:"
+	(
+		spinner boxOutlineSP "Outline Size:" type: #worldunits range:[0,1000,2] -- enabled: false
+		spinner boxSizeSP "Shell Size:" type: #worldunits range:[0,1000,28]
+		
+-- 		button boxBT "Create Box"
+		button addBoxBT "add box"
+		
+	)
+	button boxBT2 "BOXERIZE"
 	
 	-- Actions
 	
@@ -214,6 +221,14 @@ rollout boxerizeRLT "Boxerize"
 		)
 	)
 	
+	-- explosion
+	on explodeBT pressed do
+	(
+		local sel = selection as array
+		for s in sel do explodeObject s
+	)
+	
+	-- pivot on surface
 	on normalRB changed val do
 	(
 		if upnodeRB.state == val then  upnodeRB.state = 0
@@ -223,91 +238,79 @@ rollout boxerizeRLT "Boxerize"
 	(
 		if normalRB.state == val then  normalRB.state = 0
 	)
-	
-	on boxBT pressed do
-	(
-		sel = selection as array
-		if sel.count == 1 do boxerize2 sel amount: boxSizeSP.value
-	)
-	
+		
 	on testBT pressed do
 	(
-		sel = selection as array
--- 		format "normal: % , flip: % , upnode: % , flip: %\n" normalRB.state flipNormalBT.state upnodeRB.state flipUpnodeBT.state
--- 		format "pivotOnFAce2 s normal: % flipNormal: % upnode: % flipUpnode: %\n" normalRB.state flipNormalBT.state upnodeRB.state flipUpnodeBT.state
+		local sel = selection as array
 		for s in sel do pivotOnFAce3  s normal:  normalRB.state flipNormal: flipNormalBT.state upnode: upnodeRB.state flipUpnode: flipUpnodeBT.state
+	)
+	
+	on addBoxBT pressed do
+	(
+		local sel = selection as array
+		undo on
+		(
+			for s in sel do
+			(
+				select s
+				s.outlineAmount = boxOutlineSP.value
+				s.EditablePoly.Outline ()
+			
+				myShell = Shell innerAmount:0 outerAmount:boxSizeSP.value
+				addmodifier s myShell
+				s.pivot = s.center
+				
+				id = random 1 wireAr.count
+				s.material = undefined
+				s.wirecolor = wireAr[id]
+			)
+		)
+	)
+	
+-- 	on boxBT pressed do
+-- 	(
+-- 		local sel = selection as array
+-- 		if sel.count == 1 do boxerize2 sel amount: boxSizeSP.value		
+-- 	)
+	
+	on boxBT2 pressed do
+	(
+		local sel = selection as array
+			
+		undo on 
+		(
+			for s in sel do
+			(
+				select s
+				s.outlineAmount = boxOutlineSP.value
+				s.EditablePoly.Outline ()
+				
+				-- detacher chaque element
+				local selArr = explodeObject s
+
+				for o in selArr do
+				(
+					if (polyop.getNumFaces o)>0 do
+					(
+						-- reset in place
+						pivotOnFAce3  o normal:  normalRB.state flipNormal: flipNormalBT.state upnode: upnodeRB.state flipUpnode: flipUpnodeBT.state
+						
+						-- add shell on object
+						myShell = Shell innerAmount:0 outerAmount:boxSizeSP.value
+						addmodifier o myShell
+						o.pivot = o.center
+						
+						converttopoly o
+					
+						o.material = undefined	
+						
+						id = random 1 wireAr.count
+						o.wirecolor = wireAr[id]
+					)
+				)
+			)
+		)
 	)
 )
 createdialog boxerizeRLT
 
-
-/*
-
-pivotOnFAce $
-
-
-posCenter = $.center
-
-theX = normalize ((polyop.getFaceNormal $ 1)*-1)
-theY = normalize (cross [0,0,1] theX )
-theZ= normalize (cross theX theY)
-
-localTM = matrix3   theX theY theZ posCenter
-
-bakTM = $.transform
-
-$.transform = localTM
-
-addmodifier $ (xform ())
-$.modifiers[#xform].gizmo.rotation =  localTM.rotationpart - bakTM.rotationpart
-$.modifiers[#xform].gizmo.position = (in coordsys local $.center)* -1
-
-bakPos = $.pos
-in coordsys local $.center 
-
-
-$.transform = inverse $.transform
-
-in coordsys bakTM localTM.position
-xformMat  bakTM localTM 
-
-in coordsys local $.center
-localTM.translationpart + bakTM.translationpart
-localTM.rotationpart
-	
-[173.524,1956.8,688.602]
-
-[538.901,2615.82,864.095]
-[-455.711,921.731,175.493]
-
-
-localTM.rotationpart - bakTM.rotationpart
-
-b1 = $Box021.transform
-b2 = $Box022.transform
-
-xformMat  b1 b2
-
-
-b1 = $Box021
-b2 = $Box022
-about b1 rotate b2 30 z_axis
-
-
-$.objectTransform
-$.transform
-	
-localTM 
--- pt = point transform: localTM
-b1 * b2 * inverse(b1)
-
-
-$.modifiers[#xform].gizmo.rotation = in coordsys local localTM.rotation
-$.modifiers[#xform].gizmo.position = (in coordsys local $.center)* -1
-
-resetxform $
-converttopoly $
-pivotOnFAce $
-
-boxerize2 #($)
-*/
