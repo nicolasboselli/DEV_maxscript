@@ -309,9 +309,10 @@ struct assetCreationClass
 try(destroyDialog createAssetRLT)catch()
 rollout createAssetRLT "create asset v3" 
 (
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+-- 	local maxIni = getMAXIniFile()
+-- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
 -- 	vars
 	local allAssetsFolder
 	local root
@@ -589,7 +590,7 @@ rollout createAssetRLT "create asset v3"
 		-- check if we are in asset
 		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
 			-- find assetInfo.ini file
-		res = doesfileexist infoTest 
+		local res = doesfileexist infoTest 
 		
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		
@@ -608,6 +609,24 @@ rollout createAssetRLT "create asset v3"
 	)
 	-- Actions
 	
+	on createAssetRLT open do
+	(
+		format "asset op: %\n" assetEditorRLT.assetOp
+		if assetEditorRLT.assetOp == 1 then
+		(
+			initForScene()
+		)
+		else if assetEditorRLT.assetOp == 2 then
+		(
+			initForSelection ()
+		)
+		else if assetEditorRLT.assetOp == 3 then
+		(
+			initForPublishing ()
+		)
+		else()
+	)
+	
 	on nameET entered str do
 	(
 		if newAsset != undefined then
@@ -618,13 +637,13 @@ rollout createAssetRLT "create asset v3"
 			checkCreationSanity newAsset
 		)
 	)
-	
+	/*
 	on checkCreationBT pressed do
 	(
 		if newAsset != undefined then checkCreationSanity newAsset
 		else	print "complete fields"
 	)
-	
+	*/
 	on createAssetBT2 pressed do
 	(
 		if mode == 1 then newAsset.createAssetFromScene()

@@ -45,13 +45,30 @@ fn initArmadasScripts =
 )
 initArmadasScripts()
 
+-- trouver l'adresse du dossier à loader au démarage a copier
+fn getRoot =
+(
+-- 	local maxIni = getMAXIniFile()
+-- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
+	
+	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+)
+
+
 -- copy les icones dans le dossier user
 fn copyBmpIcons =
 (
 	-- determine le dossier source
-	maxIni = getMAXIniFile()
-	armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+-- 	maxIni = getMAXIniFile()
+-- 	armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
+	
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
+	
+-- 	scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
+	
+	local	scriptRoot = getRoot()
+	
 	iconsArray = getfiles (scriptRoot + "icons\*.bmp")
 	
 	-- determine les dossiers de destination
@@ -86,13 +103,7 @@ copyBmpIcons()
 -- copy du fichier filein type
 
 
--- trouver l'adresse du dossier à loader au démarage a copier
-fn getRoot =
-(
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-)
+
 
 -- aout de la lecture du dossier startup au démarrage de max (avant macroscript):
 fn initArmadasStartupDir =

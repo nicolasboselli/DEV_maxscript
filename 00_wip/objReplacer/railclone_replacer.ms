@@ -1,32 +1,42 @@
 sel = selection as array
-
 rc = sel[1]
 
-for i = 2 to sel.Count do
+fn railCloneReplace rc others =
 (
-	l = sel[i]
-	
-		-- copy railclone
-	new = copy rc
-	-- assign new spline
-	new.banode[1] = l
+	if classof rc == railclone_pro then
+	(
+		for i = 2 to others.Count do
+		(
+			l = others[i]
+			
+				-- copy railclone
+			new = copy rc
+			-- assign new spline
+			new.banode[1] = l
 
-	-- realign railclone
-	new.transform = copy l.transform
+			-- realign railclone
+			new.transform = copy l.transform
 
-	-- re assign line
-	new.banode[1] = l
-	
+			-- re assign line
+			new.banode[1] = l
+			
 
-	-- realign railclone
--- 	new.transform = copy l.transform
-	new.disabled = on
-	redrawviews ()
-	
-	new.disabled = off
-	redrawviews ()
-	
+			-- realign railclone
+		-- 	new.transform = copy l.transform
+			new.disabled = on
+			redrawviews ()
+			
+			new.disabled = off
+			redrawviews ()
+		)
+	)
+	else()
 )
+
+railCloneReplace rc sel
+
+
+
 
 
 

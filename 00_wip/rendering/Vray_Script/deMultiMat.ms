@@ -3,7 +3,7 @@
 	-- add split edge
 	-- 
 	
-
+-- classof meditmaterials[activeMeditSlot]
 fn convertMultiMat =
 (
 	multi = meditmaterials[activeMeditSlot]
@@ -127,48 +127,6 @@ fn explodeMultiMatDef s matchMat: false=
 
 -- addmodifier w
 
--- collect scene multimaterial
-fn collectMultiMatDef =
-(
-	-- collect mulimaterial in material editor
-	multimatArray = #()
-	for mat in sceneMaterials do 
-		if (classof mat) == Multimaterial do
-		(
-			append  multimatArray mat
-		)
-	 print 	multimatArray
-
-	for i = 1 to multimatArray.count do
-	(meditMaterials[i] = multimatArray[i])
-)
-
-fn collectMultiMatDef2 maxMatNum: 0 =
-(
-	local multimatArray = getclassinstances Multimaterial target: scenematerials
-	
-	local lastMatNum = maxMatNum + 24
-	format "publish min: %, publish max: %, multimat count: %\n" maxMatNum lastMatNum multimatArray.count
-	
-	if  multimatArray.count  <= lastMatNum do
-	(
-		lastMatNum = multimatArray.count 
-	)
-	
-	for i =  1 to 24 do
-	(
-		if multimatArray[i + maxMatNum] != undefined then
-		(
-			meditMaterials[i] = multimatArray[i + maxMatNum]
-		)
-		else
-		(
-			meditMaterials[i] = standard()
-		)
-	)
-	
-	#(multimatArray.count, lastMatNum)
-)
 
 -- refresh scenematerial
 fn updateSceneMaterials =
@@ -259,23 +217,23 @@ fn removeMatDef =
 	$.material = undefined
 )
 
-fn collectstandardMat maxMatNum: 0  =
+
+-- collect scene multimaterial
+fn publishMatArray  matArray maxMatNum: 0 =
 (
-	local standMatAr = getclassinstances standard target: sceneMaterials
-	
 	local lastMatNum = maxMatNum + 24
-	format "publish min: %, publish max: %, standard count: %\n" maxMatNum lastMatNum standMatAr.count
+	format "publish min: %, publish max: %, publish total: %\n" maxMatNum lastMatNum matArray.count
 	
-	if  standMatAr.count  <= lastMatNum do
+	if  matArray.count  <= lastMatNum do
 	(
-		lastMatNum = standMatAr.count 
+		lastMatNum = matArray.count 
 	)
 	
 	for i =  1 to 24 do
 	(
-		if standMatAr[i + maxMatNum] != undefined then
+		if matArray[i + maxMatNum] != undefined then
 		(
-			meditMaterials[i] = standMatAr[i + maxMatNum]
+			meditMaterials[i] = matArray[i + maxMatNum]
 		)
 		else
 		(
@@ -283,9 +241,26 @@ fn collectstandardMat maxMatNum: 0  =
 		)
 	)
 	
-	#(standMatAr.count, lastMatNum)
+	#(matArray.count, lastMatNum)
 )
 
+fn collectClassOfMat classOfMat maxMatNum: 0 =
+(
+	local matArray = getclassinstances classOfMat target: scenematerials
+	publishMatArray matArray maxMatNum: maxMatNum
+)
+
+fn collectMultiMatDef2 maxMatNum: 0 =
+(
+	local multimatArray = getclassinstances Multimaterial target: scenematerials
+	publishMatArray multimatArray maxMatNum: maxMatNum
+)
+
+fn collectstandardMat maxMatNum: 0  =
+(
+	local standMatAr = getclassinstances standard target: sceneMaterials
+	publishMatArray standMatAr maxMatNum: maxMatNum
+)
 
 fn publishSceneMatDef vrOnly: true  maxMatNum: 0 =
 (
@@ -302,38 +277,33 @@ fn publishSceneMatDef vrOnly: true  maxMatNum: 0 =
 		append matToPubAr tmpMat
 	)
 	
-	-- publich materials in material editor
-	lastMatNum = maxMatNum + 24
-	format "min: %, max: %\n" maxMatNum lastMatNum
-	
-	if  matToPubAr.count  <= lastMatNum do
-	(
-		lastMatNum = matToPubAr.count 
-	)
-	
-	for i =  1 to 24 do
-	(
-		if matToPubAr[i + maxMatNum] != undefined then
-		(
-			meditMaterials[i] = matToPubAr[i + maxMatNum]
-		)
-		else
-		(
-			meditMaterials[i] = standard()
-		)
-	)
-	
-	#(sceneMaterials.count, lastMatNum)
+	publishMatArray matToPubAr 
 )
+
+
+fn collectMatFromSel sel maxMatNum: 0 =
+(
+	local matAr = #()
+-- 	for s in sel do print s
+	for s in sel where s.material != undefined do appendifunique matAr s.material 
+	
+	publishMatArray matAr maxMatNum: maxMatNum
+)
+
 
 -- convert standard to vray
 fn convertToVrMatDef =
 (
-	vrMat = VRayMtl diffuse: meditMaterials[activeMeditSlot].diffuse name: meditMaterials[activeMeditSlot].name
-	replaceinstances meditMaterials[activeMeditSlot] vrMat
+	if classof meditMaterials[activeMeditSlot] != VRayMtl then
+	(
+		vrMat = VRayMtl diffuse: meditMaterials[activeMeditSlot].diffuse name: meditMaterials[activeMeditSlot].name
+		if classof meditMaterials[activeMeditSlot] == standard then
+		(
+			vrMat.texmap_diffuse = meditMaterials[activeMeditSlot].diffuseMap
+		)
+		replaceinstances meditMaterials[activeMeditSlot] vrMat
+	)
 )
-
--- meditMaterials[activeMeditSlot].diffuse
 
 -- function to return good smooth grp id
 fn convertToSmoothGrpDef num =
@@ -373,22 +343,6 @@ fn splitSmthGrpDef s =
 )
 -- splitSmthGrpDef $
 
-fn collectMatFromSel sel=
-(
-	local matAr = #()
--- 	for s in sel do print s
-	for s in sel where s.material != undefined do appendifunique matAr s.material 
-	if matAr.count < 25 then
-	(
-		for i = 1 to matAr.count do meditMaterials[i] = matAr[i]
-		
-	)
-	else
-	(
-		for i = 1 to 24 do meditMaterials[i] = matAr[i]
-	)
-	format "material count:%\n" matAr.count
-)
 
 
 try(destroyDialog deMultiMatRLT)catch()
@@ -403,7 +357,7 @@ rollout deMultiMatRLT "Materials utilities"
 		checkbox multiMatIDCB "use first id for multimaterial" checked: true
 		button randomWireBT "wirecolor by material"
 	)
-	
+	/*
 	group "Multi-Materials:"
 	(
 		button collectMultiBT "collect multi-materials"
@@ -412,7 +366,7 @@ rollout deMultiMatRLT "Materials utilities"
 		button splitEdgeBT "split edges"
 		
 	)
-	
+	*/
 	group "explode multi-Materials:"
 	(
 		checkbox matchMatCB "match materials"
@@ -423,9 +377,16 @@ rollout deMultiMatRLT "Materials utilities"
 	(
 		button refreshBT "refresh scene materials"
 		checkbox vronlyCB "ignore vray materials"
+		
 		button publishSceneMatBT "publish scene materials"
-		button publishStandMatBT "publish standard materials"
--- 		button publishSceneMat2BT "publish scene materials adv"
+	)
+	
+	group "class materials"
+	(
+-- 		button collectMultiBT "publish multi-materials"
+-- 		button publishStandMatBT "publish standard materials"
+		listbox matLB "mat class:" items: #("standard", "Multimaterial","Double_Sided", "vraymtl")
+		button publishMatBT "publish"
 	)
 	
 	group "material"
@@ -468,7 +429,13 @@ rollout deMultiMatRLT "Materials utilities"
 	on collectSelMatBT pressed do
 	(
 		sel = selection as array
-		collectMatFromSel sel
+-- 		collectMatFromSel sel
+		
+		local compare = collectMatFromSel sel maxMatNum: lastManNum
+		local sceneCount = compare[1]
+		lastManNum = compare[2]
+		if  lastManNum >= sceneCount then lastManNum = 0
+		
 	)
 	
 	on explodeBT pressed do 
@@ -536,7 +503,25 @@ rollout deMultiMatRLT "Materials utilities"
 		if  lastManNum >= sceneCount then lastManNum = 0
 	)
 	
+	on publishMatBT pressed do
+	(
+		local classOfMat
+-- 		format "sel: %\n"  matLB.selection
+		
+		if matLB.selection == 1 then  classOfMat = standard 
+		else if  matLB.selection == 2 then classOfMat = multimaterial 
+		else if  matLB.selection == 3 then classOfMat = DoubleSided
+		else if  matLB.selection == 4 then classOfMat =	vraymtl
+		else(format "UNKNOW\n")
+		
+		local compare = collectClassOfMat classOfMat maxMatNum: lastManNum
+		local sceneCount = compare[1]
+		lastManNum = compare[2]
+		if  lastManNum >= sceneCount then lastManNum = 0
+	)
+	
 	on convertToVrBT pressed do convertToVrMatDef()
+	
 	on publishSceneMat2BT pressed do publishSceneMatAdvDef()
 	
 	on createVrMtlBT pressed do createVrMtl()

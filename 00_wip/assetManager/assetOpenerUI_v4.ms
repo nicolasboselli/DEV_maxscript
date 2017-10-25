@@ -9,6 +9,8 @@ maj:
 		-- add ignore archive
 	
 	/- choix de la version de max à l'enregistrement en option
+		x- fonctionnel sur le publish de version
+		-- rendre fonctionnel à la creation
 	
 	x- fuse "assetCreatorUI" and "assetCreatorFromSelectionUI2"
 	
@@ -62,7 +64,7 @@ debug:
 	-- merge impossible quand on ne choisi pas comme repository le dossier parent des asset
 	
 rebuild:
-	-- tester la fenetre de publish des asset comme modal
+	x- tester la fenetre de publish des asset comme modal
 		
 */
 
@@ -138,23 +140,13 @@ rollout externalToolsRLT "asset tools"
 rollout openThumbRLT "Thumb"
 (
 	bitmap assetBMP "asset thumbnail" width: 256 height: 256
-	
-	/*
-	on openThumbRLT open do
-	(
-		assetEditorRLT.bmpOpened = true
-	)
-	
-	on openThumbRLT close do
-	(
-		assetEditorRLT.bmpOpened = false
-	)
-	*/
 )
 
 
 rollout assetEditorRLT "assets editor v2"
 (
+	local assetOp = 0
+	
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
@@ -169,7 +161,7 @@ rollout assetEditorRLT "assets editor v2"
 	local statusAr = #("all","none","approved","wip","retake", "archive" )
 	local currentAsset
 	
-	local bmpOpened = false
+-- 	local bmpOpened = false
 	
 -- 	UI
 -- 	edittext allAssetsFolderET "the \"all assets\" folder name:" text: allAssetsFolder readonly: true
@@ -526,53 +518,30 @@ rollout assetEditorRLT "assets editor v2"
 		)
 	)
 	
-
-	
-	/*
-	on createAssetBT pressed do filein "assetCreatorUI5.ms"
-		
-	on createAssetFromSelBT pressed do 
-	(
-		sel = selection as array
-		if sel.count > 0 then filein "assetCreatorFromSelectionUI2.ms"
-		else print "make selection first"
-	)
-	
-	on publishRolloutBT pressed do
-	(
-		-- check if we are in asset
-		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
-			-- find assetInfo.ini file
-		res = doesfileexist infoTest 
-		
-		if res then
-		(
--- 			root = rof.rollouts[2].root
-			currentAsset = assetClass()
-			currentAsset.initFromIni infoTest root
-			createdialog publishVersionRLT
--- 			publishVersionRLT.currentAsset = currentAsset
-		)
-		else (print "this is not an asset")
-	)
-	*/
 	on createAssetBT3 pressed do
 	(
-		createdialog createAssetRLT width: 800
-		createAssetRLT.initForScene()
+		assetOp = 1
+		createdialog createAssetRLT width: 800 modal: true
+-- 		createAssetRLT.initForScene()
+-- 		createAssetRLT.modal = true
+		refreshFromOutside()
 	)
 	
 	on createAssetFromSelBT3 pressed do
 	(
+		assetOp = 2
 		sel = selection as array
-		if sel.count > 0 then createdialog createAssetRLT width: 800
-		createAssetRLT.initForSelection()
+		if sel.count > 0 then createdialog createAssetRLT width: 800 modal: true
+-- 		createAssetRLT.initForSelection()
+		refreshFromOutside()
 	)
 	
 	on publishRolloutBT3 pressed do
 	(
-		createdialog createAssetRLT width: 800
-		createAssetRLT.initForPublishing()
+		assetOp = 3
+		createdialog createAssetRLT width: 800 modal: true
+-- 		createAssetRLT.initForPublishing()
+		refreshFromOutside()
 	)
 	
 	on collectAssetBT pressed do
