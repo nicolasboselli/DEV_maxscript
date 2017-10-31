@@ -10,6 +10,19 @@ maj:
 	-- re rendre le status editable
 		
 	-- dev init for display and init for publishing
+	
+	-- proposer un clean des calques et des materiaux
+	-- porposer un rename des calques et des materiaux
+	
+	-- blinder le choix de la version d'enregistrement:
+		-- prendre en compte la verion de max utiliser
+		-- proposer des version d'enregistremnt possible(précédente)
+		-- prendre en compte l'exception de max 2017 qui ne supporte pas la saveasversion: 2017
+	
+debug:
+	-- au fail de creation d'asset, supprimer le dossier créé
+	x- fail à l'enregistrement en 2017
+	-- la variable assetop n'arrive pas depuis l' asset opener à la première ouverture
 		
 */ 
  
@@ -62,7 +75,7 @@ struct assetCreationClass
 		assetFolder =cleanFilename(getFilenamePath assetInfo)
 		--
 		assetName = getINISetting iniFile "assetProperties" "name"
-		format "assetName: %, count: %\n" assetName assetName.count
+-- 		format "assetName: %, count: %\n" assetName assetName.count
 		if assetName.count == 0 then assetName = getINISetting iniFile "assetProperties" "assetName"
 		
 		lastVersion = (getINISetting iniFile "assetProperties" "version") as integer
@@ -76,7 +89,7 @@ struct assetCreationClass
 		lastVersionFile = cleanFilename(assetFolder + "\\" + (returnDigit lastVersion) +"\\" + assetName + ".max")
 		wipFolder = cleanFilename(assetFolder +"\\"+  "wip" + "\\")
 				
-		format  "Asset Init: %\n" assetName
+		format  "Asset Init Done: %\n" assetName
 	),
 	
 	fn getAssetFolder = basefolder +  assetName,
@@ -185,15 +198,28 @@ struct assetCreationClass
 		newFolder =  assetFolder +"\\" +  (returnDigit( lastVersion + 1))
 		folderCreated = makedir newFolder all: true
 		
+		if maxVers == 2017 then maxVers = 0
+			
 		-- save new version file
 		local newFile
+		
+		format "maxvers: %\n" maxVers
 		
 		if folderCreated == true then
 		(
 -- 			maxVers = 2015
 			newFile =  newFolder + "\\" +  assetName + ".max" 
 			newfileCreated = saveMaxFile newFile useNewFile: false saveAsVersion: maxVers
-			if newfileCreated then (format "Asset Publishing Done: % ; New Version Published: % \n" assetName newFile) else (format "Asset Publishing Fail: % \n" assetName)
+			
+			if newfileCreated then
+			(
+				format "Asset Publishing Done: % ; New Version Published: % \n" assetName newFile
+			)
+			else
+			(
+				format "Asset Publishing Fail: % \n" assetName
+				
+			)
 		)
 		
 		if newfileCreated == true then
@@ -210,7 +236,7 @@ struct assetCreationClass
 		(
 -- 			delete folder
 		)
-		format "publishing done"
+		format "publishing method end: %\n" newFile
 		newFile
 	),
 	
@@ -222,7 +248,7 @@ struct assetCreationClass
 	
 	fn getMaxFileVersion = 
 	(
-		maxVers
+		local maxVers
 		res = getMaxFileVersionData lastVersionFile 
 		if res[1] == 14000 then maxVers = "2012"
 		else if res[1] == 15000 then maxVers = "2013"
@@ -611,20 +637,28 @@ rollout createAssetRLT "create asset v3"
 	
 	on createAssetRLT open do
 	(
-		format "asset op: %\n" assetEditorRLT.assetOp
-		if assetEditorRLT.assetOp == 1 then
+		if not assetEditorRLT.assetOp == undefined then
 		(
-			initForScene()
+			format "asset op: %\n" assetEditorRLT.assetOp
+			if assetEditorRLT.assetOp == 1 then
+			(
+				initForScene()
+			)
+			else if assetEditorRLT.assetOp == 2 then
+			(
+				initForSelection ()
+			)
+			else if assetEditorRLT.assetOp == 3 then
+			(
+				initForPublishing ()
+			)
+			else()
 		)
-		else if assetEditorRLT.assetOp == 2 then
+		else
 		(
-			initForSelection ()
+			format "assetOp error\n"
+			try(destroyDialog createAssetRLT)catch()
 		)
-		else if assetEditorRLT.assetOp == 3 then
-		(
-			initForPublishing ()
-		)
-		else()
 	)
 	
 	on nameET entered str do
@@ -664,7 +698,7 @@ rollout createAssetRLT "create asset v3"
 		)
 		
 		format "asset creation done: %\n" newAsset.assetName
-		try rof.rollouts[2].refreshFromOutside() catch(format "*** % ***\n" (getCurrentException()))
+-- 		try rof.rollouts[2].refreshFromOutside() catch(format "*** % ***\n" (getCurrentException()))
 		destroydialog createAssetRLT
 	)
 )

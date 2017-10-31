@@ -62,16 +62,19 @@ debug:
 	-- error quand enregistre asset et que le path selectionner ne correspond pas
 	-- error: "rollouts"
 	-- merge impossible quand on ne choisi pas comme repository le dossier parent des asset
+	-- crash au publish en version 2017
+	-- voir si le parametre assetOp passe bien
 	
 rebuild:
 	x- tester la fenetre de publish des asset comme modal
 		
 */
+global assetEditorRLT
 
 filein "assetCreatorUI5.ms"
 filein "assetManagerDef.ms"
 
-rof
+-- rof
 
 fn sortAssestbyname v1 v2 =
 (
@@ -96,8 +99,8 @@ fn sortAssestbyname v1 v2 =
 -- scan asset folder to collect asset
 fn walkDir dir pattern =
 (
-	assetArr = #()
-    dirArr = GetDirectories (dir + "\\*")
+	local assetArr = #()
+    local dirArr = GetDirectories (dir + "\\*")
  
     for d in dirArr do
     (
@@ -116,7 +119,6 @@ fn walkDir dir pattern =
 				 append assetArr f
 			)
 		)
-       
     )
 	assetArr
 )
@@ -539,9 +541,9 @@ rollout assetEditorRLT "assets editor v2"
 	on publishRolloutBT3 pressed do
 	(
 		assetOp = 3
+		format "assetop: %\n" assetEditorRLT.assetOp
 		createdialog createAssetRLT width: 800 modal: true
--- 		createAssetRLT.initForPublishing()
-		refreshFromOutside()
+-- 		refreshFromOutside()
 	)
 	
 	on collectAssetBT pressed do

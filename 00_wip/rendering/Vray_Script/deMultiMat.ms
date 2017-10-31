@@ -367,6 +367,11 @@ rollout deMultiMatRLT "Materials utilities"
 		
 	)
 	*/
+	group "remove"
+	(
+		button removeMatBT "remove material"
+	)
+	
 	group "explode multi-Materials:"
 	(
 		checkbox matchMatCB "match materials"

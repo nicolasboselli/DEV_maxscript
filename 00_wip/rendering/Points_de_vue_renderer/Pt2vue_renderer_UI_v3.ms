@@ -186,7 +186,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 -- 		button delOtherCamBT "Supprimer les autres"
 		edittext sceneStateET "new scene state:" pos:[15,310] width: 420
 		button newSceneStateBT "create" pos:[440, 310]
-		Multilistbox CamsRenderMLT "scene states:"  
+		Multilistbox BatchRenderMLT "scene states:"  
 		
 		
 		
@@ -209,7 +209,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		-- refresh scene cameras
 		SceneCamsMLT.items = for o in camArray collect o.name
 		
-		CamsRenderMLT.items = for o in statesAr collect o
+		BatchRenderMLT.items = for o in statesAr collect o
 		
 		if isvalidnode camSel then 
 		(
@@ -225,11 +225,11 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		/*
 		if camToRender.count > 0 then 
 		(
-			CamsRenderMLT.items = for o in camToRender collect o.name
+			BatchRenderMLT.items = for o in camToRender collect o.name
 		)
 		else
 		(
-			CamsRenderMLT.items = #()
+			BatchRenderMLT.items = #()
 		)
 		*/
 	)
@@ -385,19 +385,19 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		else format "SELECTION INCORRECTE"
 	)
 	
-	on CamsRenderMLT selectionend do
+	on BatchRenderMLT selectionend do
 	(
-		local sel = CamsRenderMLT.selection as array
+		local sel = BatchRenderMLT.selection as array
 		
 		if sel.count == 1 then
 		(
-			stateSel = CamsRenderMLT.items[sel[1]]
-			stateSelAr = for i in CamsRenderMLT.selection collect CamsRenderMLT.items[i]
+			stateSel = BatchRenderMLT.items[sel[1]]
+			stateSelAr = for i in BatchRenderMLT.selection collect BatchRenderMLT.items[i]
 		)
 		else if sel.count > 1 then
 		(
 			stateSel = undefined
-			stateSelAr = for i in CamsRenderMLT.selection collect CamsRenderMLT.items[i]
+			stateSelAr = for i in BatchRenderMLT.selection collect BatchRenderMLT.items[i]
 		)
 		else
 		(
@@ -477,7 +477,9 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 -- 		cam = $Camera001
 -- 		outputPath = @"T:\BPD Marignan\SoBlagnac_0917\Perspectives\Perspectives\ptsdevue"
 		num = sceneStateMgr.GetCount()   
-
+		
+		local idSel = 
+		
 		for i = 1 to num do
 		(
 			local oneName = sceneStateMgr.GetSceneState i
@@ -529,7 +531,7 @@ createdialog Pt2vue_renderer_UI
 	/*
 	on delCamSelect pressed do
 	(
-		cameToRemoveID = CamsRenderMLT.selection as array
+		cameToRemoveID = BatchRenderMLT.selection as array
 		
 		
 		for i = cameToRemoveID.count to  1 by -1 do
