@@ -5,37 +5,24 @@ maj:
 	x- filter by name
 		x- add * add begining and end of search	
 		
+	-- avertir quand on veut publier un asset sans avoir selectionner le bon repertoire dans l assetOpener
+		
 	-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore archive
 	
 	/- choix de la version de max à l'enregistrement en option
 		x- fonctionnel sur le publish de version
 		-- rendre fonctionnel à la creation
-	
-	x- fuse "assetCreatorUI" and "assetCreatorFromSelectionUI2"
-	
-	x- deplace publish method in asset structure
-	x- deplace edit method in asset structure
-	x- revoir le systeme d enregistrement en passant par un wip
-		x- update wip name after publishing
 
-	x- clean wip folder
 	-- clean old version (garder seuelement la première et la dernière version)
 	-- add comments
-	x- add history in repository
 	-- delete/ rename asset
-	
-	
-	x- au merge eviter le cache layer et les sun
 		
 	-- proposer merge ou xref scene ou xref object
 	-- ouvrir le dialogbox du merge en option
 	
-	x- enregister le fichier courant dans le wip
 	/- ouvrir le dernier wip 
-	
-	x- renommer la dialog box lors de la creation d'assets de maniere approprié
-	
+		
 	-- publier un version "merge ready" à coté du dossier d'asset
 		-- supprimer les sun, cam et cache_layer
 	
@@ -49,21 +36,16 @@ maj:
 	x- faire apparaitre la prévue dans une fenetre separée
 		-- afficher le nom de l'asset dans la barre de titre
 	
--- (asset explorer: update tools v2)
-	-- prendre en charge les asset node
-		-- checker les asset node de la scene
-		-- compter les instances
-		-- importer le nouvel asset
-		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
+
 	
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection
-	-- error quand enregistre asset et que le path selectionner ne correspond pas
+	x- error quand enregistre asset et que le path selectionner ne correspond pas
 	-- error: "rollouts"
-	-- merge impossible quand on ne choisi pas comme repository le dossier parent des asset
-	-- crash au publish en version 2017
-	-- voir si le parametre assetOp passe bien
+	x- merge impossible quand on ne choisi pas comme repository le dossier parent des asset
+	x- crash au publish en version 2017
+	x- voir si le parametre assetOp passe bien
 	
 rebuild:
 	x- tester la fenetre de publish des asset comme modal
@@ -71,7 +53,7 @@ rebuild:
 */
 global assetEditorRLT
 
-filein "assetCreatorUI5.ms"
+filein "assetCreatorUI6.ms"
 filein "assetManagerDef.ms"
 
 -- rof

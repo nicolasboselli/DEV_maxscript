@@ -57,8 +57,9 @@ fn returnAllHierarchyDown selArray=
 
 fn cleanFilename filename =
 (
-	test =substituteString filename "\\\\" "\\"
-	test
+	local cleanName =substituteString filename "\\\\" "\\"
+-- 	cleanName =substituteString filename "\\" "/"
+	cleanName
 )
 
 fn returnDigit num =
@@ -69,6 +70,7 @@ fn returnDigit num =
 	else if num>99 then numStr = (num as string)
 	numStr
 )
+
 
 
 

@@ -4,6 +4,27 @@
 	-- 
 	
 -- classof meditmaterials[activeMeditSlot]
+
+fn sortMatbyname v1 v2 =
+(
+	-- qsort <array> sortbyname
+-- 	vars
+	local d
+	
+	if ( (toLower v1.name) < (toLower v2.name)) then
+		d=-1
+	else
+		d=1
+	
+--compare les numeros entre eux et les classe	
+	case of
+	(
+		(d < 0.): -1
+		(d > 0.): 1
+		default: 0
+	)
+)
+
 fn convertMultiMat =
 (
 	multi = meditmaterials[activeMeditSlot]
@@ -222,7 +243,7 @@ fn removeMatDef =
 fn publishMatArray  matArray maxMatNum: 0 =
 (
 	local lastMatNum = maxMatNum + 24
-	format "publish min: %, publish max: %, publish total: %\n" maxMatNum lastMatNum matArray.count
+	format "total: %, min: %, max: %\n" matArray.count maxMatNum lastMatNum 
 	
 	if  matArray.count  <= lastMatNum do
 	(
@@ -262,7 +283,7 @@ fn collectstandardMat maxMatNum: 0  =
 	publishMatArray standMatAr maxMatNum: maxMatNum
 )
 
-fn publishSceneMatDef vrOnly: true  maxMatNum: 0 =
+fn publishSceneMatDef vrOnly: true  maxMatNum: 0 sortByName: false =
 (
 	local matToPubAr = #()
 
@@ -277,7 +298,10 @@ fn publishSceneMatDef vrOnly: true  maxMatNum: 0 =
 		append matToPubAr tmpMat
 	)
 	
-	publishMatArray matToPubAr 
+	-- classe par ordre alphabetique
+	if sortByName do qsort matToPubAr sortMatbyname 
+	
+	publishMatArray matToPubAr  maxMatNum: maxMatNum
 )
 
 
@@ -292,18 +316,100 @@ fn collectMatFromSel sel maxMatNum: 0 =
 
 
 -- convert standard to vray
-fn convertToVrMatDef =
+fn convertToVrMatDef mat =
 (
-	if classof meditMaterials[activeMeditSlot] != VRayMtl then
+	local converted = false
+	local vrmat
+	
+	if classof mat == Standard then
 	(
-		vrMat = VRayMtl diffuse: meditMaterials[activeMeditSlot].diffuse name: meditMaterials[activeMeditSlot].name
-		if classof meditMaterials[activeMeditSlot] == standard then
-		(
-			vrMat.texmap_diffuse = meditMaterials[activeMeditSlot].diffuseMap
-		)
-		replaceinstances meditMaterials[activeMeditSlot] vrMat
+		vrMat = VRayMtl diffuse: mat.diffuse name: mat.name texmap_diffuse: mat.diffuseMap
+		converted = true
+		
 	)
+	else if classof mat == VRayMtl then (format "nothing to do\n")
+	else if classof mat == Autodesk_Material then 
+	(
+		vrMat = VRayMtl name: mat.name
+		
+		
+		if matchpattern (getPropNames mat)[1] pattern: "Generic_*" then
+		(
+			if hasProperty mat "Generic_Color" do vrMat.diffuse = mat.Generic_Color
+			if hasProperty mat "Generic_Image" do vrMat.texmap_diffuse = mat.Generic_Image
+			converted = true
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Masonry_Color*" then
+		(
+			if hasProperty mat "Masonry_Color" do vrMat.diffuse = mat.Masonry_Color
+			if hasProperty mat "Masonry_Color_Map" do vrMat.texmap_diffuse = mat.Masonry_Color_Map
+			converted = true
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Wall_Paint*" then
+		(
+			if hasProperty mat "Wall_Paint_Color" do vrMat.diffuse = mat.Wall_Paint_Color
+			converted = true
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Plastic_*" then
+		(
+			if hasProperty mat "Plastic_Color" do vrMat.diffuse = mat.Plastic_Color
+			if hasProperty mat "Plastic_Color_Map" do vrMat.texmap_diffuse = mat.Plastic_Color_Map
+			converted = true
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Glazing_Custom*" then
+		(
+			vrMat.diffuse = mat.Glazing_Custom_Color
+			vrMat.texmap_diffuse = mat.Glazing_Custom_Color_Map
+			converted = true
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Metal*" then
+		(
+			if matchpattern (getPropNames mat)[1] pattern: "Metallic*" then
+			(
+				vrMat.diffuse = mat.Metallic_Paint_Color
+				vrMat.texmap_diffuse = mat.Metallic_Paint_Color_Map
+			)
+			else
+			(
+				vrMat.diffuse = mat.Metal_Color
+			)
+-- 			converted = true
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Concrete*" then
+		(
+			vrMat.diffuse = mat.Concrete_Color
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Wood*" then
+		(
+			vrMat.diffuse = mat.Wood_Stain_Color
+			vrMat.texmap_diffuse = mat.Wood_Image
+		)
+		else if  matchpattern (getPropNames mat)[1] pattern: "Ceramic*" then
+		(
+			vrMat.diffuse = mat.Ceramic_Color
+			vrMat.texmap_diffuse = mat.Ceramic_Color_Map
+		)
+		
+		else(format "UNKNOW:%\n" (getPropNames mat)[1])
+
+-- 		replaceinstances mat vrMat
+-- 		meditMaterials[1] = vrMat
+	)
+	else (format "mat: % class: % \n" mat.name (classof mat) )
+	
+	if converted then replaceinstances mat vrMat 
+	else if not converted and vrmat!= undefined then meditMaterials[1] = vrMat
+	else()
 )
+-- classof meditMaterials[activeMeditSlot]
+--  meditMaterials[activeMeditSlot].Metal_Color
+-- matchpattern (getPropNames meditMaterials[activeMeditSlot])[1] pattern: "Generic_*"
+-- meditMaterials[activeMeditSlot].Generic_Color_Option
+-- classof meditMaterials[activeMeditSlot]
+-- hasProperty meditMaterials[activeMeditSlot] #Generic_Color
+
+-- for p in getPropNames meditMaterials[activeMeditSlot] do
+-- format "% = %\n" p (getProperty meditMaterials[activeMeditSlot] p)
 
 -- function to return good smooth grp id
 fn convertToSmoothGrpDef num =
@@ -384,13 +490,14 @@ rollout deMultiMatRLT "Materials utilities"
 		checkbox vronlyCB "ignore vray materials"
 		
 		button publishSceneMatBT "publish scene materials"
+		button listSceneMatBT "list scene materials"
 	)
 	
 	group "class materials"
 	(
 -- 		button collectMultiBT "publish multi-materials"
 -- 		button publishStandMatBT "publish standard materials"
-		listbox matLB "mat class:" items: #("standard", "Multimaterial","Double_Sided", "vraymtl")
+		listbox matLB "mat class:" items: #("standard", "Multimaterial","Double_Sided", "vraymtl", "Autodesk_Material")
 		button publishMatBT "publish"
 	)
 	
@@ -410,6 +517,8 @@ rollout deMultiMatRLT "Materials utilities"
 	group "V-Ray:"
 	(
 		button convertToVrBT "convert to vray mat"
+		button okConvertBT "confirm"
+		button showBT "show properties"
 	)
 	
 	
@@ -492,12 +601,19 @@ rollout deMultiMatRLT "Materials utilities"
 	on publishSceneMatBT pressed do
 	(
 -- 		print "youhou"
-		local compare = publishSceneMatDef vronly: vronlyCB.state maxMatNum: lastManNum
+		local compare = publishSceneMatDef vronly: vronlyCB.state maxMatNum: lastManNum sortbyname: true
 		local sceneCount = compare[1]
 		lastManNum = compare[2]
 		if  lastManNum >= sceneCount then lastManNum = 0
 		
 -- 		print (format "compare : %\n" compare)
+	)
+	
+	on listSceneMatBT pressed do
+	(
+		local matAr = for mat in scenematerials collect mat
+		qsort matAr sortMatbyname
+		for m in matAr do format "name: % class: %\n" m.name (classof m)
 	)
 	
 	on publishStandMatBT pressed do
@@ -517,6 +633,7 @@ rollout deMultiMatRLT "Materials utilities"
 		else if  matLB.selection == 2 then classOfMat = multimaterial 
 		else if  matLB.selection == 3 then classOfMat = DoubleSided
 		else if  matLB.selection == 4 then classOfMat =	vraymtl
+		else if  matLB.selection == 5 then classOfMat =	Autodesk_Material
 		else(format "UNKNOW\n")
 		
 		local compare = collectClassOfMat classOfMat maxMatNum: lastManNum
@@ -525,13 +642,24 @@ rollout deMultiMatRLT "Materials utilities"
 		if  lastManNum >= sceneCount then lastManNum = 0
 	)
 	
-	on convertToVrBT pressed do convertToVrMatDef()
+	on convertToVrBT pressed do 
+	(
+		convertToVrMatDef meditMaterials[activeMeditSlot]
+	)
+	
+	on okConvertBT pressed do
+	(
+		replaceinstances meditMaterials[activeMeditSlot]  meditMaterials[1]
+	)
+	
+	on showBT pressed do showproperties meditMaterials[activeMeditSlot]
 	
 	on publishSceneMat2BT pressed do publishSceneMatAdvDef()
 	
 	on createVrMtlBT pressed do createVrMtl()
 	
 	on createTileBT pressed do createTile()
+	
 	
 )
 createdialog deMultiMatRLT

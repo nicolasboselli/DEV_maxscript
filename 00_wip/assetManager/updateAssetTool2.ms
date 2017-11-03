@@ -1,3 +1,17 @@
+/*
+maj:
+	-- (asset explorer: update tools v2)
+	-- prendre en charge les asset node
+		-- checker les asset node de la scene
+		-- compter les instances
+		-- importer le nouvel asset
+		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
+		
+rebuild:
+	--  trier les variables et methodes inutiles
+	-- utiliser la structure asset generale pour l'update
+*/
+
 
 filein "assetManagerDef.ms"
 

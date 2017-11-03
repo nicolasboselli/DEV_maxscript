@@ -92,10 +92,16 @@ rollout vrMatRlt "VRay mat Lib"
 	(
 -- 		button loadCoreBT "load core"
 		edittext libPthBT "lib :" readonly: true
-		button openLibBT "..." across: 3
-		button saveLibBT "save"
+		button openLibBT "..." across: 2
+		button loadLibBT "load"
+		button saveLibBT "save" across: 2
 		button saveAsLibBT "save as"
 		checkbox autosaveCB "save on close"
+	)
+	
+	group "scene materials:"
+	(
+		button collectSceneMatBT "collect scene material"
 	)
 	
 	group "manage library:"
@@ -104,7 +110,8 @@ rollout vrMatRlt "VRay mat Lib"
 		button delMatBT "delete mat" enabled: true
 -- 		button upLibBT "refresh lib"
 		listbox matLB "materials list:" height: 30
-		button editMatBT "edit material"
+		button editMatBT "copy material"
+		button instMatBT "instance material"
 -- 		button copyMatBT "copy material"
 -- 		button replaceMatBT "replace material" enabled: false
 	)
@@ -233,6 +240,12 @@ rollout vrMatRlt "VRay mat Lib"
 		refreshUI()
 	)
 	
+	on loadLibBT pressed do
+	(
+		loadLib vrLibPath
+		refreshUI()
+	)
+	
 	on saveLibBT pressed do
 	( 
 		if doesfileexist vrLibPath then 
@@ -257,6 +270,14 @@ rollout vrMatRlt "VRay mat Lib"
 	)
 	
 	on upLibBT pressed do refreshUI()
+	
+	on collectSceneMatBT pressed do
+	(
+			matAr = for mat in scenematerials collect mat
+			qsort matAr sortbyname
+			
+			refreshUI()
+	)
 	
 	on addMatBT pressed do
 	(
@@ -313,6 +334,15 @@ rollout vrMatRlt "VRay mat Lib"
 		matName = matLB.selected
 		id = finditem matLB.items matName
 		meditMaterials[activeMeditSlot] =  copy matAr[id]
+-- 		meditMaterials[activeMeditSlot] =  matAr[id]
+	)
+	
+	on instMatBT pressed do
+	(
+		matName = matLB.selected
+		id = finditem matLB.items matName
+-- 		meditMaterials[activeMeditSlot] =  copy matAr[id]
+		meditMaterials[activeMeditSlot] =  matAr[id]
 	)
 	
 	on createVrMtlBT pressed do

@@ -165,7 +165,7 @@ macroScript ArmadasScriptAssetOpener
 	icon: #("armadasScriptsAssetOpener",1)
 (
 	local root = getroot()
-	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI_v4.ms" )
+	filein (root +"\\" + "assetManager" + "\\" + "assetOpenerUI_v5.ms" )
 )
 
 
