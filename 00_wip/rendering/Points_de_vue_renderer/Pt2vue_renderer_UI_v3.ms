@@ -70,11 +70,16 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local camToRender = #()
 	
 	local statesAr = #()
+	local stateToDisplay = #()
+	
 	local stateSel
 	local stateSelAr = ()
 	
 	local outputPath
 	local outputPathFolder
+	
+	local outputPathMaq
+	local outputPathMaqFolder
 	
 	local sceneCam = #()
 			
@@ -151,8 +156,10 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		local num = sceneStateMgr.GetCount()   
 		statesAr = for i = 1 to num collect sceneStateMgr.GetSceneState i
-		sort statesAr
-		format "statesAr: %\n" statesAr
+		format "statesAr: %,stateToDisplay: % \n" statesAr stateToDisplay
+		stateToDisplay = for o in statesAr collect o
+		sort stateToDisplay
+		format "statesAr: %,stateToDisplay: % \n" statesAr stateToDisplay
 	)
 
 
@@ -195,12 +202,20 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		button delCamSelect "Del Scene State Cam" width: 120 
 	)
 	
-	group "Batch Render"
+	group "Still - Batch Render"
 	(
 		edittext savepath  "Path:" text: "" readonly: true
 		button SelectPathFile "..." across: 3
 		button createBatchRenderBT "Batch from Cam"
 		button batchFromStateBT "Batch from State"
+	)
+	
+	group "Animation - Batch Render"
+	(
+		edittext savepathMaqET  "Path:" text: "" readonly: true
+		button SelectPathFileMaqBT  "..." across: 3
+-- 		button createBatchRenderBTMaq "Batch from Cam"
+		button batchFromStateMaqBT "Batch from sel State"
 	)
 	
 -- 	functions UI dependant
@@ -209,7 +224,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		-- refresh scene cameras
 		SceneCamsMLT.items = for o in camArray collect o.name
 		
-		BatchRenderMLT.items = for o in statesAr collect o
+		BatchRenderMLT.items = for o in stateToDisplay collect o
 		
 		if isvalidnode camSel then 
 		(
@@ -221,17 +236,9 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 			RenameCamEdit.text = "[SELECTION INCORRECTE]"
 		)
 		
-		-- refresh render cameras
-		/*
-		if camToRender.count > 0 then 
-		(
-			BatchRenderMLT.items = for o in camToRender collect o.name
-		)
-		else
-		(
-			BatchRenderMLT.items = #()
-		)
-		*/
+		if outputPath != undefined then savepath.text = outputPath
+		if outputPathMaq != undefined then savepathMaqET.text = outputPathMaq
+
 	)
 
 	fn getCamSelection =
@@ -273,6 +280,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		camArray = collectCamFN ()
 		outputPath = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
+		outputPathMaq = getINISetting armadasScriptsIni "Pt2Vue" "outputPathMaqFolder"
+		-- ahouter une verification des chemins d'enregistrement
 		
 		collectSceneStates()
 		
@@ -282,18 +291,17 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		(
 			SceneCamsMLT.selection = #{1}
 			getCamSelection()
-			refreshUI()
 		)
 		
-		savepath.text = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
-		format  "outputPathFolder: %\n" savepath.text		
+		refreshUI()
 	)
 	
 	on Pt2vue_renderer_UI close do
 	(
 		if savepath.text != undefined do
 		(
-			setINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder" 	savepath.text
+			setINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder" 	outputPath
+			setINISetting armadasScriptsIni "Pt2Vue" "outputPathMaqFolder" 	outputPathMaq
 		)
 	)
 	
@@ -433,20 +441,11 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	on SelectPathFile pressed do
 	(
-		outputPath = getSavePath caption: "Select \"point de vue\" folder" -- initialDir: pathToSearchET.text
+		local res  = getSavePath caption: "Select \"point de vue\" folder" -- initialDir: pathToSearchET.text
 		
--- 		outputPath = getBitmapSaveFileName filename: savepath.text
-		
-		if outputPath != undefined then
-		(
-			savepath.text = outputPath
--- 			suffixNameEdit.text = ".jpg"
--- 			fileNameType.text = getFilenameType outputPath
-		)
-		else
-		(
-			print "Fail"
-		)
+		if res != undefined then outputPath = copy res
+		format "outputPath: %\n" outputPath
+		refreshUI()
 	)
 
 	
@@ -476,10 +475,38 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 -- 		cam = $Camera001
 -- 		outputPath = @"T:\BPD Marignan\SoBlagnac_0917\Perspectives\Perspectives\ptsdevue"
+		
+		
+-- 		local idSel 
+		/*
+		local statesIds = BatchRenderMLT.selection
+		
+		for c in camselAr do
+		(
+			for i in statesIds do
+			(
+				local id = finditem statesAr stateToDisplay[i]
+	-- 			format "state: %, i: % , id:% , reel state: %, display state: %\n" (sceneStateMgr.GetSceneState id) i  id statesAr[id] stateToDisplay[i]
+				local oneName = (sceneStateMgr.GetSceneState id)
+				local check = batchRenderMgr.FindView  (sceneStateMgr.GetSceneState id)
+				if check == 0 then
+				(
+					local batch = batchRenderMgr.CreateView undefined
+					batch.name = oneName
+					batch.camera = c
+					local filename = outputPath + "\\" + oneName + ".jpg"
+					format "folder: %\n"filename
+					makedir (getFilenamePath  filename)
+					batch.sceneStateName = oneName
+					batch.outputFilename = filename
+				)
+				
+			)
+		)	
+		*/
+		
+		
 		num = sceneStateMgr.GetCount()   
-		
-		local idSel = 
-		
 		for i = 1 to num do
 		(
 			local oneName = sceneStateMgr.GetSceneState i
@@ -499,17 +526,71 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 				batch.outputFilename = filename
 			)else(format "batch render deja existant: %\n" oneName)
 		)
+		
+		
 	)
-
+	
+	on SelectPathFileMaqBT pressed do
+	(
+		local res = getSavePath caption: "Select \"maquette 360\" folder" -- initialDir: pathToSearchET.text
+		
+		if res != undefined then outputPathMaq = res
+		format "outputPathMaq: %\n" outputPathMaq
+		refreshUI()
+	)
+	
+	on batchFromStateMaqBT pressed do
+	(
+		
+		local statesIds = BatchRenderMLT.selection
+-- 		format "statesIds: %\n" statesIds
+		for c in camselAr do
+		(
+			for i in statesIds do
+			(
+				local id = finditem statesAr stateToDisplay[i]
+	-- 			format "state: %, i: % , id:% , reel state: %, display state: %\n" (sceneStateMgr.GetSceneState id) i  id statesAr[id] stateToDisplay[i]
+				local oneName = (sceneStateMgr.GetSceneState id)
+				local check = batchRenderMgr.FindView  (c.name + "_" + oneName)
+				if check == 0 then
+				(
+					local batch = batchRenderMgr.CreateView undefined
+					batch.name = c.name + "_" + oneName
+					batch.camera = c
+					local filename = outputPathMaq + "\\" + c.name + "_" + oneName + "\\"+ c.name + "_" + oneName + "_.jpg"
+-- 					format "folder: %\n"filename
+					makedir (getFilenamePath  filename)
+					batch.sceneStateName = oneName
+					batch.outputFilename = filename
+					format "new batch render: %\n"filename
+				)
+				else()
+				
+			)
+		)		
+	)
 )
 createdialog Pt2vue_renderer_UI
 
 
+/*
+test = sceneStateMgr.GetSceneState 1
 
-
-
-
-
+b = batchRenderMgr.GetView 1
+showinterface b
+b.camera 
+b.width 
+b.height 
+b.startFrame 
+b.endFrame 
+b.name
+b.presetFile 
+b.sceneStateName 
+b.enabled
+b.pixelAspect 
+b.overridePreset 
+b.outputFilename
+*/
 
 	/*
 	on addCamSelect pressed do 

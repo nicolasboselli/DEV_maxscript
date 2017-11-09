@@ -18,8 +18,11 @@ maj:
 	-- add comments
 	-- delete/ rename asset
 		
-	-- proposer merge ou xref scene ou xref object
-	-- ouvrir le dialogbox du merge en option
+	-- option au merge
+		-- proposer merge ou xref scene ou xref object
+		-- ouvrir le dialogbox du merge en option
+		-- toggle force use scene material
+		-- toggle force default rename
 	
 	/- ouvrir le dernier wip 
 		

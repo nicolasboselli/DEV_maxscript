@@ -8,6 +8,7 @@
 		-- create set, delete set, add script to selected set remove script from selected set
 -- debug:
 	-- eviter des erreur au load sur les filename contenant des \r \n \t
+	-- aprés un ajout de script depuis le script manager, au load de favorites, loade une liste incorecte, avec des scripts déja supprimés
 		
 -- rebuild:
 	/- creer une methode pour loader les favoris du core depuis un fichier externes(ini)
@@ -49,7 +50,7 @@ struct favFileClass
 	(
 		if doesfileexist path then
 		(
-			filein path
+			try (filein path) catch(format "##########ERROR############ERROR#############ERROR: %\n" (getcurrentexception()))
 		)
 		else
 		(
@@ -337,7 +338,17 @@ rollout mxsLaunchRLT "maxscript launcher"
 		refreshList()
 	)
 		
-	on launchBT pressed do filein (fileClassArray[scriptArrayLB.selection].path)
+	on launchBT pressed do
+	(
+-- 		format "sel: %\n" scriptArrayLB.selection
+		displayAr[scriptArrayLB.selection].launch()
+		/*
+		try
+		(
+			filein (fileClassArray[scriptArrayLB.selection].path)
+		)catch(format "##########ERROR############ERROR#############ERROR: %\n" (getcurrentexception()) )
+		*/
+	)
 	
 	on scriptArrayLB doubleClicked  arg do
 	(

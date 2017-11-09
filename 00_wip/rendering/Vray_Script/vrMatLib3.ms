@@ -131,6 +131,7 @@ rollout vrMatRlt "VRay mat Lib"
 	group "bitmap"
 	(
 		button scanBT "scan"
+		button missBmpBT "missing bitmap"
 	)
 	
 	
@@ -358,9 +359,10 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	on scanBT pressed do
 	(
-
 		
-		local bmpAr = getclassinstances bitmaptexture target: vrLib
+-- 		local bmpAr = getclassinstances bitmaptexture target: vrLib
+		local bmpAr = getclassinstances bitmaptexture target: scenematerials
+
 		for b in bmpAr do
 		(
 			if doesfileexist b.filename then
@@ -375,7 +377,10 @@ rollout vrMatRlt "VRay mat Lib"
 						b.filename = newFIleName
 						format "RE MAP filename: % >>> newName:%\n" b.filename newFIleName
 					)
-					else format "NOT CONFORM filename: %\n" b.filename
+					else
+					(
+						format "NOT CONFORM filename: %\n" b.filename
+					)
 -- 					meditMaterials[activeMeditSlot] = b
 				)
 				else 
@@ -390,6 +395,37 @@ rollout vrMatRlt "VRay mat Lib"
 			)
 		)
 -- 		format "bmpAr: %\n" bmpAr
+	)
+
+	on missBmpBT pressed do
+	(
+		local bmpAr = getclassinstances bitmaptexture --target: scenematerials
+		local i = 1
+		for b in bmpAr do
+		(
+			if not doesfileexist b.filename then
+			(
+				format "missing filename: %\n" b.filename
+				refdep = refs.dependents b  -- immediateOnly: true
+				meditmaterials[i] = b
+				i +=1
+				for d in refdep do
+				(
+					format "d: % classof: %\n" d (classof d)
+					if classof d == vraymtl then 
+					(
+						meditmaterials[i] = d
+						i += 1
+					)
+				)
+
+			)
+			else
+			(
+				format "filename: %\n" b.filename
+
+			)
+		)
 	)
 )
 createdialog vrMatRlt

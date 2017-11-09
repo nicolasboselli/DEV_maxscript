@@ -25,8 +25,13 @@ debug:
 	
 rebuild:
 	-- fuse  "fn checkCreationSanity", "fn refreshPublishRlt" et "completeparam"
+		-- la methode "checkCreationSanity" sert pour la creation d'asset, la methode "refreshPublishRlt" sert pour le publish
 		-- move asset sanity check in the structure
 		-- distinguer le sanity check de l'update de l'ui
+		
+doc:
+	-- à la creationd'asset, l'asset folder est determiné par le basefolder + asset name
+	-- au publish d'asset on récupère directement l'asset folder à partir du fichier max
 
 */ 
  
@@ -56,21 +61,6 @@ struct assetCreationClass
 	
 	maxVers,
 	
-	fn initFromScene assetRepo =
-	(
-		basefolder = assetRepo
-		assetName = getFilenameFile maxFileName
-		version = 0
-	),
-	
-	fn initFromSel sel assetRepo =
-	(
-		objs = sel
-		basefolder = assetRepo
-		assetName = sel[1].name
-		version = 0
-	),
-	
 	fn publishInfo =
 	(
 		format "\nassetName: %\nobjs: %\nbasefolder:%\nversion: %\nassetInfo: %\nassetFolder: %\nlastVersion: %\nroot: %\nwipFolder:%\nversionInfo: %\nlastVersionFile: %\nrelVersPath: %\nstatus: %\nmaxVers: %\n" \
@@ -78,14 +68,33 @@ struct assetCreationClass
 	),
 
 	
-	fn initFromIni iniFile assetRepo =
+	fn initFromScene assetRepo =
 	(
 		basefolder = assetRepo + "\\"
+		assetName = getFilenameFile maxFileName
+		assetFolder = basefolder + assetName
+		version = 0
+		
+		publishInfo()
+	),
+	
+	fn initFromSel sel assetRepo =
+	(
+		objs = sel
+		basefolder = assetRepo + "\\"
+		assetName = sel[1].name
+		assetFolder = basefolder + assetName
+		version = 0
+	),
+	
+	fn initFromIni iniFile assetRepo =
+	(
+-- 		basefolder = assetRepo + "\\"
 
 		assetInfo = iniFile
 		assetFolder = cleanFilename (getFilenamePath assetInfo)
 		
--- 		basefolder = assetFolder + "\\"
+		basefolder = assetFolder + "\\"
 		
 		--
 		assetName = getINISetting iniFile "assetProperties" "name"
@@ -113,7 +122,7 @@ struct assetCreationClass
 -- 	fn getWipFolder = getAssetFolder() + "\\" + "wip",
 	fn getWipFolder = assetFolder + "\\" + "wip",
 -- 	fn getVersionFolder = getAssetFolder() + "\\" + (returnDigit version), 
-	fn getVersionFolder = assetFolder + "\\" + (returnDigit version), 
+	fn getVersionFolder = assetfolder + "\\" + (returnDigit version), 
 	
 	fn getVersionFile = getVersionFolder() + "\\" + assetName + ".max",
 	
@@ -257,7 +266,6 @@ struct assetCreationClass
 		(
 -- 			delete folder
 		)
-		print "check1"
 		
 		format "publishing method end: %\n" newFile
 		newFile
@@ -386,12 +394,12 @@ rollout createAssetRLT "create asset v3"
 -- 		edittext superclassET "superclass:" enabled: false
 -- 		edittext classET "class:"  enabled: false
 		edittext commentET "comment:"  enabled: false
-		dropdownlist maxVersDL "max vers:" items: #( "2015", "2017") selection: 1 width: 60
+		dropdownlist maxVersDL "max vers:" items: #( "2015", "2017") selection: 2 width: 60
 	)
 	
 	group "asset sanity checking from scene:"
 	(
-		button checkCreationBT "sanity check" 
+-- 		button checkCreationBT "sanity check" 
 		
 		edittext correctNameET "correct name:" readonly: true across: 3
 		edittext assetFolderCheckET "asset folder exists:" readonly: true
@@ -421,9 +429,17 @@ rollout createAssetRLT "create asset v3"
 	)
 	
 	-- functions ui dependant 
+	-- check avant la creation d'assset
 	fn checkCreationSanity newAsset =
 	(
-		creationSanity = false
+		local creationSanity = false
+		
+		local correctName = false
+		local assetFolderExists = false
+		local versionFolderExists = false
+		local versionFileExists = false
+		local assetFileInfoExists = false
+		
 		-- check name
 		if newAsset.assetName.count > 0 then correctName = true else correctName = false
 			
@@ -453,6 +469,7 @@ rollout createAssetRLT "create asset v3"
 		correctNameET.text = correctName as string
 		assetFolderCheckET.text = assetFolderExists as string
 		versionFolderCheckET.text = versionFolderExists as string
+		
 		assetFileInfoCheckET.text = assetFileInfoExists as string
 		fileCheckET.text = versionFileExists as string
 		
@@ -463,12 +480,12 @@ rollout createAssetRLT "create asset v3"
 		)
 		
 		-- diagnostic ui result
-		versResET.text = newAsset.getVersionFile()
-		wipResET.text = newAsset.getWipFile()
+-- 		versResET.text = newAsset.getVersionFile()
+-- 		wipResET.text = newAsset.getWipFile()
 		
 		creationSanityET.text = creationSanity as string
 		
-		if creationSanity == true then
+		if creationSanity then
 		(
 -- 			createAssetBT.enabled = true
 			createAssetBT2.enabled = true
@@ -486,18 +503,19 @@ rollout createAssetRLT "create asset v3"
 		creationSanity
 	)
 	
+	-- check avant le publish
 	fn refreshPublishRlt asset =
 	(
 		-- test if asset folder ready
-		nameOk = False
-		nextVersionPossible = False
+		local nameOk = False
+		local nextVersionPossible = False
 		
 		-- check asset info file exists
-		assetFileInfoExists = doesfileexist (asset.assetInfo)
+		local assetFileInfoExists = doesfileexist (asset.assetInfo)
 		
-		-- find asset name from folder name
-		currentFile = maxFilePath
-		currentFileName = undefined
+		--  determiner le nom de l'asset depuis l enom du fichier max
+		local currentFile = maxFilePath
+		local currentFileName = undefined
 		
 		if currentFile.count >0 then
 		(
@@ -506,10 +524,10 @@ rollout createAssetRLT "create asset v3"
 			currentFileName = pathAr[pathAr.count]
 		)
 		
-		-- compare name with asset info
-		assetName = asset.assetName
+		-- compare le nom de l'asset determiner à partir du fichier avec le nom de l'asset à partir du fichier ini
+-- 		local assetName = asset.assetName
 		
-		if currentFileName == assetName then
+		if currentFileName == asset.assetName then
 		(
 -- 			assetNameET.text = assetName
 			nameOk = true
@@ -520,9 +538,9 @@ rollout createAssetRLT "create asset v3"
 		)
 		
 		-- find next version by count folders
-		lastVersion = 0
-		folderVersion = False
-		assetFolders = getDirectories (asset.assetFolder + "\*")
+		local lastVersion = 0
+		local folderVersion = False
+		local assetFolders = getDirectories (asset.assetFolder + "\*")
 		
 		for f in assetFolders do
 		(
@@ -536,13 +554,13 @@ rollout createAssetRLT "create asset v3"
 		)
 
 		-- compare with asset info
-		assetVersion = asset.lastVersion
+-- 		assetVersion = asset.lastVersion
 		
-		versionText = "???"
+-- 		local versionText = "???"
 		
 		if folderVersion == true do
 		(
-			if assetVersion == lastVersion then
+			if asset.lastVersion == lastVersion then
 			(
 -- 				versionText = returnDigit (lastVersion + 1)
 				nextVersionPossible = true
@@ -555,8 +573,7 @@ rollout createAssetRLT "create asset v3"
 -- 		statusDL.selection = id
 		
 		-- diagnostic ui result
-		versResET.text = newAsset.getVersionFile()
-		wipResET.text = newAsset.getWipFile()
+
 		
 		-- enable publishing
 		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
@@ -574,7 +591,7 @@ rollout createAssetRLT "create asset v3"
 	fn completeParam asset =
 	(
 -- 		pathET.text = asset.basefolder
-		pathET.text = asset.assetFolder
+		pathET.text = asset.basefolder
 		pathET.enabled = true
 		
 		nameET.text = asset.assetName
@@ -582,6 +599,9 @@ rollout createAssetRLT "create asset v3"
 
 		versionET.text = returnDigit asset.version
 		versionET.enabled = true
+		
+		versResET.text = asset.getVersionFile()
+		wipResET.text = asset.getWipFile()
 	)
 	
 	fn initForScene =
@@ -640,7 +660,7 @@ rollout createAssetRLT "create asset v3"
 		createAssetRLT.title = "publish new asset version"
 		
 		-- check if we are in asset
-		infoTest = getUpperFolder maxFilePath + "assetInfo.ini"
+		infoTest = (getUpperFolder maxFilePath) + "assetInfo.ini"
 			-- find assetInfo.ini file
 		local res = doesfileexist infoTest 
 		
@@ -692,9 +712,13 @@ rollout createAssetRLT "create asset v3"
 		if newAsset != undefined then
 		(
 			newAsset.assetName =  str
+			newAsset.assetFolder =  newAsset.basefolder + newAsset.assetName
+			
+			newAsset.publishInfo()
 			
 			completeParam newAsset
 			checkCreationSanity newAsset
+			newAsset.publishInfo()
 		)
 	)
 	/*
