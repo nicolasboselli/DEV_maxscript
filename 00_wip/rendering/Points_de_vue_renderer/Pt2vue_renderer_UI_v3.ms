@@ -478,7 +478,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 		
 		
 -- 		local idSel 
-		/*
+		
 		local statesIds = BatchRenderMLT.selection
 		
 		for c in camselAr do
@@ -503,9 +503,9 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 				
 			)
 		)	
-		*/
 		
 		
+		/*
 		num = sceneStateMgr.GetCount()   
 		for i = 1 to num do
 		(
@@ -526,7 +526,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 				batch.outputFilename = filename
 			)else(format "batch render deja existant: %\n" oneName)
 		)
-		
+		*/
 		
 	)
 	

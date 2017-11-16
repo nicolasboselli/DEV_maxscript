@@ -200,6 +200,6 @@ macroScript ArmadasScriptLastParent
 	on execute do
 	(
 		local sel = selection as array
-		lastParent sel
+		if sel.count >= 2 then 	lastParent sel else()
 	)
 )

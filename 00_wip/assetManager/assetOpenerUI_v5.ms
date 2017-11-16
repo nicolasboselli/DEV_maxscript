@@ -14,7 +14,7 @@ maj:
 		x- fonctionnel sur le publish de version
 		-- rendre fonctionnel à la creation
 
-	-- clean old version (garder seuelement la première et la dernière version)
+	-- clean old version (garder seulement la première et la dernière version)
 	-- add comments
 	-- delete/ rename asset
 		
@@ -23,6 +23,9 @@ maj:
 		-- ouvrir le dialogbox du merge en option
 		-- toggle force use scene material
 		-- toggle force default rename
+		-- proposer un rename avec: assetName + numero instance + nom courant
+			-- rename des objets aprés le merge en ajoutant l'assetname en prefix si le nom ne commence pas par le nom de l asset
+			-- compter les instances pour numeroter correctement
 	
 	/- ouvrir le dernier wip 
 		
@@ -30,6 +33,7 @@ maj:
 		-- supprimer les sun, cam et cache_layer
 	
 	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
+		-- prob: il y a toujours ou souvent un wip aprés le publish
 		-- proposer d'ouvrir la version la plus recente
 		
 	-- ajouter une fonction "substitute"
@@ -38,9 +42,7 @@ maj:
 	
 	x- faire apparaitre la prévue dans une fenetre separée
 		-- afficher le nom de l'asset dans la barre de titre
-	
-
-	
+		
 debug:
 	x- parent hidden object
 	-- error when change status on lastselection

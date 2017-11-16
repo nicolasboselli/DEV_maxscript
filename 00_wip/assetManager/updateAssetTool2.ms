@@ -6,6 +6,14 @@ maj:
 		-- compter les instances
 		-- importer le nouvel asset
 		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
+	
+	-- effectuer un rename à l'update qui preserve le nom du merge
+	
+	-- fonction pour dupliquer l'asset en renomant correctement
+
+	-- proposer la préservation des materiaux des objects à l'update
+	-- proposer la préservation des postion des objects à l'update
+	-- préserver les noms à l'update
 		
 rebuild:
 	--  trier les variables et methodes inutiles
@@ -18,20 +26,49 @@ filein "assetManagerDef.ms"
 
 fn collectAssetInScene =
 ( 
-	assetsAr = #()
-	pointsAr = for h in helpers where classof h == point collect h
--- 	print pointsAr
-	for o in pointsAr do
+	for h in helpers where classof h == point and getUserProp h "asset" collect h
+)
+
+fn collectAssetNames =
+(
+	local assetNamesAr = #()
+	for h in helpers where getUserProp h "asset" do
 	(
-		test = getUserProp o "asset"
--- 		print(getUserProp o "asset")
-		if test == true do 
+		appendifunique assetNamesAr (getUserProp h "assetName")
+	)
+	assetNamesAr
+)
+-- collectAssetNames()
+
+
+fn returnMaxAssetCount assetName =
+(
+	local instanceNumAr = #()
+	local instanceCount = 0
+	local maxNum = 0
+	
+	for h in helpers where getUserProp h "assetName" == assetName do
+	(
+		instanceCount +=1
+		
+		numTmp = getUserProp h "instanceNum" --  as integer
+		format "numTmp: %, classof: % \n" numTmp (classof numTmp)
+		if (classof numTmp) == integer then
 		(
-			append assetsAr o
+			if numTmp > maxNum then maxNum = numTmp
 		)
 	)
--- 	print assetsAr
-	assetsAr
+	instanceCount
+)
+
+struct assetGroup
+(
+	assetName,
+	assetInstances = #(),
+	fn initAssetGroup = 
+	(
+		assetInstances = for h in helpers where getUserProp h "assetName" == assetName collect h 
+	)
 )
 
 
@@ -41,6 +78,7 @@ struct assetInScene
 	name,
 	version,
 	root,
+	
 	versionFile,
 	assetFolder,
 	assetIni,
@@ -49,50 +87,50 @@ struct assetInScene
 	lastVersionFile,
 	isLastVersion,
 	
+	/*
 	allAssetsRoot,
 	allAssetsFolder,
 	relativeFolder,
 	relativeFolder2,
+	*/
 	
+	fn publishInfo =
+	(
+		format "name:% , version:% , assetFolder:% \n" name version assetFolder
+	),
 	
 	fn initFromCtrl oneCtrl=
 	(
 		obj = oneCtrl
+		
 		name = getuserprop obj "assetName"
 		version = getuserprop obj "assetVersion"
-		
 		assetFolder = getuserprop obj "assetfolder"
-		format "assetFolder: %\n" assetFolder
 		
+		/*
 		allAssetsRoot = getuserprop obj "allAssetsRoot"
-		
 		allAssetsFolder = getuserprop obj "allAssetsFolder"
-
-
-		
--- 		print allAssetsFolder
 		relativeFolder = getuserprop obj "relativeFolder"
 		relativeFolder2 = getuserprop obj "relativeFolder2"
+		*/
 		
 		-- obsolete root and relativePath
 		root = getuserprop obj "root"
 -- 		versionFile = root + (getuserprop obj "relativePath")
 		versionFile = cleanFilename(assetFolder + "\\" + (returnDigit version) + "\\" + name + ".max")
-		
--- 		print versionFile
+
+		-- check last version
 		if assetFolder.count == 0 then assetFolder = getupperfolder(getFilenamePath  versionFile)
-		
 		assetIni = assetFolder + "assetInfo.ini"
--- 		print assetIni
-		
+
 		lastVersion = (getINISetting assetIni "assetProperties" "version") as integer
--- 		print lastVersion
 		lastVersionFile = cleanFilename(assetFolder + "\\" +(returnDigit lastVersion) + "\\" + name + ".max")
-		
+
 		isLastVersion = true
 		if lastVersion > version and doesfileexist lastVersionFile ==  true then isLastVersion = false
-		
-		relVersPath = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
+
+	-- 		relVersPath = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
+-- 		publishInfo()
 	),
 	
 	fn updateAsset =
@@ -117,7 +155,7 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	local allAssetsFolder 
 	local root 
 	
-	local vrMeshesAr = #()
+-- 	local vrMeshesAr = #()
 	local assetAr = #()
 	local assetClassAr = #()
 	local assetClassArToShow = #()
@@ -139,7 +177,9 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		edittext currentVersionET "current version:" readonly: true
 		edittext lastVersionET "is last version:" readonly: true
 		edittext nextVersionET "next version file:" readonly: true
-		button updateAssetBT "update asset" enabled: false
+		edittext assetCtrlET "asset ctrl:" readonly: true
+		button updateAssetBT "update asset" enabled: false across: 2
+		button duplicateAssetBT "duplicate asset" enabled: true
 	)
 	
 	-- ui fonctions relatives
@@ -156,7 +196,7 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 -- 				print "start asset creation"
 				newAsset = assetInScene()
 				newAsset.initFromCtrl o
-				format "asset: %\n" newAsset
+				format "asset updated: %\n" newAsset
 				append assetClassAr newAsset
 -- 				print "asset creation done"
 			)catch(format "*** % ***\n" (getCurrentException()))
@@ -190,8 +230,6 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	
 	on updateAssetsToolRLT open do
 	(
-
-		
 		-- asset collect
 		updateAssetArray()
 		refreshAssetUI()
@@ -205,13 +243,12 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		
 		for id in selIdAr do
 		(
-			
-			
 			selectmore assetClassArToShow[id].obj
 			
 			assetET.text = assetClassArToShow[id].versionFile
 			currentVersionET.text =returnDigit (assetClassArToShow[id].version as integer)
 			lastVersionET.text = assetClassArToShow[id].islastVersion as string
+			assetCtrlET.text = assetClassArToShow[id].obj.name
 			
 			if assetClassArToShow[id].islastVersion == false then
 			(
@@ -220,38 +257,27 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 			)
 			else 
 			(
-				updateAssetBT.enabled = false
+				updateAssetBT.enabled = true
 				nextVersionET.text = "NONE"
 			)
 		)
-		
 	)
 	
 	on updateAssetBT pressed do
 	(
-		print "start update"
--- 		idAr = #(assetsLB.selection)
 		idAr = assetsLB.selection as array
-		
 		
 		for id in idAr do
 		(
--- 			print assetClassArToShow[id]
-			
+
 			oldCtrl = assetClassArToShow[id].obj
--- 			print ( "oldctrl:" + oldCtrl.name)
--- 			select oldCtrl
-			
 			
 			assetToUp = assetClassArToShow[id]
 			
 			newAssetCtrl = assetToUp.updateAsset()
-			
--- 			print "objToDel"
+
 			objToDel = returnAllHierarchyDown #(oldCtrl)
-			
-			
--- 			print "check2"
+
 			delete objToDel
 		
 			select newAssetCtrl
@@ -260,10 +286,38 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		
 		updateAssetArray()
 		refreshAssetUI()
-		print "end update"
 	)
-
-
+	
+	on duplicateAssetBT pressed do
+	(
+		-- collecte asset id
+		
+		
+		local newAssetAr = #()
+		local newAsset =#()
+		local selIds = assetsLB.selection
+		
+		for id in selIds do
+		(
+			
+			local newAssetNumber = returnMaxAssetCount assetClassArToShow[id].obj.name
+			format "asset: %, count: %\n" assetClassArToShow[id].obj.name newAssetNumber
+			local objsToDup = returnAllHierarchyDown #(assetClassArToShow[id].obj)
+-- 			select objsToDup
+			maxOps.CloneNodes objsToDup newNodes: &newAssetObjs
+-- 			format "newAsset: %\n" newAsset
+-- 			for n in newAsset do append newAssetAr n
+		)
+-- 		select newAssetAr
+		
+		updateAssetArray()
+		refreshAssetUI()
+	)
 )
 
 createdialog updateAssetsToolRLT width: 800
+
+
+
+-- maxOps.CloneNodes $ newNodes:&newAsset
+-- select newAsset

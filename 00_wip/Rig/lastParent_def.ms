@@ -3,20 +3,21 @@ fn lastParent sel =
 (
 	undo on
 	(
+		format "parenting start\n" -- to: log
 		local daddy = sel[sel.count]
 		
 		for i = 1 to (sel.count - 1) do
 		(
 			
-			parentable = true
-			parentInSel = false
+			local parentable = true
+			local parentInSel = false
 			-- test parent dans la selection
 			for j = 1 to (sel.count - 1) do
 			(
 -- 				tmpParent = sel[j].parent
 				if isvalidnode  sel[i].parent and i != j then
 				(
--- 					format "i: %, parent: % ,j: %\n" sel[i].name sel[i].parent.name sel[j].name
+					format "i: %, parent: % ,j: %\n" sel[i].name sel[i].parent.name sel[j].name
 					if sel[i].parent == sel[j] then 
 					(
 						
@@ -34,7 +35,8 @@ fn lastParent sel =
 -- 				if parentable ==  false then 
 			)
 			
-			if classof sel[i] == RailClone_Pro then  parentable = false
+			-- exclusion des railclone
+-- 			if classof sel[i] == RailClone_Pro then  parentable = false
 			
 			if not parentInSel then
 			(
@@ -47,7 +49,7 @@ fn lastParent sel =
 			(
 				if parentable then 
 				(
-					format "i: %, groupHead: %, groupmember: %, parent: %, parentable:%, parentinsel: % \n" sel[i].name (isGroupHead sel[i])  (isGroupMember sel[i]) sel[i].parent parentable parentInSel
+-- 					format "i: %, groupHead: %, groupmember: %, parent: %, parentable:%, parentinsel: % \n" sel[i].name (isGroupHead sel[i])  (isGroupMember sel[i]) sel[i].parent parentable parentInSel
 					sel[i].parent = daddy
 				)
 			)

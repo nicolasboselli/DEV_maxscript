@@ -1,34 +1,36 @@
 filein "assetManagerDef.ms"
 
 /*
+####### struct assetCreationClass 
 maj:	
 	-- trier les methodes de découpage et de reconstruction des pathname et les variables inutiles
 		-- verifier qu'elles ne sont pas utiliser dans assetopener au merge ou à l'affichage ou dans l'assetupdater
-		
-	-- re rendre le status editable
-	-- prendre en charge les category/task (modelisation, setup, animation)
+
 	
-	-- dev init for display and init for publishing
+	-- dev init for display and init for publishing(?)
 	
-	-- proposer un clean des calques et des materiaux avant publish
-	-- porposer un rename des calques et des materiaux avant publish
-	
+####### AssetCreation  Rollout:
+maj:
 	-- blinder le choix de la version d'enregistrement:
 		-- prendre en compte la verion de max utiliser
 		-- proposer des version d'enregistremnt possible(précédente)
 		-- prendre en compte l'exception de max 2017 qui ne supporte pas la saveasversion: 2017
-	
+			
+	-- proposer un clean des calques et des materiaux avant publish
+	-- porposer un rename des calques et des materiaux avant publish
+		
+			-- re rendre le status editable
+	-- prendre en charge les category/task (modelisation, setup, animation)
+
 debug:
 	-- au fail de creation d'asset, supprimer le dossier créé
-	x- fail à l'enregistrement en 2017
-	x- la variable assetop n'arrive pas depuis l' asset opener à la première ouverture
-	
+
 rebuild:
 	-- fuse  "fn checkCreationSanity", "fn refreshPublishRlt" et "completeparam"
 		-- la methode "checkCreationSanity" sert pour la creation d'asset, la methode "refreshPublishRlt" sert pour le publish
 		-- move asset sanity check in the structure
 		-- distinguer le sanity check de l'update de l'ui
-		
+
 doc:
 	-- à la creationd'asset, l'asset folder est determiné par le basefolder + asset name
 	-- au publish d'asset on récupère directement l'asset folder à partir du fichier max
@@ -126,7 +128,8 @@ struct assetCreationClass
 	
 	fn getVersionFile = getVersionFolder() + "\\" + assetName + ".max",
 	
-	fn getWipFile = getWipFolder() + "\\" + assetName +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max",
+-- 	fn getWipFile = getWipFolder() + "\\" + assetName +"_" + (returnDigit version) + "_" + "wip" + "_" + (localTimeStr()) + "_v00.max",
+	fn getWipFile = getWipFolder() + "\\" + assetName +"_" + (returnDigit version) + "_" + "wip" +  "_v00.max",
 	
 	fn createFolders =
 	(
@@ -294,6 +297,13 @@ struct assetCreationClass
 	
 	fn mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: false =
 	(
+		-- recherche des instances de l'asset dans la scene	
+		-- compte le nombre d'asset deja present
+		-- compte les "instanceNum" de l'asset dans la scene
+		-- determine l'instance num disponible
+
+		
+		
 		local assetCtrl
 		-- create asset point
 		if mergeAsAsset then 
@@ -308,17 +318,23 @@ struct assetCreationClass
 			-- tag de l'asset point
 			setUserProp assetCtrl "asset" true
 			
+			setUserProp assetCtrl "assetfolder" assetFolder
+			
+			setUserProp assetCtrl "assetName"  assetName
+			setUserProp assetCtrl "assetVersion" lastVersion
+			
+			setUserProp assetCtrl "instanceNum" 1
+			-- useless
+			/*
 			setUserProp assetCtrl "root" root
 			setUserProp assetCtrl "relativePath" relVersPath
-			setUserProp assetCtrl "assetfolder" assetFolder
 			
 			setUserProp assetCtrl "allAssetsRoot" allAssetsRoot
 			setUserProp assetCtrl "allAssetsFolder" allAssetsFolder
 			setUserProp assetCtrl "relativeFolder" relativeFolder
 			setUserProp assetCtrl "relativeFolder2" relativeFolder2
+			*/
 			
-			setUserProp assetCtrl "assetName"  assetName
-			setUserProp assetCtrl "assetVersion" lastVersion
 		)
 		
 		local objsCountBef = objects.count
@@ -332,12 +348,13 @@ struct assetCreationClass
 			objsImpAr = for i = (objsCountBef + 1) to objects.count collect objects[i]
 		)
 		
+	-- delete objets non souhaités
 		for o in objsImpAr do
 		(
 			if not isValidNode o do continue
 				
 	-- 		o = getnodebyname str
-			deletion = false
+			local deletion = false
 			
 			-- suppresion des elemets vray
 			local belongToVrSet = false
@@ -352,12 +369,12 @@ struct assetCreationClass
 			if mergeAsAsset and  o.parent == undefined and not isGroupMember o then o.parent = assetCtrl
 			else if mergeAsAsset and o.parent == undefined and isGroupHead o then o.parent = assetCtrl
 			
-			
 			format "obj: %, deletion:%, parent:%\n" o.name deletion o.parent
 			
 			if deletion == true then delete o
 		)
-		assetCtrl
+	
+		assetCtrl		
 	)
 	
 )
