@@ -11,7 +11,6 @@
 filein "objReplacerDef2.ms"
 
 try(destroydialog objReplacerRLT)catch()
-
 rollout objReplacerRLT "objects replacer v.2"
 (
 	--vars

@@ -16,6 +16,18 @@ maj:
 		-- last version
 */
 
+
+fn fileTime file =
+(
+	dotnetFile = dotnetClass "System.IO.File"
+	fileDate = dotnetFile.GetLastWriteTime file
+	timeZero = (dotnetobject "system.datetime" 1980 1 1 0 0 0)
+	timeLapse = fileDate.subtract timeZero
+	ElapsedSeconds = timeLapse.TotalSeconds
+	ElapsedSeconds as integer
+)
+
+
 fn localTimeStr =
 (
 	timeAr = getLocalTime() 

@@ -5,7 +5,7 @@ maj:
 	x- filter by name
 		x- add * add begining and end of search	
 		
-	-- avertir quand on veut publier un asset sans avoir selectionner le bon repertoire dans l assetOpener
+	x- avertir quand on veut publier un asset sans avoir selectionner le bon repertoire dans l assetOpener
 		
 	-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore archive
@@ -17,24 +17,27 @@ maj:
 	-- clean old version (garder seulement la première et la dernière version)
 	-- add comments
 	-- delete/ rename asset
-		
+	
+	-- activer le toggle "create as asset"(rename "merge as asset")
+		--  force:
+			-- un rename en respectant le bsename et l'instance num
+			-- la creation d'un point ctrl
+			-- la parenté au point ctrl
+	
 	-- option au merge
 		-- proposer merge ou xref scene ou xref object
 		-- ouvrir le dialogbox du merge en option
 		-- toggle force use scene material
-		-- toggle force default rename
-		-- proposer un rename avec: assetName + numero instance + nom courant
-			-- rename des objets aprés le merge en ajoutant l'assetname en prefix si le nom ne commence pas par le nom de l asset
-			-- compter les instances pour numeroter correctement
 	
 	/- ouvrir le dernier wip 
 		
 	-- publier un version "merge ready" à coté du dossier d'asset
 		-- supprimer les sun, cam et cache_layer
 	
-	-- tester le fichier le plus recent entre le dernier wip et le dernier publish
-		-- prob: il y a toujours ou souvent un wip aprés le publish
-		-- proposer d'ouvrir la version la plus recente
+	/- tester le fichier le plus recent entre le dernier wip et le dernier publish
+		x- prob: il y a toujours ou souvent un wip aprés le publish
+		/- proposer d'ouvrir la version la plus recente
+			-- distinguer les versions wip des version publish pour publier la bonne version
 		
 	-- ajouter une fonction "substitute"
 	-- ajouter une fonction "merge picker"
@@ -134,6 +137,8 @@ rollout openThumbRLT "Thumb"
 
 rollout assetEditorRLT "assets editor v2"
 (
+	local tooltip = "ldfijdlifh"
+	
 	local assetOp = 0
 	
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
@@ -206,7 +211,7 @@ rollout assetEditorRLT "assets editor v2"
 -- 		edittext assetRelativePathET "asset relative path: " readonly: true
 		edittext curAssetNameET "asset name:" readonly: true
 		edittext versionET "last published version:" readonly: true
-		edittext mostRecentVersionET "most recent version:" readonly: true
+		edittext mostRecentVersionET "most recent version:" readonly: true tooltip: tooltip
 		
 		edittext absPathET "absolute path:" readonly: true
 -- 		edittext relVersionET "relative version" readonly: true
@@ -228,6 +233,7 @@ rollout assetEditorRLT "assets editor v2"
 -- 		button newMaxBT "edit in new max instance" across:3
 		button newMaxBT2 "edit in new max instance v2" width: 160
 		button cleanWipFolderBT  "clean wip folder" width: 160
+		button openLatestBT "open latest" width: 160 across:3 tooltip: tooltip
 		
 -- 		bitmap assetBMP "asset thumbnail" width: 256 height: 256 visible: true
 		
@@ -257,6 +263,11 @@ rollout assetEditorRLT "assets editor v2"
 -- 		refresh absolute version filename
 		absPathET.text = asset.getLastVersionFile()
 		
+		
+-- 		refresh du fichier le plus recent
+		mostRecentVersionET.text =  asset.getLatestFile()
+		mostRecentVersionET.tooltip = asset.getLatestFile()
+		
 -- 		asset editable
 		if doesfileexist (asset.getLastVersionFile()) == true then editableET.text = "true"
 		else editableET.text = "false"
@@ -281,13 +292,13 @@ rollout assetEditorRLT "assets editor v2"
 		if asset.status != undefined then statusET.text = asset.status
 			
 -- 		wip files
-		files = getFiles (asset.wipfolder + "*")
+		files = getFiles (asset.getWipFolder() + "*")
 		wipFilesCountET.text = files.count as string
 
 	-- max version
 		try
 		(
-		maxFileVersET.text = asset.getMaxFileVersion()
+			maxFileVersET.text = asset.getMaxFileVersion()
 		)catch()
 	)
 	
@@ -303,7 +314,7 @@ rollout assetEditorRLT "assets editor v2"
 			(
 -- 				newAsset = assetClass()
 				newAsset = assetCreationClass()
-				newAsset.initFromIni a root
+				newAsset.initFromIni a --root
 -- 				allAssetsFolder
 				append tmpAssetsList newAsset
 			)catch()
@@ -390,7 +401,8 @@ rollout assetEditorRLT "assets editor v2"
 
 	fn updateIni = 
 	(
-		setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
+		format "root: %, rootAr: %\n" root rootAr
+		if root != undefined then setINISetting armadasScriptsIni "assetManager" "repositoryPath" root
 		setINISetting armadasScriptsIni "assetManager" "repositoryPathAr" (rootAr as string)
 	)
 	/*
@@ -414,16 +426,18 @@ rollout assetEditorRLT "assets editor v2"
 		-- collect root
 		rootArStr =  (getINISetting armadasScriptsIni "assetManager" "repositoryPathAr")
 		if rootArStr.count > 0 then  rootAr = execute rootArStr else rootAr = #()
-		
-		
-		
+				
 		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
 		if rootIni.count > 0 then
 		(
-			if doesfileexist rootIni == true then
+			if doesfileexist rootIni then
 			(
 				root = rootIni
 				append rootAr rootIni
+			)
+			else
+			(
+				root = ""
 			)
 		)
 		else
@@ -431,6 +445,10 @@ rollout assetEditorRLT "assets editor v2"
 			root = ""
 		)
 		
+		format "rootini: % root:%\n" rootini root
+		
+		-- nettoyage de l'array de chemin
+		rootAr = for r in rootAr where doesfileexist r collect r
 		rootAr = makeuniquearray rootAr
 		
 		-- collect assets list
@@ -497,7 +515,9 @@ rollout assetEditorRLT "assets editor v2"
 			insertItem res rootAr 1
 			rootAr = makeuniqueArray rootAr
 			if rootAr.count > 10 then deleteItem rootAr 11
-			 
+			
+			
+			
 			-- display list
 			refreshListBoxNew assetsToDisplay
 			
@@ -617,9 +637,13 @@ rollout assetEditorRLT "assets editor v2"
 	(
 		if assetsBL.selection > 0 then
 		(
-			asset = assetsToDisplay[assetsBL.selection]
+			local asset = assetsToDisplay[assetsBL.selection]
 -- 			print asset.assetFolder
+			format "asset.getWipFile(): %\n" (asset.getWipFile())
 			res = getSaveFileName  caption: "save in wip folder" filename:(asset.getWipFile()) types:"Max(*.max)|*.max|All|*.*|"
+-- 			res = getSaveFileName  caption: "save in wip folder" filename:(asset.getWipFolder()) types:"Max(*.max)|*.max|All|*.*|"
+				
+-- 				getWipFolder
 			if res != undefined then saveMaxFile res useNewFile: true
 		)
 	)
@@ -647,7 +671,8 @@ rollout assetEditorRLT "assets editor v2"
 	on mergeBT3 pressed do
 	(
 		asset = assetsToDisplay[assetsBL.selection]
-		ctrl = asset.mergeAsset3 ignoreVrSet: ignoreVrCB.state ignoreCacheLay: ignoreCacheCB.state
+		local count = asset.countInstNumInScene()
+		ctrl = asset.mergeAsset3 ignoreVrSet: ignoreVrCB.state ignoreCacheLay: ignoreCacheCB.state instNum: (count + 1)
 -- 		print ctrl
 		select ctrl
 	)
@@ -661,6 +686,12 @@ rollout assetEditorRLT "assets editor v2"
 		for f in files do deletefile f
 			
 		refreshEditGroup asset
+	)
+	
+	on openLatestBT pressed do
+	(
+		-- si la derneière version est un wip alors ouvrir le fichier
+		-- si la dernière version est un publish alors créer une version wip
 	)
 )
 

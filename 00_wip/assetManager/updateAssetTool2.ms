@@ -1,20 +1,31 @@
 /*
 maj:
 	-- (asset explorer: update tools v2)
-	-- prendre en charge les asset node
-		-- checker les asset node de la scene
-		-- compter les instances
-		-- importer le nouvel asset
-		-- si l'import est intance d'un asset:  renommer la nouvelle instance en numerotant aprés le basename
+	-- fonction de delete
 	
-	-- effectuer un rename à l'update qui preserve le nom du merge
+	-- rendre optionnel le classement par ordre alphabétique(checkbox)
 	
-	-- fonction pour dupliquer l'asset en renomant correctement
+	x- forcer l'update pour le debug
+	
+	/- rename à l'update:
+		/- recupérer l'insatnce num de l'asset updater
+		-- renomer tout les objets de l'insantce updater en fonction de l'instance num et du basename de l'asset
+
+	/- rename à la duplication:
+		/- compter le nombre d'instance deja présents
+		/- affecter un nouvreau instance num à la copie
+		/- renommer les objects dupliqués en fonction du basename et de la numerotation
 
 	-- proposer la préservation des materiaux des objects à l'update
 	-- proposer la préservation des postion des objects à l'update
 	-- préserver les noms à l'update
-		
+	
+	-- retour d'état à la selection dans la scene
+	
+debug:
+	x- à l'update est ce qu'on merge un nouveau soleil?
+		-- au merge le parametre "ignore vrset" etait "false"
+
 rebuild:
 	--  trier les variables et methodes inutiles
 	-- utiliser la structure asset generale pour l'update
@@ -50,16 +61,23 @@ fn returnMaxAssetCount assetName =
 	for h in helpers where getUserProp h "assetName" == assetName do
 	(
 		instanceCount +=1
+		if instanceCount > maxNum then maxNum = instanceCount
+-- 		format "instanceCount: % \n"  instanceCount
 		
 		numTmp = getUserProp h "instanceNum" --  as integer
-		format "numTmp: %, classof: % \n" numTmp (classof numTmp)
+		
 		if (classof numTmp) == integer then
 		(
 			if numTmp > maxNum then maxNum = numTmp
 		)
+		format "h: %, instanceCount: %, numTmp: %, maxNum: % \n" h.name instanceCount numTmp maxNum 
 	)
-	instanceCount
+	format "maxNum: %\n" (maxNum + 1)
+	maxNum + 1
 )
+--  "villa2"
+-- returnMaxAssetCount(getuserprop $ "assetName")
+returnMaxAssetCount "teapot"
 
 struct assetGroup
 (
@@ -74,7 +92,7 @@ struct assetGroup
 
 struct assetInScene
 (
-	obj,
+	ctrl,
 	name,
 	version,
 	root,
@@ -101,22 +119,22 @@ struct assetInScene
 	
 	fn initFromCtrl oneCtrl=
 	(
-		obj = oneCtrl
+		ctrl = oneCtrl
 		
-		name = getuserprop obj "assetName"
-		version = getuserprop obj "assetVersion"
-		assetFolder = getuserprop obj "assetfolder"
+		name = getuserprop ctrl "assetName"
+		version = getuserprop ctrl "assetVersion"
+		assetFolder = getuserprop ctrl "assetfolder"
 		
 		/*
-		allAssetsRoot = getuserprop obj "allAssetsRoot"
-		allAssetsFolder = getuserprop obj "allAssetsFolder"
-		relativeFolder = getuserprop obj "relativeFolder"
-		relativeFolder2 = getuserprop obj "relativeFolder2"
+		allAssetsRoot = getuserprop ctrl "allAssetsRoot"
+		allAssetsFolder = getuserprop ctrl "allAssetsFolder"
+		relativeFolder = getuserprop ctrl "relativeFolder"
+		relativeFolder2 = getuserprop ctrl "relativeFolder2"
 		*/
 		
 		-- obsolete root and relativePath
-		root = getuserprop obj "root"
--- 		versionFile = root + (getuserprop obj "relativePath")
+		root = getuserprop ctrl "root"
+-- 		versionFile = root + (getuserprop ctrl "relativePath")
 		versionFile = cleanFilename(assetFolder + "\\" + (returnDigit version) + "\\" + name + ".max")
 
 		-- check last version
@@ -131,16 +149,21 @@ struct assetInScene
 
 	-- 		relVersPath = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
 -- 		publishInfo()
+		oneCtrl
 	),
 	
 	fn updateAsset =
 	(
 -- 		newAsset = assetClass()
 		newAsset = assetCreationClass()
-		newAsset.initFromIni assetIni allAssetsFolder
--- 		newAssetCtrl = newAsset.mergeAsset ignoreCache: true
-		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: true
-		newAssetCtrl.transform = obj.transform
+		newAsset.initFromIni assetIni --allAssetsFolder
+		
+		local instNum = getUserProp ctrl "instanceNum"
+		format "instNum:%\n" instNum
+		
+		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: true ignoreCacheLay: true objsNameConflict: #mergeDups instNum: instNum
+		newAssetCtrl.transform = ctrl.transform
+		newAssetCtrl.name = ctrl.name
 		newAssetCtrl
 	)
 )
@@ -173,12 +196,16 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	(
 		checkbox outOfDateOnlyCB "display out of date assets only"
 		multiListBox  assetsLB "assets:"
+		button refreshBT "refresh"
+		
 		edittext assetET "asset version:" readonly: true
 		edittext currentVersionET "current version:" readonly: true
 		edittext lastVersionET "is last version:" readonly: true
 		edittext nextVersionET "next version file:" readonly: true
 		edittext assetCtrlET "asset ctrl:" readonly: true
-		button updateAssetBT "update asset" enabled: false across: 2
+		edittext instanceNumET "instance num:" readonly: true
+		
+		button updateAssetBT "update asset" enabled: true across: 2
 		button duplicateAssetBT "duplicate asset" enabled: true
 	)
 	
@@ -205,6 +232,7 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	
 	fn refreshAssetUI =
 	(
+		-- refresh liste d'asset
 		assetClassArToShow = #()
 		 
 		for o in assetClassAr do
@@ -222,7 +250,33 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 			)
 			
 		)
+		-- classer par odre alphabetique
+		
 		assetsLB.items = for o in assetClassArToShow collect o.name
+			
+		-- refresh champs de la selection
+	)
+	
+	fn refreshAssetSelUI s=
+	(
+-- 			selectmore assetClassArToShow[id].ctrl
+			
+		assetET.text = s.versionFile
+		currentVersionET.text =returnDigit (s.version as integer)
+		lastVersionET.text = s.islastVersion as string
+		assetCtrlET.text = s.ctrl.name
+		instanceNumET.text = (getuserprop s.ctrl "instanceNum") as string
+		
+		if s.islastVersion == false then
+		(
+			updateAssetBT.enabled = true
+			nextVersionET.text = s.lastVersionFile
+		)
+		else 
+		(
+			updateAssetBT.enabled = true
+			nextVersionET.text = "NONE"
+		)
 	)
 	
 -- 	actions
@@ -233,6 +287,8 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		-- asset collect
 		updateAssetArray()
 		refreshAssetUI()
+-- 		for id in selIdAr refreshAssetSelUI do refreshAssetSelUI assetClassArToShow[id]
+		assetsLB.selectionEnd()
 	)
 	
 	
@@ -243,24 +299,17 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		
 		for id in selIdAr do
 		(
-			selectmore assetClassArToShow[id].obj
-			
-			assetET.text = assetClassArToShow[id].versionFile
-			currentVersionET.text =returnDigit (assetClassArToShow[id].version as integer)
-			lastVersionET.text = assetClassArToShow[id].islastVersion as string
-			assetCtrlET.text = assetClassArToShow[id].obj.name
-			
-			if assetClassArToShow[id].islastVersion == false then
-			(
-				updateAssetBT.enabled = true
-				nextVersionET.text = assetClassArToShow[id].lastVersionFile
-			)
-			else 
-			(
-				updateAssetBT.enabled = true
-				nextVersionET.text = "NONE"
-			)
+			refreshAssetSelUI assetClassArToShow[id]
+			selectmore assetClassArToShow[id].ctrl
 		)
+	)
+	
+	on refreshBT pressed do
+	(
+		updateAssetArray()
+		refreshAssetUI()
+-- 		for id in selIdAr refreshAssetSelUI do refreshAssetSelUI assetClassArToShow[id]
+		assetsLB.selectionEnd()
 	)
 	
 	on updateAssetBT pressed do
@@ -270,13 +319,16 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		for id in idAr do
 		(
 
-			oldCtrl = assetClassArToShow[id].obj
+			oldCtrl = assetClassArToShow[id].ctrl
 			
 			assetToUp = assetClassArToShow[id]
 			
 			newAssetCtrl = assetToUp.updateAsset()
-
+			-- prendre l'ancien instance num
 			objToDel = returnAllHierarchyDown #(oldCtrl)
+			
+			-- rename
+			local objToRename = returnAllHierarchyDown #(newAssetCtrl)
 
 			delete objToDel
 		
@@ -286,32 +338,61 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		
 		updateAssetArray()
 		refreshAssetUI()
+		assetsLB.selectionEnd()
 	)
 	
 	on duplicateAssetBT pressed do
 	(
 		-- collecte asset id
-		
-		
 		local newAssetAr = #()
 		local newAsset =#()
 		local selIds = assetsLB.selection
 		
+		clearselection()
 		for id in selIds do
-		(
+		(			
 			
-			local newAssetNumber = returnMaxAssetCount assetClassArToShow[id].obj.name
-			format "asset: %, count: %\n" assetClassArToShow[id].obj.name newAssetNumber
-			local objsToDup = returnAllHierarchyDown #(assetClassArToShow[id].obj)
--- 			select objsToDup
-			maxOps.CloneNodes objsToDup newNodes: &newAssetObjs
+			local refNum = getUserProp assetClassArToShow[id].ctrl  "instanceNum"
+			local refNumStr = refNum as string
+			
+			local objsToDup = returnAllHierarchyDown #(assetClassArToShow[id].ctrl)
+			
+			-- decompte des instance dans la scene
+			local basename = getUserProp assetClassArToShow[id].ctrl "assetName"
+			local newAssetNumber = returnMaxAssetCount basename
+			local strNum = newAssetNumber as string
+			format "asset: %, newAssetNumber: %\n" assetClassArToShow[id].ctrl.name newAssetNumber
+			
+			-- copie
+			maxOps.CloneNodes objsToDup actualNodeList: &refNodeList newNodes: &newAssetObjs
 -- 			format "newAsset: %\n" newAsset
--- 			for n in newAsset do append newAssetAr n
+			
+			-- rename des copies
+			for i = 1 to newAssetObjs.count do
+			(
+				newAssetObjs[i].name = refNodeList[i].name
+				newAssetObjs[i].name = substitutestring newAssetObjs[i].name (basename + "_") ""
+				newAssetObjs[i].name = substitutestring newAssetObjs[i].name (refNumStr + "_") ""
+				
+				newAssetObjs[i].name = basename + "_" + strNum + "_" + newAssetObjs[i].name
+			)
+			
+			-- recupération du nouveau contrl
+			for o in newAssetObjs where classof o == point and getUserProp o "asset" do
+			(
+-- 				format "o.name: %\n" o.name
+				setUserProp o "instanceNum" newAssetNumber
+				selectmore o
+			)
+				
+			-- rename avec basename + instancenum
+			-- 	for o in newAssetObjs where classof o == point and getUserProp o "asset" do selectmore o
 		)
 -- 		select newAssetAr
 		
 		updateAssetArray()
 		refreshAssetUI()
+		assetsLB.selectionEnd()
 	)
 )
 

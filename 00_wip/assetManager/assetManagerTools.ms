@@ -64,8 +64,9 @@ for m in sceneMaps do
 
 )
 */
+-- enumerateFiles ()
 
-fn hjRemoveGhostTex=
+fn RemoveGhostTex=
 (	
 	result=0
 	fn allUsedMaps =
@@ -257,10 +258,46 @@ fn createOneVrmesh s folder =
 	vrayMeshExport meshFile: vrmeshFile  maxPreviewFaces:2000 exportMultiple: true autoCreateProxies: true exportPointClouds: false
 )
 
+fn patchMultimatName =
+(
+	local multiAr = getclassinstances multimaterial target: scenematerials
+	
+	local basename = (filterString maxfilename ".")[1]
+	
+	for m in multiAr do
+	(
+		if not matchpattern m.name pattern: (basename + "_*") then 
+		(
+			
+			format "m.name: %\n" m.name
+			m.name = basename + "_" + m.name
+		)
+	)
+)
+patchMultimatName()
+
+fn deleteEmptyLayers =
+(
+	local num = LayerManager.count
+	for i = 1 to (num - 1) do
+	(
+		l = LayerManager.getLayer i
+		format "l.name: %, l.count: %\n" l.name (l.getNumNodes())
+		if (l.getNumNodes()) == 0 then
+		(
+			
+		)
+	)
+)
+-- deleteEmptyLayers()
+
+-- l = LayerManager.current 
+-- LayerManager.doesLayerHierarchyContainNodes l.name
+-- l.name
+
 
 -- rollout
 try(destroyDialog assetsToolsRLT)catch()
-
 rollout assetsToolsRLT "asset tools"
 (
 	button collectVrayMeshesBT "collect vraymeshes" enabled: false
@@ -317,3 +354,5 @@ rollout assetsToolsRLT "asset tools"
 	on createThumbBT pressed do createThumb()
 )
 createdialog assetsToolsRLT
+
+

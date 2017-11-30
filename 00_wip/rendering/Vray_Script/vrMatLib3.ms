@@ -399,7 +399,7 @@ rollout vrMatRlt "VRay mat Lib"
 
 	on missBmpBT pressed do
 	(
-		local bmpAr = getclassinstances bitmaptexture --target: scenematerials
+		local bmpAr = getclassinstances bitmaptexture target: scenematerials
 		local i = 1
 		for b in bmpAr do
 		(
@@ -408,14 +408,20 @@ rollout vrMatRlt "VRay mat Lib"
 				format "missing filename: %\n" b.filename
 				refdep = refs.dependents b  -- immediateOnly: true
 				meditmaterials[i] = b
+				
 				i +=1
+				
 				for d in refdep do
 				(
-					format "d: % classof: %\n" d (classof d)
+-- 					format "d: % classof: %, i:%\n" d (classof d) i
 					if classof d == vraymtl then 
 					(
-						meditmaterials[i] = d
-						i += 1
+						format "d: % classof: %, i:%\n" d (classof d) i
+						if i < 24 then
+						(
+							meditmaterials[i] = d
+							i += 1
+						)
 					)
 				)
 
@@ -430,7 +436,8 @@ rollout vrMatRlt "VRay mat Lib"
 )
 createdialog vrMatRlt
 
-
+-- f = @"T:\Ametis\St Jory-Colibri_1017\Perspectives\Scenes 3d\modelisation\wip\antoine\Tone Auto Entreprise\TEXTURES\TEXTURES VISIOLAB\Textures\Chene-verni_antique.jpg"
+-- doesfileexist f
 
 /*
 -- base material grid
