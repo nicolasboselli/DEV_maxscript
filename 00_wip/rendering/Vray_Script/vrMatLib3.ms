@@ -367,7 +367,7 @@ rollout vrMatRlt "VRay mat Lib"
 		(
 			if doesfileexist b.filename then
 			(
-				if matchpattern b.filename pattern: "M:*" or matchpattern b.filename pattern: "R:*" or matchpattern b.filename pattern: "N:*"then format "FOUND filename: %\n" b.filename
+				if matchpattern b.filename pattern: "M:*" or matchpattern b.filename pattern: "R:*" or matchpattern b.filename pattern: "N:*" or matchpattern b.filename pattern: "T:*" then format "FOUND filename: %\n" b.filename
 				else if matchpattern b.filename pattern: "D:\RESSOURCES*" then
 				(
 -- 					format "RE MAP filename: %\n" b.filename

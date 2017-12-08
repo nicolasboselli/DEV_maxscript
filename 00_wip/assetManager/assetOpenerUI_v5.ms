@@ -57,8 +57,15 @@ debug:
 	
 rebuild:
 	x- tester la fenetre de publish des asset comme modal
+	-- selection de la tache et de la version a editer:
+		/- créer une methode qui retoune le fichier selectionner à editer en passant à parametre les selections dans l ui
+			-- faire fonctionner avec les version "without"
+			-- mettre à jour le fichier selectionne au changement de version selectionnée
+			-- prendre en compte les wip existant pour proposer un nouveau wip
+			
 		
 */
+
 global assetEditorRLT
 
 filein "assetCreatorUI6.ms"
@@ -154,6 +161,9 @@ rollout assetEditorRLT "assets editor v2"
 	local statusAr = #("all","none","approved","wip","retake", "archive" )
 	local currentAsset
 	
+	local changeAsset = false
+	local changeTask = false
+	
 -- 	local bmpOpened = false
 	
 -- 	UI
@@ -210,10 +220,15 @@ rollout assetEditorRLT "assets editor v2"
 -- 		edittext curAllAssetsFolderET "all assets folder: " readonly: true
 -- 		edittext assetRelativePathET "asset relative path: " readonly: true
 		edittext curAssetNameET "asset name:" readonly: true
-		edittext versionET "last published version:" readonly: true
-		edittext mostRecentVersionET "most recent version:" readonly: true tooltip: tooltip
 		
-		edittext absPathET "absolute path:" readonly: true
+		edittext taskET "task:" readonly: true -- across: 2
+		
+		edittext versionET "last published version:" readonly: true -- across: 2
+		
+		edittext mostRecentVersionET "last file version:" readonly: true tooltip: tooltip
+		
+		edittext absPathET "last editable file version:" readonly: true
+
 -- 		edittext relVersionET "relative version" readonly: true
 		
 		edittext statusET "status:" readonly: true
@@ -233,36 +248,64 @@ rollout assetEditorRLT "assets editor v2"
 -- 		button newMaxBT "edit in new max instance" across:3
 		button newMaxBT2 "edit in new max instance v2" width: 160
 		button cleanWipFolderBT  "clean wip folder" width: 160
-		button openLatestBT "open latest" width: 160 across:3 tooltip: tooltip
+		button openLatestBT "open latest" width: 160 --across:3 tooltip: tooltip
 		
 -- 		bitmap assetBMP "asset thumbnail" width: 256 height: 256 visible: true
 		
 -- 		button updateBT "update"
 	)
 	
-
-
-	fn refreshEditGroup asset =
+	group "asset selected infos 2"
 	(
--- 		refresh root
--- 		curAssetRootET.text = asset.allAssetsRoot
-
--- 		refresh assets folder
--- 		curAllAssetsFolderET.text = asset.allAssetsFolder
-
--- 		refresh relative path
--- 		assetRelativePathET.text = asset.relativeFolder
-		
+		dropdownlist  taskListDL "task:"  across: 2
+		dropdownlist versionDL "last published version:"
+		edittext editSelFileET "asset selected filename:" readonly: true
+		edittext wipSelFileET "next asset wip filename:" readonly: true
+		edittext wipSelLastFileET "last asset wip filename:" readonly: true
+		edittext lastestFilenameET "latest asset filename:" readonly: true
+	)
+	
+	
+	fn refreshEditGroup asset =
+	(	
 -- 		refresh name
 		if asset.assetName != undefined then curAssetNameET.text = asset.assetName else curAssetNameET.text = "UNDEFINED"
-
+		
+-- 		refresh task
+		local bakSel = taskListDL.selection
+		
+		local taskVersionList = asset.getMaxFilesCount2()
+		local lastTask
+		local taskListRC = #()
+		for i = 1 to taskVersionList.count do
+		(
+			if taskVersionList[i].count > 0 then
+			(
+				lastTask = taskList[i]
+				append taskListRC taskList[i]
+			)
+		)
+		taskET.text = lastTask
+		
+		taskListDL.items = for t in taskListRC collect t
+-- 		taskListDL.selection = taskListDL.items.count
+		
+		if baksel > 0 and baksel < taskListDL.items.count and not changeAsset then taskListDL.selection = bakSel else taskListDL.selection = taskListDL.items.count
+-- 		format "baksel: % taskListDL.selection: % taskListDL.items.count: %\n" bakSel taskListDL.selection taskListDL.items.count
+		
 -- 		refresh version number
+		local versBakSel = versionDL.selection
+		
+		local id = finditem taskList taskListDL.selected
+-- 		format "id: %   taskListDL.selection: % taskVersionList[id]: %\n" id   taskListDL.selected taskVersionList[id]
+		versionDL.items = for n in taskVersionList[id] collect (n as string)
+		if versBakSel > 0 and versBakSel < versionDL.items.count and not changeAsset and not changetask then versionDL.selection = versBakSel else versionDL.selection = versionDL.items.count
+		
 		if asset.lastVersion != undefined then versionET.text = returnDigit asset.lastVersion
 		else versionET.text = "???"
 		
 -- 		refresh absolute version filename
 		absPathET.text = asset.getLastVersionFile()
-		
 		
 -- 		refresh du fichier le plus recent
 		mostRecentVersionET.text =  asset.getLatestFile()
@@ -271,20 +314,26 @@ rollout assetEditorRLT "assets editor v2"
 -- 		asset editable
 		if doesfileexist (asset.getLastVersionFile()) == true then editableET.text = "true"
 		else editableET.text = "false"
+			
+--		 asset selected version
+		local assetSelFilename = asset.getEditableFileSelected taskListDL.selected (versionDL.selected as integer)
+		if assetSelFilename != undefined then editSelFileET.text = assetSelFilename else  editSelFileET.text = "NONE"
 		
+-- 		asset selected wip filename
+		wipSelFileET.text = asset.getWipFilename  taskListDL.selected (versionDL.selected as integer)
+		
+-- 		wip selection
+		local assetSelFilename = asset.createWipFile2 taskListDL.selected (versionDL.selected as integer)
+			
 -- 		refresh thumbnail
 		thumbFile =  asset.assetFolder + "\\" + "assetThumb.jpg"
 		
 		if doesfileexist thumbFile == true then
 		(
--- 			assetBMP.filename = thumbFile
 			if openThumbRLT.open then openThumbRLT.assetBMP.filename = thumbFile
--- 			if bmpOpened then openThumbRLT.assetBMP.filename = thumbFile
 		)
 		else 
 		(
--- 			print "no thumbnail"
--- 			assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 			if openThumbRLT.open  then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
 		
@@ -325,17 +374,24 @@ rollout assetEditorRLT "assets editor v2"
 	
 	fn refreshListBoxNew assetsAr =
 	(
-		
+		local bakSel = assetsBL.selection
+-- 		format "bakSel: %\n" bakSel
 		rootET.text = root
 		pathListDL.items = rootAr
 		assetsBL.items = for o in assetsAr collect o.assetName	
 -- 		pathListDL.items = for p in rootAr collect p
 		
-		if assetsAr.count >0 then
+		if  bakSel > 0 and assetsAr.count >= bakSel then
 		(
-			refreshEditGroup assetsAr[1]
+			refreshEditGroup assetsAr[bakSel]
 -- 			refreshPublishGroup assetsAr[1]
 		)
+		/*
+		else
+		(
+			refreshEditGroup assetsAr[1]
+		)
+		*/
 	)
 	
 	fn filterAssetsList assetsAr nameSearch:"" statusSearch: 1 =
@@ -516,8 +572,6 @@ rollout assetEditorRLT "assets editor v2"
 			rootAr = makeuniqueArray rootAr
 			if rootAr.count > 10 then deleteItem rootAr 11
 			
-			
-			
 			-- display list
 			refreshListBoxNew assetsToDisplay
 			
@@ -531,11 +585,8 @@ rollout assetEditorRLT "assets editor v2"
 	(
 		assetOp = 1
 		createdialog createAssetRLT width: 800 modal: true
--- 		createAssetRLT.initForScene()
--- 		createAssetRLT.modal = true
--- 		refreshFromOutside()
 		
-				-- collect assets list
+		-- collect assets list
 		assetsList = collectAssets root
 		-- collect list to display
 		assetsToDisplay = filterAssetsList assetsList
@@ -552,7 +603,7 @@ rollout assetEditorRLT "assets editor v2"
 -- 		createAssetRLT.initForSelection()
 -- 		refreshFromOutside()
 		
-				-- collect assets list
+		-- collect assets list
 		assetsList = collectAssets root
 		-- collect list to display
 		assetsToDisplay = filterAssetsList assetsList
@@ -606,8 +657,11 @@ rollout assetEditorRLT "assets editor v2"
 		refreshListBoxNew assetsToDisplay
 	)
 	
+
+	
 	on assetsBL selected obj do
 	(
+		changeAsset = true
 		refreshEditGroup assetsToDisplay[obj]
 -- 		refreshPublishGroup assetsToDisplay[obj]
 	)
@@ -675,6 +729,20 @@ rollout assetEditorRLT "assets editor v2"
 		ctrl = asset.mergeAsset3 ignoreVrSet: ignoreVrCB.state ignoreCacheLay: ignoreCacheCB.state instNum: (count + 1)
 -- 		print ctrl
 		select ctrl
+	)
+	
+	on taskListDL selected val do
+	(
+		changeAsset = false
+		changeTask = true
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+	)
+	
+	on versionDL selected val do
+	(
+		changeAsset = false
+		changeTask = false
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
 	)
 	
 	on cleanWipFolderBT pressed do
