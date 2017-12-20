@@ -92,6 +92,7 @@ fn InstanceMatByName mat = (
 fn idArrayDef s =
 (
 	local idArray = #()
+	format "s: %\n" s
 	local faceMax = s.GetNumFaces ()
 	for i = 1 to faceMax do
 	(
@@ -106,6 +107,7 @@ fn explodeMultiMatDef s matchMat: false=
 (
 	local idArray = idArrayDef s
 	local multiMtl = s.material 
+	local splitObjList = #(s)
 	
 	for id in idArray do
 	(
@@ -116,11 +118,14 @@ fn explodeMultiMatDef s matchMat: false=
 			newName = uniquename (s.name + "_mat_" + (id as string))
 			polyop.detachFaces s #selection delete: true asNode: true name: newName
 			
+			format "newNode: %\n"	newObj
+			
 			if matchMat then
 			(
-				res = getnodebyname newName
+				local res = getnodebyname newName
 				res.material = multiMtl[id]
 				format "obj: %, \tmat: % \n" res.name multiMtl[id]
+				append splitObjList res
 			)
 			
 			
@@ -140,8 +145,10 @@ fn explodeMultiMatDef s matchMat: false=
 	
 	if matchMat then s.material = multiMtl[idArray[1]]
 	format "explode material done: %\n" s
+	splitObjList
 )
 
+-- idArrayDef $
 -- explodeMultiMatDef $ matchMat: true
 -- select objects[objects.count]
 -- mf = for m in  s.modifiers collect m
@@ -558,7 +565,19 @@ rollout deMultiMatRLT "Materials utilities"
 		
 		for s in sel where classof s.material == multimaterial do
 		(
-			explodeMultiMatDef s  matchMat: matchMatCB.state
+			local returnTomesh = false
+			if classof s == Editable_mesh then
+			(
+				converttopoly s
+				returnTomesh = true
+			)
+			
+			local splitObj = explodeMultiMatDef s  matchMat: matchMatCB.state
+			
+			if returnToMesh then
+			(
+				for o in splitObj do convertToMesh  o
+			) else()
 		)
 	)
 	

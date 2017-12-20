@@ -48,36 +48,58 @@ initArmadasScripts()
 -- trouver l'adresse du dossier à loader au démarage a copier
 fn getRoot =
 (
--- 	local maxIni = getMAXIniFile()
--- 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
-	
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 )
 
 
+
+-- ajout de la lecture du dossier startup au démarrage de max (avant macroscript):
+fn initArmadasStartupDir =
+(
+	local startupDir = (getRoot() + "scriptInstaller/startup")
+
+	-- ajout du dossier startup 
+	local ini_file = if (maxversion())[1] < 12000 then "plugin.ini" else "plugin.userSettings.ini"
+	setINISetting (getdir #maxdata + ini_file) #directories "Armadas Scripts Startup" startupDir
+)
+initArmadasStartupDir()
+
+/*
+-- fileInFileSource = (getRoot() + "scriptInstaller/armadesFileIn.ms")
+-- trouver l'adresse de destination
+	-- soit dans le fichier plugin soit ajouter une adresse dans les fichier user "pluginpaths"
+
+-- fileInFileDest = ((GetDir #startupScripts) + "/" + "armadesFileIn.ms")
+fileInFileDest = ((GetDir #maxData) + "scripts/startup/" + "armadesFileIn.ms")
+
+-- suppression du fichier existant
+if doesfileexist fileInFileDest then deleteFile fileInFileDest
+-- copie
+copyDone = copyFile  fileInFileSource fileInFileDest
+format "copy: % to: %\ncopy done: %\n" fileInFileSource fileInFileDest copyDone
+*/
+
 -- copy les icones dans le dossier user
 fn copyBmpIcons =
 (
-	-- determine le dossier source
--- 	maxIni = getMAXIniFile()
--- 	armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	
+	-- determine le dossier source	
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
+-- 	local	scriptRoot = getRoot()
 	
--- 	scriptRoot = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
-	
-	local	scriptRoot = getRoot()
-	
-	iconsArray = getfiles (scriptRoot + "icons\*.bmp")
+	local iconsArray = getfiles ((getRoot()) + "icons\*.bmp")
 	
 	-- determine les dossiers de destination
--- 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
-	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "ui\\usericons"
-	iconsRoot2 = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
-		
-	existence = getdirectories iconsRoot
-	if existence.count == 0 then makedir iconsRoot all:true 
+	iconsRoot = (getdir #maxroot) + "\UI\Icons"
+-- 	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "ui\\usericons"
+	iconsRoot = (getdir #maxroot) + "usericons"
+-- 	iconsRoot2 = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
+	
+	-- création du chemin de destination
+-- 	existence = getdirectories iconsRoot
+-- 	if existence.count == 0 then makedir iconsRoot all:true 
+	
+	if not doesfileexist iconsRoot then makedir iconsRoot all:true 
 	
 	-- make copy
 	for ic in iconsArray do
@@ -100,36 +122,8 @@ fn copyBmpIcons =
 )
 copyBmpIcons()
 
--- copy du fichier filein type
 
 
-
-
--- aout de la lecture du dossier startup au démarrage de max (avant macroscript):
-fn initArmadasStartupDir =
-(
-	startupDir = (getRoot() + "scriptInstaller/startup")
-
-	-- ajout du dossier startup 
-	ini_file = if (maxversion())[1] < 12000 then "plugin.ini" else "plugin.userSettings.ini"
-	setINISetting (getdir #maxdata + ini_file) #directories "Armadas Scripts Startup"startupDir
-)
-initArmadasStartupDir()
-
-/*
--- fileInFileSource = (getRoot() + "scriptInstaller/armadesFileIn.ms")
--- trouver l'adresse de destination
-	-- soit dans le fichier plugin soit ajouter une adresse dans les fichier user "pluginpaths"
-
--- fileInFileDest = ((GetDir #startupScripts) + "/" + "armadesFileIn.ms")
-fileInFileDest = ((GetDir #maxData) + "scripts/startup/" + "armadesFileIn.ms")
-
--- suppression du fichier existant
-if doesfileexist fileInFileDest then deleteFile fileInFileDest
--- copie
-copyDone = copyFile  fileInFileSource fileInFileDest
-format "copy: % to: %\ncopy done: %\n" fileInFileSource fileInFileDest copyDone
-*/
 
 
 -- install macroscript
@@ -203,3 +197,52 @@ macroScript ArmadasScriptLastParent
 		if sel.count >= 2 then 	lastParent sel else()
 	)
 )
+
+macroScript ArmadasScriptCustomIsolate
+	category:"ArmadasScripts"
+	buttonText: "customIsolate"
+	toolTip:"isolate selection without focus on"
+-- 	icon: #("ArmadasScriptMaterialsUtilities",1)
+(
+	local isIsolate = false
+	local isolatedList = #()
+	
+	on execute do
+	(
+		if not isIsolate then
+		(
+			for s in $* do
+			(
+				if not s.ishidden and not s.isselected then
+				(
+					s.ishidden = true
+					append isolatedList s
+				)
+			)
+			isIsolate = true
+			format "isolation done\n"
+		)
+		else if isIsolate then
+		(
+			for i=isolatedList.count to 1 by - 1 do
+			(
+				if isvalidnode isolatedList[i] then 
+				(
+					isolatedList[i].ishidden = false
+					deleteitem isolatedList i
+				)
+			)
+			isIsolate = false
+			format "isolation end\n"
+		)
+		else()
+		redrawviews ()
+	)
+	
+	on ischecked return isIsolate
+)
+
+
+
+
+
