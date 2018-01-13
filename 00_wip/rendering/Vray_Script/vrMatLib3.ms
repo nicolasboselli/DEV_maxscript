@@ -130,8 +130,9 @@ rollout vrMatRlt "VRay mat Lib"
 	
 	group "bitmap"
 	(
-		button scanBT "scan"
-		button missBmpBT "missing bitmap"
+		button scanBT "scan and patch"
+		button missBmpBT "edit missing bitmap"
+		button missBmpBT2 "format missing bitmap"
 	)
 	
 	
@@ -390,7 +391,7 @@ rollout vrMatRlt "VRay mat Lib"
 			)
 			else
 			(
-				format "NOT FOUND filename: %\n" b.filename
+				format "NOT FOUND filename: %\n" b
 -- 				meditMaterials[activeMeditSlot] = b
 			)
 		)
@@ -403,6 +404,7 @@ rollout vrMatRlt "VRay mat Lib"
 		local i = 1
 		for b in bmpAr do
 		(
+			
 			if not doesfileexist b.filename then
 			(
 				format "missing filename: %\n" b.filename
@@ -432,6 +434,31 @@ rollout vrMatRlt "VRay mat Lib"
 
 			)
 		)
+	)
+	
+	on missBmpBT2 pressed do
+	(
+		local bmpAr = getclassinstances bitmaptexture target: scenematerials
+		local i = 1
+		
+		for b in bmpAr do
+		(
+			if b.filename != undefined then
+			(
+				if doesfileexist b.filename then
+				(
+					format "Found: % %\n" i b.filename 
+				)
+				else if not doesfileexist b.filename then
+				(
+					format "Not Found: %\n" i b.filename 
+				)
+				else()
+				i += 1
+			)
+			else format "Not Found: % %\n" i undefined
+		)
+
 	)
 )
 createdialog vrMatRlt

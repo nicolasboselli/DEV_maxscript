@@ -6,6 +6,8 @@ maj:
 		x- add * add begining and end of search	
 		
 	x- avertir quand on veut publier un asset sans avoir selectionner le bon repertoire dans l assetOpener
+	
+	-- incrementer la prochaine verison de wip
 		
 	-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore archive
@@ -241,28 +243,31 @@ rollout assetEditorRLT "assets editor v2"
 		
 -- 		checkbox instanceCB "new max instance"
 		button openBT "open folder" width: 160 across:3
-		button openWipBT "open wip" width: 160
+		button openWipBT "open wip folder" width: 160
 		button saveInWipBT "save in wip"  width: 160
 -- 		button editBT "edit" 
 		button editBT2 "edit v2" width: 160 across: 3
 -- 		button newMaxBT "edit in new max instance" across:3
 		button newMaxBT2 "edit in new max instance v2" width: 160
 		button cleanWipFolderBT  "clean wip folder" width: 160
-		button openLatestBT "open latest" width: 160 --across:3 tooltip: tooltip
+-- 		button openLatestBT "open latest" width: 160 --across:3 tooltip: tooltip
 		
 -- 		bitmap assetBMP "asset thumbnail" width: 256 height: 256 visible: true
 		
 -- 		button updateBT "update"
 	)
 	
-	group "asset selected infos 2"
+	group "asset selected infos 2:"
 	(
+		edittext lastestFilenameET "latest asset selected filename:" readonly: true
+		button openLatestBT "open latest"
+		edittext wipSelLastFileET "last asset selected wip filename:" readonly: true
+		button openWip2BT "open last wip"
 		dropdownlist  taskListDL "task:"  across: 2
 		dropdownlist versionDL "last published version:"
-		edittext editSelFileET "asset selected filename:" readonly: true
-		edittext wipSelFileET "next asset wip filename:" readonly: true
-		edittext wipSelLastFileET "last asset wip filename:" readonly: true
-		edittext lastestFilenameET "latest asset filename:" readonly: true
+		edittext editSelFileET "asset selected version filename:" readonly: true
+		edittext wipSelFileET "next asset selected version wip filename:" readonly: true
+		button editAssetBT "edit"
 	)
 	
 	
@@ -271,7 +276,7 @@ rollout assetEditorRLT "assets editor v2"
 -- 		refresh name
 		if asset.assetName != undefined then curAssetNameET.text = asset.assetName else curAssetNameET.text = "UNDEFINED"
 		
--- 		refresh task
+-- 		refresh task listbox
 		local bakSel = taskListDL.selection
 		
 		local taskVersionList = asset.getMaxFilesCount2()
@@ -314,28 +319,6 @@ rollout assetEditorRLT "assets editor v2"
 -- 		asset editable
 		if doesfileexist (asset.getLastVersionFile()) == true then editableET.text = "true"
 		else editableET.text = "false"
-			
---		 asset selected version
-		local assetSelFilename = asset.getEditableFileSelected taskListDL.selected (versionDL.selected as integer)
-		if assetSelFilename != undefined then editSelFileET.text = assetSelFilename else  editSelFileET.text = "NONE"
-		
--- 		asset selected wip filename
-		wipSelFileET.text = asset.getWipFilename  taskListDL.selected (versionDL.selected as integer)
-		
--- 		wip selection
-		local assetSelFilename = asset.createWipFile2 taskListDL.selected (versionDL.selected as integer)
-			
--- 		refresh thumbnail
-		thumbFile =  asset.assetFolder + "\\" + "assetThumb.jpg"
-		
-		if doesfileexist thumbFile == true then
-		(
-			if openThumbRLT.open then openThumbRLT.assetBMP.filename = thumbFile
-		)
-		else 
-		(
-			if openThumbRLT.open  then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
-		)
 		
 -- 		refresh status
 		if asset.status != undefined then statusET.text = asset.status
@@ -349,6 +332,66 @@ rollout assetEditorRLT "assets editor v2"
 		(
 			maxFileVersET.text = asset.getMaxFileVersion()
 		)catch()
+		
+		
+	--	refresh thumbnail
+		thumbFile =  asset.assetFolder + "\\" + "assetThumb.jpg"
+		
+		if doesfileexist thumbFile == true then
+		(
+			if openThumbRLT.open then openThumbRLT.assetBMP.filename = thumbFile
+		)
+		else 
+		(
+			if openThumbRLT.open  then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
+		)
+		
+	/* ASSET SELECTED INFOS v2*/
+--		 asset selected version
+		local assetSelFilename = asset.getEditableFileSelected taskListDL.selected (versionDL.selected as integer)
+		if assetSelFilename != undefined then
+		(
+			editSelFileET.text = assetSelFilename
+			editSelFileET.tooltip = assetSelFilename
+		)
+		else  
+		(
+			editSelFileET.text = "NONE"
+			editSelFileET.tooltip = "NONE"
+		)
+		
+-- 		asset selected wip filename
+		wipSelFileET.text = asset.getNextWipFilename taskListDL.selected (versionDL.selected as integer)
+		wipSelFileET.tooltip = asset.getNextWipFilename taskListDL.selected (versionDL.selected as integer)
+		
+-- 		last asset wip selection
+		local assetLastWipFilename = asset.getLastWipFilename()
+		if assetLastWipFilename != undefined then 
+		(
+			wipSelLastFileET.text = assetLastWipFilename
+			wipSelLastFileET.tooltip = assetLastWipFilename
+		)	
+		else  
+		(
+			wipSelLastFileET.text = "NONE"
+			wipSelLastFileET.tooltip = "NONE"
+		)
+		
+			
+-- 		latest asset filename
+		local assetLastestFilename = asset.getLatestFile()
+		if assetLastestFilename != undefined then 
+		(
+			lastestFilenameET.text = assetLastestFilename
+			lastestFilenameET.tooltip = assetLastestFilename
+		)	
+		else  
+		(
+			lastestFilenameET.text = "NONE"
+			lastestFilenameET.tooltip = "NONE"
+		)
+		
+	
 	)
 	
 	fn collectAssets root =
@@ -502,7 +545,7 @@ rollout assetEditorRLT "assets editor v2"
 		)
 		
 		format "rootini: % root:%\n" rootini root
-		
+
 		-- nettoyage de l'array de chemin
 		rootAr = for r in rootAr where doesfileexist r collect r
 		rootAr = makeuniquearray rootAr
@@ -603,6 +646,7 @@ rollout assetEditorRLT "assets editor v2"
 -- 		createAssetRLT.initForSelection()
 -- 		refreshFromOutside()
 		
+		-- mettre optionel le refresh à 'update de publish
 		-- collect assets list
 		assetsList = collectAssets root
 		-- collect list to display
@@ -704,9 +748,13 @@ rollout assetEditorRLT "assets editor v2"
 		
 	on editBT2 pressed do
 	(
-		asset = assetsToDisplay[assetsBL.selection]
+		local asset = assetsToDisplay[assetsBL.selection]
+		local taskVersionList = asset.getMaxFilesCount2 ()
+-- 		for t in taskVersionList do sort t
 		
-		wipFile = asset.createWipFile()
+-- 		local wipFile = asset.createWipFile()
+		local wipFile = asset.createWipFile2 "without" taskVersionList[1][taskVersionList[1].count]
+		
 		if checkForSave() do loadMaxFile wipFile useFileUnits: true
 		
 -- 		try refreshListBox() catch(format "*** % ***\n" (getCurrentException()))

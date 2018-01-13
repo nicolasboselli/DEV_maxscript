@@ -155,7 +155,8 @@ fn checkAssetFolder =
 (
 	assetFolder = getUpperFolder maxFilePath
 	test = doesfileexist (assetFolder + "assetInfo.ini")
-	test 
+	test2 = doesfileexist (maxFilePath + "assetInfo.ini")
+	if test or test2 then true else false
 )
 
 fn createVrMeshesFolder =
@@ -183,12 +184,13 @@ fn createTexturesFolder =
 	texturesFolderExist = False
 	
 	texturesFolderTmp = ((getupperfolder maxFilePath) + "textures")
-	print texturesFolderTmp
+	format "texturesFolderTmp: %\n" texturesFolderTmp
+	
 	res = getDirectories texturesFolderTmp
 	if res.count == 0 then 
 	(
 		texturesFolderExist = makedir texturesFolderTmp
-		if texturesFolderExist == true do	texturesFolder = texturesFolderTmp
+		if texturesFolderExist == true do texturesFolder = texturesFolderTmp
 	)
 	else texturesFolder = texturesFolderTmp
 
@@ -197,7 +199,19 @@ fn createTexturesFolder =
 
 -- create vrmeshes
 -- collect map
+fn createTexturesFolder2 =
+(
+	local texturesFolderTmp
+	
+	if doesfileexist (maxFilePath + "assetInfo.ini") then texturesFolderTmp =  maxFilePath + "textures"
+	else if doesfileexist ((getupperfolder maxFilePath) + "assetInfo.ini") then texturesFolderTmp =  ((getupperfolder maxFilePath) + "textures")
+	else()
 
+	if not doesfileexist texturesFolderTmp then makedir texturesFolderTmp
+		
+	texturesFolderTmp
+)
+-- createTexturesFolder2()
 
 
 fn copyTextures textFolder =
@@ -274,7 +288,7 @@ fn patchMultimatName =
 		)
 	)
 )
-patchMultimatName()
+-- patchMultimatName()
 
 fn deleteEmptyLayers =
 (
@@ -343,7 +357,7 @@ rollout assetsToolsRLT "asset tools"
 	
 	on collectTexturesBT pressed do
 	(
-		textFolder = createTexturesFolder()
+		textFolder = createTexturesFolder2 ()
 		if textFolder != undefined then 
 		(
 			print "starting copy"

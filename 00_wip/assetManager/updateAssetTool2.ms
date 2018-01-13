@@ -34,7 +34,6 @@ rebuild:
 
 filein "assetManagerDef.ms"
 
-
 fn collectAssetInScene =
 ( 
 	for h in helpers where classof h == point and getUserProp h "asset" collect h
@@ -77,7 +76,7 @@ fn returnMaxAssetCount assetName =
 )
 --  "villa2"
 -- returnMaxAssetCount(getuserprop $ "assetName")
-returnMaxAssetCount "teapot"
+-- returnMaxAssetCount "teapot"
 
 struct assetGroup
 (
@@ -152,7 +151,7 @@ struct assetInScene
 		oneCtrl
 	),
 	
-	fn updateAsset =
+	fn updateAsset updateMaterialsChoice: #useSceneMtlDups   =
 	(
 -- 		newAsset = assetClass()
 		newAsset = assetCreationClass()
@@ -161,7 +160,7 @@ struct assetInScene
 		local instNum = getUserProp ctrl "instanceNum"
 		format "instNum:%\n" instNum
 		
-		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: true ignoreCacheLay: true objsNameConflict: #mergeDups instNum: instNum
+		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: true ignoreCacheLay: true objsNameConflict: #mergeDups instNum: instNum updateMaterials: updateMaterialsChoice 
 		newAssetCtrl.transform = ctrl.transform
 		newAssetCtrl.name = ctrl.name
 		newAssetCtrl
@@ -197,7 +196,10 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		checkbox outOfDateOnlyCB "display out of date assets only"
 		multiListBox  assetsLB "assets:"
 		button refreshBT "refresh"
-		
+	)
+	
+	group "asset selected infos:"
+	(
 		edittext assetET "asset version:" readonly: true
 		edittext currentVersionET "current version:" readonly: true
 		edittext lastVersionET "is last version:" readonly: true
@@ -205,9 +207,15 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		edittext assetCtrlET "asset ctrl:" readonly: true
 		edittext instanceNumET "instance num:" readonly: true
 		
-		button updateAssetBT "update asset" enabled: true across: 2
 		button duplicateAssetBT "duplicate asset" enabled: true
 	)
+	
+	group "update"
+	(
+		checkbox preserveMatCB "preserve materials" across: 2
+		button updateAssetBT "update asset" enabled: true 
+	)
+	
 	
 	-- ui fonctions relatives
 		-- asset collect
@@ -323,7 +331,11 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 			
 			assetToUp = assetClassArToShow[id]
 			
-			newAssetCtrl = assetToUp.updateAsset()
+			local updateMaterialsChoice
+			if preserveMatCB.state then updateMaterialsChoice = #useSceneMtlDups  else updateMaterialsChoice =  #useMergedMtlDups
+				
+			newAssetCtrl = assetToUp.updateAsset updateMaterialsChoice: updateMaterialsChoice
+			
 			-- prendre l'ancien instance num
 			objToDel = returnAllHierarchyDown #(oldCtrl)
 			
