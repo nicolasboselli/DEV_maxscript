@@ -1,3 +1,10 @@
+/*
+maj: faire un check du fichier qui marque dans les files properties
+	- s il y a des railclone dans la scene
+	- s il y a des multi materiaux dans la scene
+*/
+
+
 -- collapse railclone
 objs = objects as array
 -- objs = selection as array
@@ -27,6 +34,16 @@ for o in objs where classof o.baseobject == railclone_pro do
 	converttopoly o
 	format "convert done:%\n" o.name
 )
+
+-- tag file properties railclone inside
+RailClone_Inside
+rcScene = getclassinstances railclone_pro
+if rcScene.count > 0 then RailClone_Inside = true else RailClone_Inside = false
+fileProperties.addProperty #custom "RailClone_Inside" RailClone_Inside 
+
+-- interroge file properties railclone inside
+rciId = fileProperties.findProperty #custom "RailClone_Inside"
+format "railcone inside: %\n" (fileProperties.getPropertyValue #custom 2)
 
 -- collapse sweep
 objs = objects as array
