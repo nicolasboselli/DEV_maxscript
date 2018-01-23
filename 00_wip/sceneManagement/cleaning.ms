@@ -43,7 +43,7 @@ fileProperties.addProperty #custom "RailClone_Inside" RailClone_Inside
 
 -- interroge file properties railclone inside
 rciId = fileProperties.findProperty #custom "RailClone_Inside"
-format "railcone inside: %\n" (fileProperties.getPropertyValue #custom 2)
+format "railcone inside: %\n" (fileProperties.getPropertyValue #custom rciId)
 
 -- collapse sweep
 objs = objects as array

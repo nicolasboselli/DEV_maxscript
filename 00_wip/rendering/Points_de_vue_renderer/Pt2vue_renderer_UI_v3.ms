@@ -557,7 +557,8 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 					local batch = batchRenderMgr.CreateView undefined
 					batch.name = c.name + "_" + oneName
 					batch.camera = c
-					local filename = outputPathMaq + "\\" + c.name + "_" + oneName + "\\"+ c.name + "_" + oneName + "_.jpg"
+-- 					local filename = outputPathMaq + "\\" + c.name + "_" + oneName + "\\"+ c.name + "_" + oneName + "_.jpg"
+					local filename = outputPathMaq + "\\"  + oneName + "\\" + oneName + "_.jpg"
 -- 					format "folder: %\n"filename
 					makedir (getFilenamePath  filename)
 					batch.sceneStateName = oneName

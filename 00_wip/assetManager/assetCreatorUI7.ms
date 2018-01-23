@@ -5,6 +5,10 @@ filein "assetManagerDef.ms"
 maj:	
 	/- refaire marcher la création d'asset
 	
+	-- refaire fonctionner la création d'asset par selection sur le modèle de la creation et du publish
+	
+	-- enregistrer des nouvelles version avec le publish (remplace "save in wip", force le remplacement)
+	
 	/- distinguer ou unifier les variables "version" et "lastversion"
 
 	-- trier les methodes de découpage et de reconstruction des pathname et les variables inutiles
@@ -21,7 +25,14 @@ maj:
 	
 	-- commencer le versionnig à 1 et pas à zero
 	
+	x- fusionner methode publish et create en modifiant la methode get assetfolder pour qu'lle retourne toujours l'assetfolder et pas le pathname du file .ini
+	
+	-- updater la fonction merge pour rendre le choix de la version à merger possible
+	
 ####### AssetCreation  Rollout:
+debug;
+	-- a l'ouverture du rollout, caler le menu des taches sur la dernière tache créée 
+
 maj:
 	-- rendre la creation de tache operationnelle  (modelisation, setup, animation)
 		-- prendre en charge le choix de la version publié (pour écraser existant)
@@ -37,7 +48,7 @@ maj:
 		-- proposer des version d'enregistremnt possible(précédente)
 		-- prendre en compte l'exception de max 2017 qui ne supporte pas la saveasversion: 2017
 			
-	-- proposer un clean des calques et des materiaux avant publish
+	/- proposer un clean des calques et des materiaux avant publish
 	-- porposer un rename des calques et des materiaux avant publish
 		
 	-- re rendre le status editable
@@ -124,7 +135,7 @@ struct assetCreationClass
 		lastVersion = 0
 		
 	),
-	
+	/*
 	fn getAssetFolder = 
 	(
 		local assetFolderRC
@@ -134,13 +145,13 @@ struct assetCreationClass
 		
 		assetFolderRC
 	),
-	
--- 	fn initFromIni iniFile assetRepo =
+	*/
+
 	fn initFromIni iniFile  =
 	(
 		assetInfo = iniFile
-		assetFolder = getAssetFolder ()
-		
+
+		assetFolder = cleanFilename (getFilenamePath assetInfo)	
 		basefolder = getupperfolder (assetFolder) + "\\"
 		
 		-- get asset name from file ini
@@ -151,6 +162,8 @@ struct assetCreationClass
 		lastVersion = (getINISetting iniFile "assetProperties" "version") as integer
 		version = lastVersion
 	),
+	
+	fn getAssetFolder = assetFolder,
 
 	fn getMaxFilesCount2 =
 	(
@@ -161,7 +174,7 @@ struct assetCreationClass
 		
 		-- collecte des version "without task" à partir des dossier et fichiers
 		local dirArr = GetDirectories (assetFolder + "\\*")
-		format "req: %, dirArr: %\n" (assetFolder + "\\*") dirArr		
+-- 		format "req: %, dirArr: %\n" (assetFolder + "\\*") dirArr		
 		
 		for f in dirArr do
 		(
@@ -204,9 +217,47 @@ struct assetCreationClass
 	
 	fn getWipFolder = assetFolder + "\\" + "wip",	
 	fn getVersionFolder = assetfolder + "\\" + (returnDigit version), 	
-	fn getWipFile = cleanFilename(getWipFolder() + "\\" + assetName +"." + (returnDigit version) + ".wip.001.max"),
+-- 	fn getWipFile = cleanFilename(getWipFolder() + "\\" + assetName +"." + (returnDigit version) + ".wip.001.max"),
 	
-	fn getLastVersionFile = cleanFilename(assetFolder + "\\" + (returnDigit lastVersion) + "\\" + assetName + ".max"),
+	fn getLastVersionFile = 
+	(
+		cleanFilename(assetFolder + "\\" + (returnDigit version) + "\\" + assetName + ".max")
+	),
+	
+	fn getLastVersionFile2 = 
+	(
+		local lastFilename
+		local taskVersionList = getMaxFilesCount2()
+		local maxTask
+		local maxTaskVers
+		-- récupérer la tache la plus avancée
+-- 		format "taskVersionList: %\n" taskVersionList
+		
+		for i = 1  to taskList.count do
+		(
+			if taskVersionList[i].count > 0 then
+			(
+				maxTask = taskList[i]
+				maxTaskVers = amax taskVersionList[i]
+			)
+		)
+		
+-- 		format "maxTask:% maxTaskVers:%\n" maxTask maxTaskVers
+		
+		if maxTask == "without" then
+		(
+			lastFilename = cleanFilename(assetFolder + "\\" + (returnDigit maxTaskVers) + "\\" + assetName + ".max")
+		)
+		else
+		(
+			lastFilename = cleanFilename(assetFolder + "\\" + assetName + "." + maxTask + "." + (returnDigit maxTaskVers)  + ".max")
+		)
+		
+		lastFilename
+-- 		format "lastFilename:% \n" lastFilename 
+		
+	),
+	
 	
 	fn getNextPublishFilename oneTask oneVers =
 	(
@@ -223,7 +274,7 @@ struct assetCreationClass
 		
 		nextPublishFilename
 	),
-	
+	/*
 	fn getWipFilename  oneTask oneVers = 
 	(
 		local wipFile
@@ -237,7 +288,7 @@ struct assetCreationClass
 		)
 		wipFile
 	),
-	
+	*/
 	
 	fn getNextWipFilename  oneTask oneVers = 
 	(
@@ -290,7 +341,7 @@ struct assetCreationClass
 		for dir in dirArr do
 		(
 			local fileArr = getFiles (dir + "*wip*.max")
-			format "fileArr: %\n" fileArr
+-- 			format "fileArr: %\n" fileArr
 			if fileArr.count > 0 do
 			(
 				for f in fileArr do
@@ -369,11 +420,13 @@ struct assetCreationClass
 	(
 		versionFolder = makedir (getVersionFolder()) all: true
 		format "version folder: %\n " versionFolder
-			
+		/*
 		folderCreated = makedir (getWipFolder())
 		format "wip folder: %\n" folderCreated
-			
+		
 		folderCreated
+			*/
+		versionFolder
 	),
 	
 	fn createAssetFileInfo =
@@ -382,11 +435,10 @@ struct assetCreationClass
 		local assetInfoIniFile = assetFolder + "\\assetInfo.ini"
 		
 		setINISetting assetInfoIniFile "assetProperties" "assetName" assetName
--- 			setINISetting assetInfoIniFile "assetProperties" "path" (getAssetFolder())
--- 			setINISetting assetInfoIniFile "assetProperties" "lastVersion" (version as string)
 		setINISetting assetInfoIniFile "assetProperties" "version" (version as string)
 	),
 	
+	/*
 	fn createVersionFileInfo =
 	(
 		versionInfoIniFile =  assetFolder +  "\\" + (returnDigit version) + "\\versionInfo.ini"
@@ -395,6 +447,7 @@ struct assetCreationClass
 		setINISetting versionInfoIniFile "assetProperties" "lastVersion" (version as string)
 		setINISetting versionInfoIniFile "assetProperties" "status" status
 	),
+	*/
 	
 	fn updateAssetFileInfo =
 	(
@@ -430,39 +483,8 @@ struct assetCreationClass
 		)
 		else format "folders are not existing\n"
 	),
-	/*
-	fn createWipFile  task: "without" =
-	(
-		local sourceTmp
-		local destTmp
-		
-		if task == "without" then
-		(
-			local sourceTmp = getLastVersionFile()
-			local destTmp = getWipFile()
-			copyFile sourceTmp destTmp
-		)
-		else
-		(
-		)
-		
-		destTmp
-	),
-	*/
-	fn createWipFile2 oneTask oneVers =
-	(		
-		local sourceTmp = getEditableFileSelected oneTask oneVers
-		local destTmp
-		
-		if doesfileexist sourceTmp then
-		(
-			destTmp = getNextWipFilename oneTask oneVers
-		)
-		
-		copyFile sourceTmp destTmp
-		
-		destTmp
-	),
+
+
 	
 	fn publishNewVersion maxVers task: "without" taskversion: 0 =
 	(
@@ -473,53 +495,7 @@ struct assetCreationClass
 		
 		if saved then createAssetFileInfo()
 		format "file saved: %\n" newfilename
-		
-		
-		/*
-		-- determination de la version de max
--- 		if maxVers == 2017 then maxVers = 0
-		
-		local newfileCreated = false
-		
-		if task == "without" then
-		(
-			-- create new version folder
-			local newFolder =  assetFolder +"\\" +  (returnDigit (lastVersion + 1))
-			local folderCreated = makedir newFolder all: true
-			
-			-- save new version file
-			local newFile
-			
-	-- 		format "maxvers: %\n" maxVers
-			
-			if folderCreated == true then
-			(
-	-- 			maxVers = 2015
-				local newFile =  newFolder + "\\" +  assetName + ".max" 
-				local newfileCreated = saveMaxFile newFile useNewFile: false saveAsVersion: maxVers
-				
-				if newfileCreated then
-				(
-					format "Asset Publishing Done: % ; New Version Published: % \n" assetName newFile
-				)
-				else
-				(
-					format "Asset Publishing Fail: % \n" assetName
-				)
-			)
-		)
-		else
-		(
-			local lastVersion
-			local versList = getMaxFilesCount()
-			local id = finditem taskList task
-			format "versList: %, id:%\n" versList id
-		
-			if id > 0 then lastVersion = versList[id]
-			local newFile =  (getAssetFolder()) + "\\" + assetname + "." + task + "." + (returnDigit (lastVersion + 1)) + ".max"
-			format "newFile: %\n" newFile
-		)
-		*/
+
 		if saved then
 		(
 			format "lastVersion: %, version: %\n" lastVersion version
@@ -537,12 +513,26 @@ struct assetCreationClass
 		newfilename
 	),
 	
-
-	
+	fn createWipFile2 oneTask oneVers =
+	(		
+		local sourceTmp = getEditableFileSelected oneTask oneVers
+		local destTmp
+		
+		if doesfileexist sourceTmp then
+		(
+			destTmp = getNextWipFilename oneTask oneVers
+		)
+		
+		copyFile sourceTmp destTmp
+		
+		destTmp
+	),
+		
 	fn getMaxFileVersion = 
 	(
 		local maxVers
-		res = getMaxFileVersionData (getLastVersionFile())
+		res = getMaxFileVersionData (getLastVersionFile2())
+		
 		if res[1] == 14000 then maxVers = "2012"
 		else if res[1] == 15000 then maxVers = "2013"
 		else if res[1] == 16000 then maxVers = "2014"
@@ -550,7 +540,7 @@ struct assetCreationClass
 		else if res[1] == 18000 then maxVers = "2016"
 		else if res[1] == 19000 then maxVers = "2017"
 		else maxVers = "unknow"
-		
+-- 		format "maxVers: %\n" maxVers
 		maxVers
 	),
 	
@@ -609,7 +599,7 @@ struct assetCreationClass
 		
 		local objsCountBef = objects.count
 		--import
-		local f = getLastVersionFile()
+		local f = getLastVersionFile2()
 		mergeMAXFile f  updateMaterials  objsNameConflict -- #AutoRenameDups  -- #mergeDups -- #select
 		
 	--	collect objects import
@@ -681,7 +671,7 @@ rollout createAssetRLT "create asset v3"
 	(
 		edittext pathET "base path:" readonly: true
 		
-		edittext nameET "name:" enabled: false
+		edittext nameET "name:" enabled: true
 	
 		
 -- 		edittext statusET "status:" enabled: false across: 3
@@ -770,7 +760,7 @@ rollout createAssetRLT "create asset v3"
 		format "start publishing refresh\n"
 		-- test if asset folder ready
 		local nameOk = False
-		local nextVersionPossible = false
+		local nextVersionPossible = true
 		
 		taskVersionList = asset.getMaxFilesCount2 ()
 		format "taskVersionList: %\n" taskVersionList
@@ -816,6 +806,7 @@ rollout createAssetRLT "create asset v3"
 		)
 		
 		
+		
 		format "assetFileInfoExists: % nameOk: % nextVersionPossible: %\n" assetFileInfoExists nameOk nextVersionPossible
 		-- update du rollout
 		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
@@ -855,10 +846,20 @@ rollout createAssetRLT "create asset v3"
 			useWipCB.enabled = false
 		)
 		
-	-- 	refresh task version dorp list number
+	-- placer la version de task sur la dernière version de tache publié la plus haute
+		for i = 1  to taskList.count do
+		(
+			if taskVersionList[i].count > 0 then
+			(
+				taskDL.selection = i
+			)
+		)
+		
+	-- 	refresh task version drop list number
 		local id = finditem taskList taskDL.selected
 		local newVersion
 		
+			
 		-- init de la taskversionlist pour la creation d'asset	
 		if taskVersionList != undefined then
 		(			
@@ -959,7 +960,7 @@ rollout createAssetRLT "create asset v3"
 		mode = 3
 		createAssetBT2.caption = "publish new asset version"
 		createAssetRLT.title = "publish new asset version"
-		nameET.readonly = true
+-- 		nameET.readonly = true
 		
 		-- check if we are in asset
 		local infoTest = (getUpperFolder maxFilePath) + "assetInfo.ini"
@@ -977,7 +978,7 @@ rollout createAssetRLT "create asset v3"
 		
 		if rootIni.count > 0 and res then
 		(
-			if doesfileexist rootIni == true then root = rootIni + "\\"
+-- 			if doesfileexist rootIni == true then root = rootIni + "\\"
 				
 			newAsset = assetCreationClass()
 			newAsset.initFromIni infoTest --root
@@ -987,7 +988,19 @@ rollout createAssetRLT "create asset v3"
 			RefreshUI()		
 -- 			checkCreationSanity newAsset
 		)
-		else (print "this is not an asset")
+		else 
+		(
+			if doesfileexist rootIni == true then root = rootIni + "\\"
+			
+			newAsset = assetCreationClass()
+			newAsset.initFromScene root
+				
+-- 			checkCreationSanity newAsset
+			refreshPublishRlt newAsset
+			RefreshUI()	
+		)
+
+-- 		else (print "this is not an asset")
 		
 		
 	)
@@ -1024,6 +1037,7 @@ rollout createAssetRLT "create asset v3"
 		if newAsset != undefined then
 		(
 			newAsset.assetName =  str
+			newAsset.basefolder =  root
 			newAsset.assetFolder =  newAsset.basefolder + newAsset.assetName
 			newAsset.publishInfo()
 			
@@ -1069,7 +1083,7 @@ rollout createAssetRLT "create asset v3"
 		else if mode == 3 then 
 		(
 -- 			local maxVers			
-			newAsset.publishNewVersion maxVers task: (taskDL.selected) taskVersion: taskVersionSel
+			newfile = newAsset.publishNewVersion maxVers task: (taskDL.selected) taskVersion: taskVersionSel
 		)
 			
 		if useWipCB.state then
@@ -1087,20 +1101,3 @@ rollout createAssetRLT "create asset v3"
 )
 -- createdialog createAssetRLT width: 800
 
--- f = @"N:\Ressources_Nico\ASSET_SANDBOX\teapot\assetInfo.ini"
--- f = @"T:\CA Immobilier\Amphion les Bains_1117\Perspectives\Scenes 3d\modelisation\wip\batB\assetInfo.ini"
--- doesfileexist f
--- getFileCreateDate  f
-
--- fileTime f
-
--- test = assetCreationClass()
--- test.initFromIni f
-
--- test.getMaxFilesCount2()
--- test.publishNewVersion 2017 task: "modelisation"
-
-
---  finditem taskList  "modelisation"
--- test.getLastVersionFile()
--- test.getLatestFile()

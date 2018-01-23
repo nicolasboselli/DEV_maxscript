@@ -27,6 +27,7 @@ maj:
 			-- la parenté au point ctrl
 	
 	-- option au merge
+		-- mettre le choix de la tache et de la version au merge
 		-- proposer merge ou xref scene ou xref object
 		-- ouvrir le dialogbox du merge en option
 		-- toggle force use scene material
@@ -70,7 +71,7 @@ rebuild:
 
 global assetEditorRLT
 
-filein "assetCreatorUI6.ms"
+filein "assetCreatorUI7.ms"
 filein "assetManagerDef.ms"
 
 -- rof
@@ -205,8 +206,10 @@ rollout assetEditorRLT "assets editor v2"
 		button openThumbBT "Thumbnail"
 	)
 -- 	rof.rollouts[2].assetsList[1].name
-	group "Merging:"
+	group "Merge:"
 	(
+		dropdownlist  mergetaskListDL "task:"  across: 2
+		dropdownlist mergetaskVersListDL "last published version:"
 		checkbox ignoreCacheCB "ignore cache_layer" checked: true across: 4
 		checkbox ignoreVrCB "ignore vray set" checked: true -- enabled: false 
 		checkbox createAsAssetCB "create as asset" enabled: false
@@ -257,7 +260,7 @@ rollout assetEditorRLT "assets editor v2"
 -- 		button updateBT "update"
 	)
 	
-	group "asset selected infos 2:"
+	group "Edit:"
 	(
 		edittext lastestFilenameET "latest asset selected filename:" readonly: true
 		button openLatestBT "open latest"
@@ -390,8 +393,6 @@ rollout assetEditorRLT "assets editor v2"
 			lastestFilenameET.text = "NONE"
 			lastestFilenameET.tooltip = "NONE"
 		)
-		
-	
 	)
 	
 	fn collectAssets root =
@@ -544,7 +545,7 @@ rollout assetEditorRLT "assets editor v2"
 			root = ""
 		)
 		
-		format "rootini: % root:%\n" rootini root
+		format "rootini: % root:%\n" rootini root --to: logStr
 
 		-- nettoyage de l'array de chemin
 		rootAr = for r in rootAr where doesfileexist r collect r
@@ -764,8 +765,11 @@ rollout assetEditorRLT "assets editor v2"
 	
 	on newMaxBT2 pressed do
 	(
-		asset = assetsToDisplay[assetsBL.selection]
-		wipFile = asset.createWipFile()
+		local asset = assetsToDisplay[assetsBL.selection]
+		local taskVersionList = asset.getMaxFilesCount2 ()
+		
+-- 		wipFile = asset.createWipFile()
+		local wipFile = asset.createWipFile2 "without" taskVersionList[1][taskVersionList[1].count]
 		if doesFileExist wipFile do shellLaunch (GetDir #maxroot + "3dsmax.exe") wipFile
 	)
 	
@@ -808,6 +812,20 @@ rollout assetEditorRLT "assets editor v2"
 	(
 		-- si la derneière version est un wip alors ouvrir le fichier
 		-- si la dernière version est un publish alors créer une version wip
+	)
+	
+	on editAssetBT pressed do
+	(
+		local asset = assetsToDisplay[assetsBL.selection]
+		local taskVersionList = asset.getMaxFilesCount2 ()
+		
+		local wipFile = asset.createWipFile2 taskListDL.selected (versionDL.selected as integer)
+		
+		if checkForSave() do loadMaxFile wipFile useFileUnits: true
+		
+-- 		try refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+		format "Asset Edited: %\n" wipFile
 	)
 )
 
