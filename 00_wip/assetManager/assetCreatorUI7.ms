@@ -5,16 +5,19 @@ filein "assetManagerDef.ms"
 maj:	
 	/- refaire marcher la création d'asset
 	
-	-- refaire fonctionner la création d'asset par selection sur le modèle de la creation et du publish
+	-- supprimer la méthode creationcheck
+	-- updater la methode pour créer un asset à partir de la selection dansla scene
+	-- unifier les méthodes d'init du publish dans le rollout, ca devrait deprecier des methodes d'init danas la structure
 	
-	-- enregistrer des nouvelles version avec le publish (remplace "save in wip", force le remplacement)
+	x- refaire fonctionner la création d'asset par selection sur le modèle de la creation et du publish
+	
+	/- enregistrer des nouvelles version avec le publish (remplace "save in wip", force le remplacement)
+		-- ça a l'air de marcher rajouter un avertissement (messagebox) quand on ecrase un ficchier existant
 	
 	/- distinguer ou unifier les variables "version" et "lastversion"
 
 	-- trier les methodes de découpage et de reconstruction des pathname et les variables inutiles
 		-- verifier qu'elles ne sont pas utiliser dans assetopener au merge ou à l'affichage ou dans l'assetupdater
-
-	-- dev init for display and init for publishing(?)
 		
 	/- comparé les "assetname" et les "version" obtenus à partir des fichier ini et à partir des filename et folder
 	
@@ -28,6 +31,7 @@ maj:
 	x- fusionner methode publish et create en modifiant la methode get assetfolder pour qu'lle retourne toujours l'assetfolder et pas le pathname du file .ini
 	
 	-- updater la fonction merge pour rendre le choix de la version à merger possible
+		-- la methode est prete, il faut la faire fonctionner avec l'UI
 	
 ####### AssetCreation  Rollout:
 debug;
@@ -116,6 +120,7 @@ struct assetCreationClass
 
 	fn initFromScene assetRepo =
 	(
+		assetInfo = undefined
 		basefolder = assetRepo + "\\"
 		assetName = getFilenameFile maxFileName
 		assetFolder = basefolder + assetName
@@ -127,6 +132,7 @@ struct assetCreationClass
 	
 	fn initFromSel sel assetRepo =
 	(
+		assetInfo = undefined
 		objs = sel
 		basefolder = assetRepo + "\\"
 		assetName = sel[1].name
@@ -483,8 +489,6 @@ struct assetCreationClass
 		)
 		else format "folders are not existing\n"
 	),
-
-
 	
 	fn publishNewVersion maxVers task: "without" taskversion: 0 =
 	(
@@ -501,9 +505,11 @@ struct assetCreationClass
 			format "lastVersion: %, version: %\n" lastVersion version
 			lastVersion +=  1
 			format "lastVersion: %, version: %\n" lastVersion version
-			
+			print "check1"
 			-- update asset info file
-			 updateAssetFileInfo()
+-- 			updateAssetFileInfo()
+			createAssetFileInfo()
+			print "check1.5"
 		)
 		else
 		(
@@ -511,6 +517,7 @@ struct assetCreationClass
 		)
 
 		newfilename
+		
 	),
 	
 	fn createWipFile2 oneTask oneVers =
@@ -655,6 +662,10 @@ rollout createAssetRLT "create asset v3"
 	local allAssetsFolder
 	local root
 	
+	local rltAssetFolder
+	local rltAssetName
+	
+	
 -- 	local assetPath = @"\\ELVIS\_svn\zz_ressources3D"
 	local newAsset
 	
@@ -665,6 +676,7 @@ rollout createAssetRLT "create asset v3"
 	
 	local taskVersionList
 	
+	local changeAsset = true
 	local changeTask = false
 	
 	group "parameters"
@@ -749,7 +761,8 @@ rollout createAssetRLT "create asset v3"
 		)
 		else 
 		(
-			creationSanity = false
+-- 			creationSanity = false
+			creationSanity = true
 -- 			publishSanity = true
 		)		
 	)
@@ -805,8 +818,6 @@ rollout createAssetRLT "create asset v3"
 			)
 		)
 		
-		
-		
 		format "assetFileInfoExists: % nameOk: % nextVersionPossible: %\n" assetFileInfoExists nameOk nextVersionPossible
 		-- update du rollout
 		if  assetFileInfoExists == true and	nameOk == true  and nextVersionPossible == true then
@@ -847,12 +858,17 @@ rollout createAssetRLT "create asset v3"
 		)
 		
 	-- placer la version de task sur la dernière version de tache publié la plus haute
-		for i = 1  to taskList.count do
+		
+		if changeAsset then
 		(
-			if taskVersionList[i].count > 0 then
+			for i = 1  to taskList.count do
 			(
-				taskDL.selection = i
+				if taskVersionList[i].count > 0 then
+				(
+					taskDL.selection = i
+				)
 			)
+			changeAsset = false
 		)
 		
 	-- 	refresh task version drop list number
@@ -881,12 +897,13 @@ rollout createAssetRLT "create asset v3"
 			taskVersionDL.items = itemsList
 		)
 		
-		
+		-- toujours afficher la dernière version de tache au changement de tache
  		if changetask then 
 		(
 			taskVersionDL.selection = 1
 			changetask = false
 		)
+		
 		
 		-- filenames
 		
@@ -918,12 +935,11 @@ rollout createAssetRLT "create asset v3"
 			newAsset = assetCreationClass()
 			newAsset.initFromScene root
 				
-			checkCreationSanity newAsset
+-- 			checkCreationSanity newAsset
 			refreshPublishRlt newAsset
 			RefreshUI()	
 			format "newAsset: % \n" newAsset
 		)
-		
 	)
 	
 	fn initForSelection =
@@ -947,12 +963,10 @@ rollout createAssetRLT "create asset v3"
 			newAsset.initFromSel sel root
 -- 			print newAsset
 			
-			
 			checkCreationSanity newAsset
 			RefreshUI()	
 			format "newAsset: % \n" newAsset
 		)
-		
 	)
 	
 	fn initForPublishing =
@@ -982,7 +996,7 @@ rollout createAssetRLT "create asset v3"
 				
 			newAsset = assetCreationClass()
 			newAsset.initFromIni infoTest --root
-			newAsset.version += 1
+-- 			newAsset.version += 1
 			
 			refreshPublishRlt newAsset
 			RefreshUI()		
@@ -999,12 +1013,49 @@ rollout createAssetRLT "create asset v3"
 			refreshPublishRlt newAsset
 			RefreshUI()	
 		)
-
 -- 		else (print "this is not an asset")
-		
-		
 	)
 	-- Actions
+	
+	fn initForPublishing2 =
+	(
+		-- methode d'initilisation globale
+		mode = 0
+		createAssetBT2.caption = "publish new asset version"
+		createAssetRLT.title = "publish new asset version"
+		
+		newAsset = assetCreationClass()
+		
+		-- recherche du root (basefolder)
+		local assetRepo
+		local assetRepoRC = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		if doesfileexist assetRepoRC then assetRepo = assetRepoRC + "\\"
+				
+		-- recherche du fichier ini
+		local assetInfo = (getUpperFolder maxFilePath) + "assetInfo.ini"
+		if not (doesfileexist assetInfo) then assetInfo = maxFilePath + "assetInfo.ini"
+		if not (doesfileexist assetInfo) then assetInfo = undefined
+		
+		-- 
+		newAsset.objs =  selection as array
+		
+		if asseinfo != undefined then
+		(
+	--		get asset name from file ini
+			local assetName = getINISetting iniFile "assetProperties" "name"
+			if assetName.count == 0 then assetName = getINISetting iniFile "assetProperties" "assetName"
+			
+			newAsset.assetName = assetName
+			newAsset.assetFolder = cleanFilename (getFilenamePath assetInfo)	
+			newAsset.basefolder = getupperfolder (assetFolder) + "\\"
+		)
+		else
+		(
+			newAsset.basefolder = assetRepo + "\\"
+			newAsset.assetName = getFilenameFile maxFileName
+			newAsset.assetFolder = basefolder + assetName
+		)
+	)
 	
 	on createAssetRLT open do
 	(
@@ -1034,18 +1085,36 @@ rollout createAssetRLT "create asset v3"
 	
 	on nameET entered str do
 	(
+				
+		local rootIni = getINISetting armadasScriptsIni "assetManager" "repositoryPath"
+		
+		if rootIni.count > 0 then 
+		(
+			if doesfileexist rootIni then root = rootIni + "\\"
+		)
+		
+	
 		if newAsset != undefined then
 		(
+			format "asset re-init start\n"
 			newAsset.assetName =  str
-			newAsset.basefolder =  root
+			newAsset.basefolder =  root + "\\"
 			newAsset.assetFolder =  newAsset.basefolder + newAsset.assetName
+			
+			-- tester le assetfile.ini
+			local assetinfoFile = newAsset.assetFolder + "\\" + "assetInfo.ini"
+			format "assetinfo.ini: % exist: %\n" assetinfoFile (doesfileexist assetinfoFile)
+			if doesfileexist assetinfoFile then  newAsset.assetInfo = assetinfoFile else newAsset.assetInfo = undefined
 			newAsset.publishInfo()
 			
+			changeAsset = true
 			refreshPublishRlt newAsset
-			checkCreationSanity newAsset
+-- 			checkCreationSanity newAsset
 			RefreshUI()
 -- 			newAsset.publishInfo()
+			format "asset re-init end\n"
 		)
+		format "newAsset: %\n" newAsset
 	)
 	
 	on taskDL selected  val do
@@ -1060,7 +1129,6 @@ rollout createAssetRLT "create asset v3"
 	(
 		RefreshUI()
 	)
-
 	
 	on createAssetBT2 pressed do
 	(
@@ -1077,7 +1145,7 @@ rollout createAssetRLT "create asset v3"
 		-- création du fichier
 		if mode == 1 then
 		(		
-			newAsset.createAssetFromScene maxVers task: (taskDL.selected) taskVersion: taskVersionSel
+			newfile = newAsset.createAssetFromScene maxVers task: (taskDL.selected) taskVersion: taskVersionSel
 		)
 		else if mode == 2 then newAsset.createAssetFromSel()
 		else if mode == 3 then 
@@ -1085,7 +1153,7 @@ rollout createAssetRLT "create asset v3"
 -- 			local maxVers			
 			newfile = newAsset.publishNewVersion maxVers task: (taskDL.selected) taskVersion: taskVersionSel
 		)
-			
+		
 		if useWipCB.state then
 		(
 -- 			local wipFile = newAsset.createWipFile()

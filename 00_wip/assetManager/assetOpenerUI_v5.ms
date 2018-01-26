@@ -217,6 +217,20 @@ rollout assetEditorRLT "assets editor v2"
 		button mergeBT3 "merge v3"
 	)
 	
+	group "Edit:"
+	(
+		edittext lastestFilenameET "latest asset selected filename:" readonly: true
+		button openLatestBT "open latest"
+		edittext wipSelLastFileET "last asset selected wip filename:" readonly: true
+		button openWip2BT "open last wip"
+		dropdownlist  taskListDL "task:"  across: 2
+		dropdownlist versionDL "last published version:"
+		edittext editSelFileET "asset selected version filename:" readonly: true
+		edittext wipSelFileET "next asset selected version wip filename:" readonly: true
+		button editAssetBT "edit"
+	)
+	
+	
 	group "Asset selected infos:"
 	(
 		
@@ -260,18 +274,6 @@ rollout assetEditorRLT "assets editor v2"
 -- 		button updateBT "update"
 	)
 	
-	group "Edit:"
-	(
-		edittext lastestFilenameET "latest asset selected filename:" readonly: true
-		button openLatestBT "open latest"
-		edittext wipSelLastFileET "last asset selected wip filename:" readonly: true
-		button openWip2BT "open last wip"
-		dropdownlist  taskListDL "task:"  across: 2
-		dropdownlist versionDL "last published version:"
-		edittext editSelFileET "asset selected version filename:" readonly: true
-		edittext wipSelFileET "next asset selected version wip filename:" readonly: true
-		button editAssetBT "edit"
-	)
 	
 	
 	fn refreshEditGroup asset =
