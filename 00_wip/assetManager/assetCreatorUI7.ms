@@ -502,9 +502,9 @@ struct assetCreationClass
 
 		if saved then
 		(
-			format "lastVersion: %, version: %\n" lastVersion version
+-- 			format "lastVersion: %, version: %\n" lastVersion version
 			lastVersion +=  1
-			format "lastVersion: %, version: %\n" lastVersion version
+-- 			format "lastVersion: %, version: %\n" lastVersion version
 			print "check1"
 			-- update asset info file
 -- 			updateAssetFileInfo()
@@ -574,7 +574,7 @@ struct assetCreationClass
 		maxNum
 	),
 	
-	fn mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: false objsNameConflict: #AutoRenameDups updateMaterials: #useSceneMtlDups instNum: 1 =
+	fn mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: false objsNameConflict: #AutoRenameDups updateMaterials: #useSceneMtlDups instNum: 1 task: "without" taskversion: 0 =
 	(
 		
 		local assetCtrl
@@ -600,13 +600,18 @@ struct assetCreationClass
 			
 			setUserProp assetCtrl "instanceNum" instNum
 			
+			setUserProp assetCtrl "task" task
+			setUserProp assetCtrl "taskVersion" taskversion
+			
 			format "instNum merge:%\n" instNum
-					
 		)
 		
 		local objsCountBef = objects.count
 		--import
-		local f = getLastVersionFile2()
+-- 		format "task: %, taskversion: %\n" task taskversion
+		local f = getEditableFileSelected task taskVersion
+		format "merge: %\n" f
+-- 		f = getLastVersionFile2()
 		mergeMAXFile f  updateMaterials  objsNameConflict -- #AutoRenameDups  -- #mergeDups -- #select
 		
 	--	collect objects import

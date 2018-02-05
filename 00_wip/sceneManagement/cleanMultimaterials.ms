@@ -9,6 +9,7 @@ memo:
 -- on peut travailler les materiaux de la scene, d'une selection d ojets, des objets visible, des materiaux de l'editeur de materiaux
 */
 
+-- permet de collacter les objets identiques
 faceNumRef = meshop.getNumFaces $
 -- edgeNumRef = meshop.getNumVerts  $
 vertNumRef =  meshop.getNumVerts  $
@@ -25,6 +26,16 @@ for o in all do
 	)	
 )
 
+-- ################## clean editmesh isolated vertices
+-- meshop.deleteIsoVerts $
+i = 0
+for s in selection do
+(
+	meshop.deleteIsoVerts s
+	s.pivot = s.center
+	i += 1
+	format "i: %\n" i
+)
 
 -- collect les multimaterials identique 
 fn collectSameMultiMat matRef objSel=
@@ -101,7 +112,7 @@ fn collectSameMultiMat3 matRef matSet=
 					else()
 				)
 				
-				if collectMat then append sameMultiMatList o.material 
+				if collectMat then append sameMultiMatList m 
 			)
 		)
 	)
@@ -138,41 +149,26 @@ matSel = for s in sel collect s.material
 matList = collectSameMultiMat3 meditmaterials[activeMeditSlot] matSel
 format "% versions, collapse % materials\n" matList.count  (matList.count - 1)
 
--- collapse tous les multimateriaux de la scene visible
-	-- 	sceneMultiMatList = getClassInstances multimaterial target: scenematerials
-	-- 	sceneMultiMatList.count
-
-	-- 	sel = for o in  $* where o.ishidden == false collect o
-	-- 	for mat in meditmaterials do
-	-- 	(
-	-- 		if classof mat == multimaterial then
-	-- 		(
-	-- 			listRes = collectSameMultiMat mat sel
-	-- 			matList = listRes[2]
-	-- 			format "% versions, collapse % materials\n" matList.count  (matList.count - 1)
-	-- 			for i = 1 to matList.count do replaceinstances matList[i] matList[1]
-	-- 		)
-	-- 	)
-
 -- collapse tous les multimateriaux de l editeur de materiaux dans la scene visible
 visSel = for o in  $* where o.ishidden == false collect o
 	
 meditMultiMatList = for m in  meditmaterials where classof m == multimaterial collect m
 format "meditMultimatList count: %\n" meditMultiMatList.count
 
--- collapse tous les multimateriaux de la selection
-	-- revoir la boucle pour éviter de traiter tout l'array à chaque fois, supprimer les materiaux collapser lde l'arret
-		-- matSel = #()
-		-- sel = for o in  $* where o.ishidden == false collect o
-		-- for s in sel do  appendifunique matSel s.material
-		-- matSel.count
-	
+
+
 for mat in meditMultiMatList do
 (
-	matList = collectSameMultiMat3 mat meditMultiMatList
-	format "mat.name: % , % versions, collapse % materials\n" mat.name matList.count  (matList.count - 1)
--- 		for i = 1 to matList.count do replaceinstances matList[i] matList[1]
+	local matList = collectSameMultiMat3 mat meditMultiMatList
+-- 	format "matList: %\n" matList
+-- 	format "mat.name: % , % versions, collapse % materials\n" mat.name matList.count  (matList.count - 1)
+	for i = 1 to matList.count do
+	(
+		replaceinstances matList[i] matList[1]
+-- 		format "% replaces %\n" matList[1] matList[i]
+	)
 )
+-- replaceinstances meditmaterials[2] meditmaterials[activeMeditSlot]
 
 -- ################################ ATTACH/ EXPLODE MESH avec meme MULTIMAT 
 

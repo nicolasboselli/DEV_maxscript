@@ -3,15 +3,37 @@ maj
 add param:  center pivot,  add uvwmap, add mat, setup sweep, 
 
 debug:
-sur des murs orienter en z l estract de spline est décalé
+/-sur des murs orienter en z l estract de spline est décalé
 */
 
+fn round_to val n = 
+(
+	local mult = 10.0 ^ n
+	(floor ((val * mult) + 0.5)) / mult
+)
+
+/*
 fn createBoxOrient s =
 (
 	faceSel = polyop.getfaceselection s 
 	posObj = s.pos
 	posCenter = polyop.getFaceCenter s (faceSel as array)[1]
 	theZ = polyop.getFaceNormal s (faceSel as array)[1]
+	theY = normalize (cross [0,0,1] theZ )
+	theX = normalize (cross theY theZ)
+	theTM = matrix3   theX theY theZ posCenter
+
+	rep = box transform: theTM
+)
+*/
+fn createBoxOrient2 s =
+(
+	faceSel = polyop.getfaceselection s 
+	posObj = s.pos
+	posCenter = polyop.getFaceCenter s (faceSel as array)[1]
+	theZ = polyop.getFaceNormal s (faceSel as array)[1]
+	for i = 1 to theZ.count do theZ[i] = round_to theZ[i] 4
+		
 	theY = normalize (cross [0,0,1] theZ )
 	theX = normalize (cross theY theZ)
 	theTM = matrix3   theX theY theZ posCenter
@@ -153,7 +175,7 @@ rollout edgeToShapeRLT "edge to shape"
 				-- create box orient
 				if createBoxOrientCB.state == true and subobjectLevel == 4 and (polyop.getfaceselection s).count > 0 then
 				(
-					boxorient = createBoxOrient s
+					boxorient = createBoxOrient2 s
 				)else  (print "select faces")
 					
 				

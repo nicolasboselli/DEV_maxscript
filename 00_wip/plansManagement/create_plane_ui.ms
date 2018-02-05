@@ -153,18 +153,6 @@ rollout createPlaneRLT "create plane"
 	button transferMapBT "transfer map" pos:[350,lastLine]
 	
 -- 	functions
-	/*
-	fn createPlansLayerFN =
-	(
-		LM = layermanager
-		planLayer
-		
-		if (LM.getLayerFromName "plans") == undefined then planLayer = LM.newLayerFromName "plans"
-		else planLayer = LM.getLayerFromName "plans"
-		
-		planLayer
-	)
-	*/
 	
 	-- functions
 	fn sortbyname v1 v2 =
@@ -180,35 +168,12 @@ rollout createPlaneRLT "create plane"
 		--compare les numeros entre eux et les classe	
 		case of
 		(
-			(d < 0.): -1
-			(d > 0.): 1
+			(d < 0.): 1
+			(d > 0.): -1
 			default: 0
 		)
 	)
-	/*
-	fn returnJpgList oneJpg =
-	(
-		jpgDir = getFilenamePath  oneJpg
-		jpgListTmp = getFiles (jpgDir + "*.jpg")
 
-		jpgListTmp
-	)
-	*/
-	/*
-	fn returnJpgList2 oneFolder = 
-	(
-		jpgTmpList = getFiles (oneFolder + "*.jpg")
-		jpgTmpList
-	)
-	*/
-	/*
-	fn initPlanClass jpgList =
-	(
-		planObjList = for oneJpg in jpgList collect (planClass oneJpg)
-		format "planObjList: %\n" planObjList
-		planObjList
-	)
-	*/
 	fn collectPlansList =
 	(
 		if root != undefined and root != "C:\\" then 
@@ -229,15 +194,20 @@ rollout createPlaneRLT "create plane"
 -- 	create plane and add plan material
 	fn createMappedPlane oneJpg = 
 	(
-	-- 	create plane
-		tmpPlane = Plane length:1000 width:800 pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ("plane_" + (getFilenameFile oneJpg)) \
-		backfacecull: on renderable: off
+
 	-- 	createMap
 		jpgMap = Bitmaptexture fileName: oneJpg name: ("zz_map_" + (getFilenameFile oneJpg))
-	-- 	create material
+			
+		-- 	create material
 		tmpMaterial = Standardmaterial name: ("zz_plan_" + (getFilenameFile oneJpg))
 		tmpMaterial.diffuseMap = jpgMap
 		tmpMaterial.showInViewport =on
+		
+		-- 	create plane
+		tmpPlane = Plane length:tmpMaterial.diffuseMap.bitmap.height width: tmpMaterial.diffuseMap.bitmap.width pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ("plane_" + (getFilenameFile oneJpg)) \
+		backfacecull: on renderable: off
+		
+
 		-- 	assign material on plane
 		tmpPlane.material = tmpMaterial
 		tmpPlane

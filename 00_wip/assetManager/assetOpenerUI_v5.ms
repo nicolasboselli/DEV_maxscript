@@ -7,7 +7,7 @@ maj:
 		
 	x- avertir quand on veut publier un asset sans avoir selectionner le bon repertoire dans l assetOpener
 	
-	-- incrementer la prochaine verison de wip
+	-- incrementer la prochaine version de wip
 		
 	-- filter by status (all, approved, wip, retake, archived)
 		-- add ignore archive
@@ -20,17 +20,15 @@ maj:
 	-- add comments
 	-- delete/ rename asset
 	
-	-- activer le toggle "create as asset"(rename "merge as asset")
-		--  force:
-			-- un rename en respectant le bsename et l'instance num
-			-- la creation d'un point ctrl
-			-- la parenté au point ctrl
-	
 	-- option au merge
 		-- mettre le choix de la tache et de la version au merge
 		-- proposer merge ou xref scene ou xref object
-		-- ouvrir le dialogbox du merge en option
 		-- toggle force use scene material
+		-- activer le toggle "create as asset"(rename "merge as asset")
+			--  force:
+				-- un rename en respectant le bsename et l'instance num
+				-- la creation d'un point ctrl
+				-- la parenté au point ctrl
 	
 	/- ouvrir le dernier wip 
 		
@@ -166,6 +164,7 @@ rollout assetEditorRLT "assets editor v2"
 	
 	local changeAsset = false
 	local changeTask = false
+	local changeMergeTask = false
 	
 -- 	local bmpOpened = false
 	
@@ -283,9 +282,12 @@ rollout assetEditorRLT "assets editor v2"
 		
 -- 		refresh task listbox
 		local bakSel = taskListDL.selection
-		
+		local mergeBakSel  = mergetaskListDL.selection
+				
 		local taskVersionList = asset.getMaxFilesCount2()
+		
 		local lastTask
+		
 		local taskListRC = #()
 		for i = 1 to taskVersionList.count do
 		(
@@ -295,21 +297,29 @@ rollout assetEditorRLT "assets editor v2"
 				append taskListRC taskList[i]
 			)
 		)
+		
 		taskET.text = lastTask
 		
 		taskListDL.items = for t in taskListRC collect t
+		mergetaskListDL.items =  for t in taskListRC collect t
 -- 		taskListDL.selection = taskListDL.items.count
 		
 		if baksel > 0 and baksel < taskListDL.items.count and not changeAsset then taskListDL.selection = bakSel else taskListDL.selection = taskListDL.items.count
+		if mergeBakSel > 0 and mergeBakSel < mergetaskListDL.items.count and not changeAsset then mergetaskListDL.selection = mergeBakSel else mergetaskListDL.selection = mergetaskListDL.items.count
 -- 		format "baksel: % taskListDL.selection: % taskListDL.items.count: %\n" bakSel taskListDL.selection taskListDL.items.count
 		
 -- 		refresh version number
 		local versBakSel = versionDL.selection
+		local mergeVersBakSel = mergetaskVersListDL.selection
 		
 		local id = finditem taskList taskListDL.selected
+		local mergeId = finditem taskList mergetaskListDL.selected
 -- 		format "id: %   taskListDL.selection: % taskVersionList[id]: %\n" id   taskListDL.selected taskVersionList[id]
 		versionDL.items = for n in taskVersionList[id] collect (n as string)
+		mergetaskVersListDL.items = for n in taskVersionList[mergeId] collect (n as string)
+		
 		if versBakSel > 0 and versBakSel < versionDL.items.count and not changeAsset and not changetask then versionDL.selection = versBakSel else versionDL.selection = versionDL.items.count
+		if mergeVersBakSel > 0 and mergeVersBakSel < mergetaskVersListDL.items.count and not changeAsset and not changeMergeTask then mergetaskVersListDL.selection = mergeVersBakSel else mergetaskVersListDL.selection = mergetaskVersListDL.items.count
 		
 		if asset.lastVersion != undefined then versionET.text = returnDigit asset.lastVersion
 		else versionET.text = "???"
@@ -351,7 +361,9 @@ rollout assetEditorRLT "assets editor v2"
 			if openThumbRLT.open  then openThumbRLT.assetBMP.bitmap = bitmap 256 256 color:(color 125 125 125)
 		)
 		
-	/* ASSET SELECTED INFOS v2*/
+	/*MERGE INFOS
+		
+	/* EDIT INFOS */
 --		 asset selected version
 		local assetSelFilename = asset.getEditableFileSelected taskListDL.selected (versionDL.selected as integer)
 		if assetSelFilename != undefined then
@@ -780,7 +792,12 @@ rollout assetEditorRLT "assets editor v2"
 	(
 		asset = assetsToDisplay[assetsBL.selection]
 		local count = asset.countInstNumInScene()
-		ctrl = asset.mergeAsset3 ignoreVrSet: ignoreVrCB.state ignoreCacheLay: ignoreCacheCB.state instNum: (count + 1)
+		
+		local ctrl = asset.mergeAsset3 ignoreVrSet: ignoreVrCB.state \
+		ignoreCacheLay: ignoreCacheCB.state \
+		instNum: (count + 1) \
+		task: mergetaskListDL.selected \
+		taskversion: (mergetaskVersListDL.selected as integer)
 -- 		print ctrl
 		select ctrl
 	)
@@ -796,6 +813,14 @@ rollout assetEditorRLT "assets editor v2"
 	(
 		changeAsset = false
 		changeTask = false
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+	)
+	
+	on mergetaskListDL selected val do
+	(
+		changeAsset = false
+		changeMergeTask = true
+		
 		refreshEditGroup assetsToDisplay[assetsBL.selection]
 	)
 	

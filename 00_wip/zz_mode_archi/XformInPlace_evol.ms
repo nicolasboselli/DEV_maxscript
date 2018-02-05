@@ -66,9 +66,12 @@ fn resetInPlace2 s tmpParent =
 	
 	s.parent = bakparent
 	
-	s.rotation = tmpParent.rotation
+-- 	s.rotation = tmpParent.rotation
 -- 	delete tmpParent
 )
+
+
+
 
 fn resetXformInPlace3 s =
 (
