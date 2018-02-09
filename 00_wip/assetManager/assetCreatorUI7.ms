@@ -858,8 +858,8 @@ rollout createAssetRLT "create asset v3"
 		)
 		else
 		(
-			createAssetBT2.enabled = false
-			useWipCB.enabled = false
+			createAssetBT2.enabled = true
+			useWipCB.enabled = true
 		)
 		
 	-- placer la version de task sur la dernière version de tache publié la plus haute
