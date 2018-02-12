@@ -144,30 +144,95 @@ fn collectObjByMat matRef objSet =
 
 
 -- collapser les multimat de la selection dans l'editeur de materiaux v2
-sel = for o in  $* where o.ishidden == false collect o
-matSel = for s in sel collect s.material
-matList = collectSameMultiMat3 meditmaterials[activeMeditSlot] matSel
-format "% versions, collapse % materials\n" matList.count  (matList.count - 1)
+-- sel = for o in  $* where o.ishidden == false collect o
+-- matSel = for s in sel collect s.material
+-- matList = collectSameMultiMat3 meditmaterials[activeMeditSlot] matSel
+-- format "% versions, collapse % materials\n" matList.count  (matList.count - 1)
 
 -- collapse tous les multimateriaux de l editeur de materiaux dans la scene visible
 visSel = for o in  $* where o.ishidden == false collect o
-	
+visSelMultiMat = #()
+for o in visSel where classof o.material == multimaterial do
+(
+	appendifunique visSelMultiMat o.material
+)
+format "visSelMultiMat count: %\n" visSelMultiMat.count
+
 meditMultiMatList = for m in  meditmaterials where classof m == multimaterial collect m
 format "meditMultimatList count: %\n" meditMultiMatList.count
 
-
-
-for mat in meditMultiMatList do
+for j = 1 to meditMultiMatList.count do
 (
-	local matList = collectSameMultiMat3 mat meditMultiMatList
+	local matList = collectSameMultiMat3 meditMultiMatList[j] visSelMultiMat
 -- 	format "matList: %\n" matList
 -- 	format "mat.name: % , % versions, collapse % materials\n" mat.name matList.count  (matList.count - 1)
 	for i = 1 to matList.count do
 	(
 		replaceinstances matList[i] matList[1]
--- 		format "% replaces %\n" matList[1] matList[i]
+		format "% replaces %\n" matList[1] matList[i]
+		format "medit: % , collapse: %/% \n" j i matList.count 
 	)
 )
+
+-- collapse le multimat choisi dans l editeur de materiaux
+matList = collectSameMultiMat3  meditmaterials[activeMeditSlot] visSelMultiMat
+for i = 1 to matList.count do
+(
+	replaceinstances matList[i] matList[1]
+	format "% replaces %\n" matList[1] matList[i]
+	format "%/% ; % versions, collapse % materials\n" i matList.count   matList.count  (matList.count - 1)
+)
+
+-- collapse des materiaux visibles
+visSel = for o in  $* where o.ishidden == false collect o
+visSelMultiMat = #()
+for o in visSel where classof o.material == multimaterial do
+(
+	appendifunique visSelMultiMat o.material
+)
+format "visSelMultiMat count: %\n" visSelMultiMat.count
+
+for j = 1 to visSelMultiMat.count do
+(
+	local matList = collectSameMultiMat3 visSelMultiMat[j] visSelMultiMat
+-- 	format "matList: %\n" matList
+-- 	format "mat.name: % , % versions, collapse % materials\n" mat.name matList.count  (matList.count - 1)
+	if matList.count > 1 then
+	(
+		format "matref : % , collapse % materiaux\n" j matList.count 
+		for i = 1 to matList.count do
+		(
+			replaceinstances matList[i] matList[1]
+-- 			format "% replaces %\n" matList[1] matList[i]
+-- 			format "medit: % , collapse: %/% \n" j i matList.count 
+		)
+		
+		visSelMultiMat = #()
+		for o in visSel where classof o.material == multimaterial do
+		(
+			appendifunique visSelMultiMat o.material
+		)
+		format "visSelMultiMat count: %\n" visSelMultiMat.count
+		
+		j = 1
+	)
+)
+
+-- select object by material
+clearselection()
+for o in $* do
+(
+	if o.material ==  meditmaterials[activeMeditSlot] then 
+	(
+		o.ishidden = false
+		selectmore o
+	)
+	else
+	(
+		o.ishidden = true
+	)
+)
+
 -- replaceinstances meditmaterials[2] meditmaterials[activeMeditSlot]
 
 -- ################################ ATTACH/ EXPLODE MESH avec meme MULTIMAT 
