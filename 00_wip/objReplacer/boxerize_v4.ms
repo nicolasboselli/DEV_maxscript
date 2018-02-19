@@ -100,56 +100,6 @@ fn pivotOnFAce3  s normal: 1 flipNormal: true upnode: 3 flipUpnode: false =
 	s.modifiers[#xform].gizmo.transform = bakTM * inverse(localTM)
 )
 
--- pivotOnFAce3  $ normal: 2 flipNormal: false upnode: 3 flipUpnode: false 
-
--- $.scale
-/*
-fn boxerize2 selAr amount: 28 =
-(
-	wireAr = #(green, red, blue, orange, yellow, brown)
-	undo on 
-	(
-		for s in selAr do
-		(
-			-- reset x form on selection!!!!!!!!!!!!!!!!!!!!!!!!!!!!
--- 			resetxform s
--- 			converttopoly s
-			
-			select s
-			$.outlineAmount = 2
-			$.EditablePoly.Outline ()
-			
-			-- detacher chaque element
--- 			polyop.setFaceSelection  s #all
-			selArr = explodeObject s
-
-			for o in selArr do
-			(
-				if (polyop.getNumFaces o)>0 do
-				(
-					-- reset in place
-					pivotOnFAce o
--- 					converttopoly o
-					
-					-- add shell on object
-					myShell = Shell innerAmount:0 outerAmount:amount
-					addmodifier o myShell
-					o.pivot = o.center
-					
-					converttopoly o
-				
-					o.material = undefined	
-					
-					id = random 1 wireAr.count
-					o.wirecolor = wireAr[id]
-				)
-			)
-		)
-	)
-)
-*/
--- myShell = undefined
-
 -- boxerizeRLT.upnodeRB.enabled = true
 
 try(destroydialog boxerizeRLT)catch()

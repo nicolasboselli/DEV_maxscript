@@ -52,8 +52,6 @@ fn getRoot =
 	local root = getINISetting armadasScriptsIni "armadasScripts" "armadasScriptsRoot"
 )
 
-
-
 -- ajout de la lecture du dossier startup au démarrage de max (avant macroscript):
 fn initArmadasStartupDir =
 (

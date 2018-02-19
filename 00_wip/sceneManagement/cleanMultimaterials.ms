@@ -37,57 +37,7 @@ for s in selection do
 	format "i: %\n" i
 )
 
--- collect les multimaterials identique 
-fn collectSameMultiMat matRef objSel=
-(
--- 	matRef = $.material
-	sameMultiMatList = #(matRef)
-	sameMultiMatObjList = #()
-
-	if (classof matRef == multimaterial) then
-	(
-		for o in objSel where isvalidnode o do
-		(
-			if classof o.material == multimaterial and o.material.numsubs == matRef.numsubs then
-			(
-				local collectMat = true
-				local collectObj = true
-				
-				for i = 1 to matRef.numsubs do
-				(
-					if matRef[i] != o.material[i] then 
-					(
-						collectMat = false 
-						collectObj = false
-					)
-					else()
-				)
-				
-				if o.material  == matRef then 
-				(
-					collectMat = false
-				)
-				
-				if collectMat then append sameMultiMatList o.material 
-				if collectObj then append sameMultiMatObjList o
-			)
-		)
-	)
-	else
-	(
-		for o in objSel where isvalidnode o do
-		(
-			if o.material == matRef do
-			(
-				append sameMultiMatObjList o
-			)
-		)
-	)
-	
--- 	for i = 1 to sameMultiMatList.count where i <= 24 do meditmaterials[i] = sameMultiMatList[i]
-	#( sameMultiMatObjList, sameMultiMatList)
-)
-
+-- ### collect same multi material
 fn collectSameMultiMat3 matRef matSet=
 (
 -- 	matRef = $.material

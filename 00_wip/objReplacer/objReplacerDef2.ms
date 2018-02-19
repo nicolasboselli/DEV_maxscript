@@ -79,6 +79,49 @@ fn returnBBsize2 ref =
 	bbsize
 )
 
+fn returnBBsize3 ref = 
+(
+	bb = nodeGetBoundingBox ref ref.transform
+
+	xsize = distance ([bb[1].x,0,0]) ([bb[2].x,0,0])
+	ysize = distance ([0, bb[1].y,0]) ([0,bb[2].y,0])
+	zsize = distance ([0,0,bb[1].z]) ([0,0,bb[2].z])
+	[xsize, ysize, zsize]
+)
+
+-- returnBBsize4
+/*
+sel = selection as array
+head = findHeadsOfHierarchy sel
+
+xValAr = #()
+yValAr = #()
+zValAr = #()
+
+for s in sel do
+(
+	bbVal =  nodeGetBoundingBox s head[1].transform
+	for o in bbVal do
+	(
+		append xValAr o.x
+		append yValAr o.y
+		append zValAr o.z
+	)
+-- 	format "bbVal: %\n" bbVal
+)
+
+bbGlobal = #([(amax xValAr), (amax yValAr), (amax zValAr)], [(amin xValAr), (amin yValAr), (amin zValAr)])
+-- point pos: bbGlobal[1]
+-- point pos: bbGlobal[2]
+
+xsize = distance ([bbGlobal[1].x,0,0]) ([bbGlobal[2].x,0,0])
+ysize = distance ([0, bbGlobal[1].y,0]) ([0,bbGlobal[2].y,0])
+zsize = distance ([0,0,bbGlobal[1].z]) ([0,0,bbGlobal[2].z])
+[xsize, ysize, zsize]
+
+*/
+
+
 fn replaceObject ref target =
 (
 	-- get ref size
@@ -115,7 +158,8 @@ fn replaceObject2 ref target  rescaleX: true rescaleY: true rescaleZ: true =
 	refSize = returnBBsize2 ref
 	
 	-- get target size:
-	targetSize = returnBBsize2 target
+-- 	targetSize = returnBBsize2 target
+	targetSize = returnBBsize3 target
 	
 	-- copy ref 
 	maxOps.cloneNodes ref cloneType:#instance newNodes:&copyRef

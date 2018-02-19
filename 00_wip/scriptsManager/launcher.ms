@@ -104,14 +104,15 @@ rollout mxsLaunchRLT "maxscript launcher"
 			-- test if file exist
 			for onePath in favArTmp do
 			(
-				if doesFileExist onePath == true then
+				local cleanPath = substituteString onePath "\\" "/"
+				if doesFileExist cleanPath == true then
 				(
-					format "filename found: %\n" onePath
-					appendifunique favScriptAr onePath
+					format "filename found: %\n" cleanPath
+					appendifunique favScriptAr cleanPath
 				)
 				else
 				(
-					format "filename not found: %\n" onePath
+					format "filename not found: %\n" cleanPath
 				)
 			)
 			
@@ -234,7 +235,8 @@ rollout mxsLaunchRLT "maxscript launcher"
 			local scriptsPathesAr = #()
 			for script in fileClassArray do
 			(
-				pathEnd = substitutestring script.path root ""
+				local pathEnd = substitutestring script.path root ""
+				format "pathEnd: %\n" pathEnd
 				append scriptsPathesAr pathEnd
 			)			
 			

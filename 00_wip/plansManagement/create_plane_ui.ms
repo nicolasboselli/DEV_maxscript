@@ -77,6 +77,7 @@ fn copyPlan sel =
 	)
 )
 
+
 struct planClass
 (
 	path,
@@ -147,10 +148,11 @@ rollout createPlaneRLT "create plane"
 	button refreshFoldBT "refresh" pos: [490,10]
 	listbox jpgListBox "jpg list:"
 	
-	button createPlaneBT "create"  pos:[ 50 , lastLine]
-	button injectMapBT "inject" pos:[150,lastLine]
-	button changeMapBT "change map" pos:[250,lastLine]
-	button transferMapBT "transfer map" pos:[350,lastLine]
+	button createA4BT "createA4" pos:[ 20 , lastLine]
+	button createPlaneBT "create"  pos:[ 100 , lastLine]
+	button injectMapBT "inject" pos:[170,lastLine]
+	button changeMapBT "change map" pos:[270,lastLine]
+	button transferMapBT "transfer map" pos:[370,lastLine]
 	
 -- 	functions
 	
@@ -204,7 +206,9 @@ rollout createPlaneRLT "create plane"
 		tmpMaterial.showInViewport =on
 		
 		-- 	create plane
-		tmpPlane = Plane length:tmpMaterial.diffuseMap.bitmap.height width: tmpMaterial.diffuseMap.bitmap.width pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ("plane_" + (getFilenameFile oneJpg)) \
+		tmpPlane = Plane length:tmpMaterial.diffuseMap.bitmap.height width: tmpMaterial.diffuseMap.bitmap.width\
+		pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 \
+		name: ("plane_" + (getFilenameFile oneJpg)) \
 		backfacecull: on renderable: off
 		
 
@@ -212,6 +216,29 @@ rollout createPlaneRLT "create plane"
 		tmpPlane.material = tmpMaterial
 		tmpPlane
 	)
+	
+	fn createA4 oneJpg =
+	(
+		-- 	createMap
+		jpgMap = Bitmaptexture fileName: oneJpg name: ("zz_map_" + (getFilenameFile oneJpg))
+			
+		-- 	create material
+		tmpMaterial = Standardmaterial name: ("zz_plan_" + (getFilenameFile oneJpg))
+		tmpMaterial.diffuseMap = jpgMap
+		tmpMaterial.showInViewport =on
+		
+		-- 	create plane
+		tmpPlane = Plane length:21 width: 29.7 pos:[0,0,0]  lengthsegs: 1 widthsegs: 1 name: ("plane_" + (getFilenameFile oneJpg)) \
+		backfacecull: on renderable: off
+		
+
+		-- 	assign material on plane
+		tmpPlane.material = tmpMaterial
+		tmpPlane
+	)
+	
+	
+	
 	
 -- 	delete uvwmap
 	fn deleteUVWmap onePlane =
@@ -225,6 +252,7 @@ rollout createPlaneRLT "create plane"
 		)
 	)
 	
+
 -- 	rename plane and add plane material
 	fn reMapPlane onePlane oneJpg= 
 	( 
@@ -306,6 +334,24 @@ rollout createPlaneRLT "create plane"
 		collectPlansList() 
 		refreshUI()	
 
+		select mapPlane
+	)
+	
+	on createA4BT pressed do
+	(
+		intSel = jpgListBox.selection 
+		jpgSel = planObjList[intSel]
+				
+		mapPlane = createA4  jpgSel.path
+		ajustUVWmap mapPlane
+		
+		lay = createPlansLayer()
+		lay.addnode mapPlane
+		
+		-- update listbox
+		collectPlansList() 
+		refreshUI()
+		
 		select mapPlane
 	)
 	

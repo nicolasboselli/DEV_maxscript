@@ -455,15 +455,15 @@ rollout scriptExplorerRLT "Scripts Explorer"
 		refreshUI()
 		
 		-- chargement des scripts favoris
-		if (hasINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray") == true then
+		if (hasINISetting armadasScriptsIni "mxsLaunchRLT" "favScriptAr") == true then
 		(
-			favArStr = getINISetting armadasScriptsIni  "armadasScriptsFavorite" "armadasScriptsArray"
+			favArStr = getINISetting  armadasScriptsIni "mxsLaunchRLT" "favScriptAr"
 			favArTmp = execute favArStr
 			
 			-- test if file exist
 			for onePath in favArTmp do
 			(
-				if doesFileExist onePath == true do
+				if doesFileExist onePath do
 				(
 					appendifunique favAr onePath
 				)
@@ -529,18 +529,46 @@ rollout scriptExplorerRLT "Scripts Explorer"
 	
 	on printPathBT pressed do
 	(
+		-- chargement des scripts favoris
+		if (hasINISetting armadasScriptsIni "mxsLaunchRLT" "favScriptAr") == true then
+		(
+			favArStr = getINISetting  armadasScriptsIni "mxsLaunchRLT" "favScriptAr"
+			favArTmp = execute favArStr
+			
+			-- test if file exist
+			for onePath in favArTmp do
+			(
+				if doesFileExist onePath do
+				(
+					appendifunique favAr onePath
+				)
+			)
+		)
+		else
+		(
+			favAr = #()
+		)
+		format "favorites array: %\n" favAr
+		
+		-- ajout d'un script aux favoris
+
+		
 		if classof toDisplay[scriptsListLB.selection] != folderClass then
 		(
 			appendifunique  favAr toDisplay[scriptsListLB.selection].path 
 -- 			favAr = makeuniquearray favAr
 			format "favorites script: %\n" favAr
-			setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" (with printAllElements on favAr as string)
+-- 			setINISetting armadasScriptsIni "armadasScriptsFavorite" "armadasScriptsArray" (with printAllElements on favAr as string)
 			setINISetting armadasScriptsIni "mxsLaunchRLT" "favScriptAr" (with printAllElements on favAr as string)
 		)
 		else
 		(
 			format "un dossier ne peut pas être ajouter aux favoris"
 		)
+		
+		-- refresh de la fenetres de favoris (TODO)
+-- 		format "mxsLaunchRLT.open: %\n" mxsLaunchRLT.open
+		
 	)
 	
 	on launchScriptBT pressed do

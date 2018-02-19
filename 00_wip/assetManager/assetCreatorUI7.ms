@@ -472,8 +472,18 @@ struct assetCreationClass
 		newfilename
 	),
 	
-	fn createAssetFromSel =
+	fn createAssetFromSel task: "without" taskversion: 0 =
 	(
+		local newfilename = getNextPublishFilename task taskversion
+		makedir  (getFilenamePath newfilename) all: true
+		
+		saveNodes objs newfilename 
+		
+		if doesfileexist newfilename then createAssetFileInfo()
+		format "file saved: %\n" newfilename
+		newfilename
+		
+		/*
 		res = createFolders()
 		if res == true then
 		(
@@ -488,6 +498,7 @@ struct assetCreationClass
 			)
 		)
 		else format "folders are not existing\n"
+		*/
 	),
 	
 	fn publishNewVersion maxVers task: "without" taskversion: 0 =
@@ -968,7 +979,8 @@ rollout createAssetRLT "create asset v3"
 			newAsset.initFromSel sel root
 -- 			print newAsset
 			
-			checkCreationSanity newAsset
+			refreshPublishRlt newAsset
+-- 			checkCreationSanity newAsset
 			RefreshUI()	
 			format "newAsset: % \n" newAsset
 		)
@@ -1152,7 +1164,10 @@ rollout createAssetRLT "create asset v3"
 		(		
 			newfile = newAsset.createAssetFromScene maxVers task: (taskDL.selected) taskVersion: taskVersionSel
 		)
-		else if mode == 2 then newAsset.createAssetFromSel()
+		else if mode == 2 then
+		(
+			newAsset.createAssetFromSel()
+		)
 		else if mode == 3 then 
 		(
 -- 			local maxVers			
