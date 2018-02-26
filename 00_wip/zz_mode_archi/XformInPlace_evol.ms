@@ -51,7 +51,6 @@ fn resetInPlaceAuto s =
 	delete tmpParent
 )
 
-
 fn resetInPlace2 s tmpParent =
 (
 	bakparent = s.parent
@@ -69,9 +68,6 @@ fn resetInPlace2 s tmpParent =
 -- 	s.rotation = tmpParent.rotation
 -- 	delete tmpParent
 )
-
-
-
 
 fn resetXformInPlace3 s =
 (
@@ -149,8 +145,6 @@ rollout xformRLT "xform in place V2"
 		ref = undefined
 		refreshUI()
 	)
-	
-	
 	
 	on xformBT pressed do
 	(

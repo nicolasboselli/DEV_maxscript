@@ -268,14 +268,6 @@ for m in meditMultiMatList do
 
 -- ############################################## ATTACH MESH AVEC MEME MONOMAT
 -- sur la selection d'objet mono mat
-	-- collecter les materaux de la selection
--- sel = selection as array
--- matList = #()
--- for s in sel do
--- (
--- 	appendifunique matList s.material
--- )
--- matList.count
 
 
 -- sur les materiaux de l'editeur de materiaux et sur les objest visibles
@@ -291,46 +283,4 @@ for m in meditMonoMatList do
 	combineMesh sel
 )
 
-
--- collecter les objets par materiaux
-/*
-k = 1
-for i = 1 to  matList.count do
-(
-	if classof matList[i] != multimaterial then
-	(		
-		
-		local matObj = #()
-		-- collecte des objetc mono mat
-		for s in sel do
-		(
-			if isvalidnode s then
-			(
-				if s.material == matList[i] then append matObj s
-			)
-		)
-		
-		format " name: % count: %\n" matList[i].name matObj.count
-		if matObj.count < 70 then
-		(
-			for j = 2 to matObj.count do
-			(
-				if isvalidnode matObj[j]  then 
-				(
-					if classof matObj[j].baseobject != Editable_mesh then converttomesh matObj[j]
-	-- 				format "attach % et %\n" matObj[1] matObj[j]
-					attach matObj[1] matObj[j]
-				)
-			)
-		)
-		else
-		(
-			meditmaterials[k] =  matList[i]
-			k += 1
-			format "trop d'objets, mat: % count: %\n" matList[i].name matObj.count
-		)
-	)
-)
-*/
--- fusionner les objets ensemble
 

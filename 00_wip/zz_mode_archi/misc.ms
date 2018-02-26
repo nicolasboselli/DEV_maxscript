@@ -17,6 +17,20 @@ fn randomColorFN sel =
 )
 */
 
+fn desinstance sel =
+(
+-- 	all = $* as array
+
+	-- 	InstanceMgr.GetInstances all[1] &instNodes
+		if (InstanceMgr.CanMakeObjectsUnique sel) then
+		(
+			format "desinstance: %\n" sel.name
+			InstanceMgr.MakeObjectsUnique sel #prompt
+		)
+
+)
+
+
 fn centerPivotDef sel = 
 (
 	for s in sel do
@@ -80,27 +94,30 @@ fn makeFloorFN currentSel =
 	(
 		if classof s == splineshape do
 		(
-			undo on
+			if (isClosed s 1) then
 			(
-				myEditPoly = Edit_Poly()
-				addmodifier s myEditPoly
-				convertto s editable_poly
+			undo on
+				(
+					myEditPoly = Edit_Poly()
+					addmodifier s myEditPoly
+					convertto s editable_poly
 
-				-- outline 15 cm
-				select s
-				polyop.setFaceSelection  s #all
-				s.outlineAmount = -15
-				s.EditablePoly.Outline ()
+					-- outline 15 cm
+					select s
+					polyop.setFaceSelection  s #all
+					s.outlineAmount = -15
+					s.EditablePoly.Outline ()
 
-				-- shell 10cm
-				myShell = Shell innerAmount:10 outerAmount:10
-				addmodifier s myShell
+					-- shell 10cm
+					myShell = Shell innerAmount:5 outerAmount:5
+					addmodifier s myShell
 
-				-- convert to poly
-				convertto s editable_poly
+					-- convert to poly
+					convertto s editable_poly
 
-				-- material "interieur"G
-				sel.material = sceneMaterials["interieur"]
+					-- material "interieur"G
+					sel.material = sceneMaterials["interieur"]
+				)
 			)
 		)
 	)
@@ -203,7 +220,8 @@ fn extrudeFaces size =
 		faceList = polyop.getFaceSelection $
 -- 		size = (units.decodeValue "-25cm")
 -- 		polyop.extrudeFaces $ faceList size
-		polyop.extrudeFaces $ faceList (units.decodeValue "-25cm")
+		sizeStr = (size as string) + "cm"
+		polyop.extrudeFaces $ faceList (units.decodeValue sizeStr)
 
 		faceListToDel = polyop.getFaceSelection $
 		polyop.deleteFaces $ faceListToDel
@@ -243,7 +261,7 @@ rollout miscRLT "Modeling utilities"
 	)
 	
 	
-	button getInstBT "get instances"
+
 	
 	/*
 	group "wirecolor: "
@@ -253,20 +271,27 @@ rollout miscRLT "Modeling utilities"
 		button randomWireBT "wirecolor by material"
 	)
 	*/
-	
-	group "modeling"
+	group "Instances:"
 	(
-		button goutteBT "goutte d'eau"
-		button debordBT "debord balcon"
+		button getInstBT "get instances"
+		button desInstBT "de-instances selection"
+	)
+	
+	
+	group "Modeling:"
+	(
+-- 		button goutteBT "goutte d'eau"
+-- 		button debordBT "debord balcon"
 		
 		button makeFloorBT "make floor"
-		button connectRingBT "connect ring x1"
-		button connectRing2BT "connect ring x2"
+-- 		button connectRingBT "connect ring x1"
+-- 		button connectRing2BT "connect ring x2"
 		button cleanCombineBT "combine"
 		
 		button converttopolyBT "convert to poly"
 		
 		button extrudeBT "extrusion 25"
+		button extrude34BT "extrusion 34"
 	)
 	
 	button centerPivotBT "center pivot"
@@ -296,6 +321,16 @@ rollout miscRLT "Modeling utilities"
 		(
 			res = getInstancesFN s
 			selectmore res
+		)
+	)
+	
+	on desInstBT pressed do
+	(
+		sel = selection as array
+		for s in sel do
+		(
+			res = desinstance s
+-- 			selectmore res
 		)
 	)
 	
@@ -349,6 +384,18 @@ rollout miscRLT "Modeling utilities"
 			if classof sel[1] == editable_poly then
 			(
 				extrudeFaces -25
+			)
+		)
+	)
+	
+	on extrude34BT pressed do
+	(
+		sel = selection as array
+		if sel.count == 1 then
+		(
+			if classof sel[1] == editable_poly then
+			(
+				extrudeFaces -34
 			)
 		)
 	)

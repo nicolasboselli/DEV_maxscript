@@ -32,7 +32,10 @@ fn cleanspline s =
 					format "knot to del # i: %, ang: % \n" i ang
 					deleteKnot s sp i
 				)
-				else format "knot to keep # i: %, ang: % \n" i ang
+				else
+				(
+-- 					format "knot to keep # i: %, ang: % \n" i ang
+				)
 			)
 			
 			-- test du premier points
@@ -55,7 +58,10 @@ fn cleanspline s =
 					format "knot to del # i: %, ang: % \n" knCount ang
 					deleteKnot s sp knCount
 				)
-				else format "knot to keep # i: %, ang: % \n" knCount ang
+				else
+				(
+					format "knot to keep # i: %, ang: % \n" knCount ang
+				)
 			)
 			
 			-- test du dernier points
@@ -77,7 +83,10 @@ fn cleanspline s =
 					format "knot to del # i: %, ang: % \n" 1 ang
 					deleteKnot s sp 1
 				)
-				else format "knot to keep # i: %, ang: % \n" 1 ang
+				else
+				(
+					format "knot to keep # i: %, ang: % \n" 1 ang
+				)
 			)
 			
 		)

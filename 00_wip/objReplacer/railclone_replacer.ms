@@ -15,6 +15,7 @@ fn railCloneReplace rc others =
 			new.banode[1] = l
 
 			-- realign railclone
+-- 			new.transform = copy l.transform
 			new.transform = copy l.transform
 
 			-- re assign line

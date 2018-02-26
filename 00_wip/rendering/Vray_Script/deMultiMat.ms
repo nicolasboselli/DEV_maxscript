@@ -1,9 +1,8 @@
 -- maj:
-	-- add refresh scene materials
-	-- add split edge
-	-- 
-	
--- classof meditmaterials[activeMeditSlot]
+	-- ajouter outil pour rajouter un uvw map cubique
+	-- importer la methode pour exploser les mesh avec multi material
+	-- importer la méthode pour fusionner les multimateriaux identiques dans la scene
+	-- faire fonctionner le wirecolor sur une selection d'objet
 
 fn sortMatbyname v1 v2 =
 (
@@ -83,6 +82,49 @@ fn randomWireFN useFirstId: true =
 	)
 )
 
+
+
+
+fn addUVWCube uvSize =
+(
+	local UvModExist = True
+	local UvwSquare = Uvwmap  maptype: 4 length: uvSize width: uvSize  height: uvSize  axis: 2
+	
+	modPanel.addModToSelection (UvwSquare) ui:on
+)
+
+fn addUVWCube2 uvSize =
+(
+	
+	local UvwSquare = Uvwmap  maptype: 4 length: uvSize width: uvSize  height: uvSize  axis: 2
+	
+	for s in selection do
+	(
+		local UvModExist = false
+		for m in s.modifiers do
+		(
+			if classof m == Uvwmap then
+			(
+				UvModExist = true
+-- 				UvwSquare = m
+				m.length = uvSize
+				m.width = uvSize
+				m.height = uvSize
+			)
+			else
+			(
+				addmodifier s UvwSquare
+			)
+		)
+		
+-- 		if not UvModExist then	modPanel.addModToSelection (UvwSquare) ui:on
+		if not UvModExist then	addmodifier s UvwSquare -- ui:on
+	)
+	
+	
+)
+
+
 -- make unique instance material
 fn InstanceMatByName mat = (
 	(for o in objects where o.mat != undefined and o.mat.name == mat.name collect o).mat = mat
@@ -102,7 +144,7 @@ fn idArrayDef s =
 	return (sort(makeuniquearray idArray ))
 )
 
--- explode mulitmat
+-- explode mulitmat pour polygone
 fn explodeMultiMatDef s matchMat: false=
 (
 	local idArray = idArrayDef s
@@ -148,12 +190,14 @@ fn explodeMultiMatDef s matchMat: false=
 	splitObjList
 )
 
--- idArrayDef $
--- explodeMultiMatDef $ matchMat: true
--- select objects[objects.count]
--- mf = for m in  s.modifiers collect m
-
--- addmodifier w
+-- explose meshes
+fn getFacesID s =
+(
+	local idArray = #()
+	local faceMax = meshop.getNumFaces s
+	for i = 1 to faceMax do appendifunique idArray (getFaceMatID s i)
+	idArray
+)
 
 
 -- refresh scenematerial
@@ -227,7 +271,25 @@ fn skinMultiMatdef s =
 	
 -- 	s.material = tmpMat[1]
 )
-				
+
+
+fn isolateByMat mat =
+(
+	clearselection()
+
+	for s in $* do
+	(
+		if s.material == mat then
+		(
+			selectmore s
+			s.ishidden = false
+		)
+		else
+		(
+			s.ishidden = true
+		)
+	)
+)
 
 fn createVrMtl =
 (
@@ -321,6 +383,7 @@ fn collectMatFromSel sel maxMatNum: 0 =
 	publishMatArray matAr maxMatNum: maxMatNum
 )
 
+-- showproperties meditmaterials[activemeditslot]
 
 -- convert standard to vray
 fn convertToVrMatDef mat =
@@ -330,7 +393,7 @@ fn convertToVrMatDef mat =
 	
 	if classof mat == Standard then
 	(
-		vrMat = VRayMtl diffuse: mat.diffuse name: mat.name texmap_diffuse: mat.diffuseMap
+		vrMat = VRayMtl diffuse: mat.diffuse name: mat.name texmap_diffuse: mat.diffuseMap texmap_opacity: mat.opacityMap
 		converted = true
 		
 	)
@@ -508,9 +571,10 @@ rollout deMultiMatRLT "Materials utilities"
 		button publishMatBT "publish"
 	)
 	
-	group "material"
+	group "Material"
 	(
 		button createVrMtlBT "create vray material"
+		button isolateByMatBT "isolate selected material"
 -- 		button collectVrMtlBT "collect material"
 -- 		button createTileBT "create tile"
 	)
@@ -524,8 +588,15 @@ rollout deMultiMatRLT "Materials utilities"
 	group "V-Ray:"
 	(
 		button convertToVrBT "convert to vray mat"
-		button okConvertBT "confirm"
-		button showBT "show properties"
+-- 		button okConvertBT "confirm"
+-- 		button showBT "show properties"
+	)
+	
+	group "uvw mapping box:"
+	(
+		button uv100 "100" across: 3
+		button uv250 "250"
+		button uv500 "500"
 	)
 	
 	
@@ -678,6 +749,18 @@ rollout deMultiMatRLT "Materials utilities"
 	on createVrMtlBT pressed do createVrMtl()
 	
 	on createTileBT pressed do createTile()
+	
+	on isolateByMatBT pressed do
+	(
+		isolateByMat meditMaterials[activeMeditSlot]
+	)
+	
+	on uv100 pressed do addUVWCube2 100
+		
+	on uv250 pressed do addUVWCube2 250
+		
+	on uv500 pressed do addUVWCube2 500
+	
 	
 	
 )

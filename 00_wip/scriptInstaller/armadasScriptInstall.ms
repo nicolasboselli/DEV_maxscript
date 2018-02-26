@@ -207,34 +207,37 @@ macroScript ArmadasScriptCustomIsolate
 	
 	on execute do
 	(
-		if not isIsolate then
+		undo on
 		(
-			for s in $* do
+			if not isIsolate then
 			(
-				if not s.ishidden and not s.isselected then
+				for s in $* do
 				(
-					s.ishidden = true
-					append isolatedList s
+					if not s.ishidden and not s.isselected then
+					(
+						s.ishidden = true
+						append isolatedList s
+					)
 				)
+				isIsolate = true
+				format "isolation done\n"
 			)
-			isIsolate = true
-			format "isolation done\n"
-		)
-		else if isIsolate then
-		(
-			for i=isolatedList.count to 1 by - 1 do
+			else if isIsolate then
 			(
-				if isvalidnode isolatedList[i] then 
+				for i=isolatedList.count to 1 by - 1 do
 				(
-					isolatedList[i].ishidden = false
-					deleteitem isolatedList i
+					if isvalidnode isolatedList[i] then 
+					(
+						isolatedList[i].ishidden = false
+						deleteitem isolatedList i
+					)
 				)
+				isIsolate = false
+				format "isolation end\n"
 			)
-			isIsolate = false
-			format "isolation end\n"
+			else()
+			redrawviews ()
 		)
-		else()
-		redrawviews ()
 	)
 	
 	on ischecked return isIsolate
