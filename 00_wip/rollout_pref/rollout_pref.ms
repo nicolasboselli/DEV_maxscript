@@ -10,7 +10,7 @@ fn writeRolloutParams rlt params =
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
 	local cat = rlt.name
 	
-	format "rollout: %\n" cat
+	format "WRITE PREF rollout: %\n" cat
 	for n in params do
 	(
 		-- collect position
@@ -25,10 +25,19 @@ fn writeRolloutParams rlt params =
 			setINISetting armadasScriptsIni cat n  ((GetDialogSize rlt) as string)
 			format "name: size, value: %\n"  (GetDialogSize rlt)
 		)
+		else if n == "rootPlans" then
+		(
+-- 			format "getProperty % % : %\n" rlt n (getProperty  rlt n)
+			p = getProperty  rlt n
+			format "name: %, value:  %\n"  n p
+			if p != undefined then 	fileProperties.addProperty #custom n  p
+		)
 		else
 		(
 			
 			p = getProperty  rlt n
+			
+			
 			-- collect rollout control
 			if superclassof p == RolloutControl then
 			(
@@ -36,14 +45,14 @@ fn writeRolloutParams rlt params =
 				if classof p == checkboxcontrol then 
 				(
 					setINISetting armadasScriptsIni cat p.name  (p.state as string)
-					format "name: %, value: %\n" p.name p.state
+					format "name: %, value: %, classof: %\n" p.name p.state (classof p)
 				)
 				else if classof p == SpinnerControl then 
 				(
 					setINISetting armadasScriptsIni cat p.name  (p.value as string)
-					format "name: %, value: %\n" p.name p.value
+					format "name: %, value: %, classof: %\n" p.name p.value (classof p)
 				)
-				else(format "UNKNOWN_param: %, classof: %\n" p (classof p))
+				else(format "__FAIL__  name: %, classof: %\n" p (classof p))
 			)
 			-- collect variable
 			else if classof p == Array then
@@ -53,25 +62,29 @@ fn writeRolloutParams rlt params =
 			)
 			else if classof p == string then
 			(
+				format "name: %, value: %, classof: %\n" n p (classof p)
 				setINISetting armadasScriptsIni cat n p
 			)
 			else
 			(
 -- 				setINISetting armadasScriptsIni cat n p
-				format "NOT SAVED name: %, classof: %, value: %n" n (classof p) p
+				format "__FAIL__  name: %, classof: %, value: %\n" n (classof p) p
 			)
 		)
 	)
+	format "WRITE PREF done\n\n" 
 )
 -- writeRolloutParams edgeToShapeRLT edgeParams
 
-
+-- fileProperties.findProperty #custom "rootPlans"
+-- fileProperties.getPropertyValue  #custom "rootPlans"
 
 fn loadRolloutParams rlt params =
 (
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
 	local cat = rlt.name
 	
+	format "LOAD PREF rollout: %\n" cat
 	for n in params do
 	(
 		if n == "pos" then
@@ -79,11 +92,28 @@ fn loadRolloutParams rlt params =
 			local posStr
 			try(posStr = getINISetting armadasScriptsIni cat "pos")catch(format "*** % ***\n" (getCurrentException()))
 			if posStr.count > 0 then setDialogPos rlt (execute posStr)
+			format "name: pos,  value: %\n" posStr
 		)
 		else if n == "size" then
 		(
 			try(posStr = getINISetting armadasScriptsIni cat "size")catch(format "*** % ***\n" (getCurrentException()))
 -- 			format "name: size, value: %\n"  (GetDialogSize rlt)
+		)
+		else if n == "rootPlans" then
+		(
+			local val 
+			local testVal = fileProperties.findProperty #custom "rootplans"
+			if testVal > 0 then
+			(
+				val = fileProperties.getPropertyValue  #custom testVal
+				format "init with fileproperty name: % val: % \n" n val
+			)
+			else 
+			(
+				val = getINISetting armadasScriptsIni cat "root"
+				format "init with root: %\n" val
+			)
+			setProperty  rlt n val
 		)
 		else
 		(
@@ -127,16 +157,18 @@ fn loadRolloutParams rlt params =
 			else if classof p == string then
 			(
 				local val = getINISetting armadasScriptsIni cat n
+				format "name: %, STRING value: %\n" n val
 				setProperty  rlt n val
 			)
 			else
 			(
 				-- load variable
 				local val = getINISetting armadasScriptsIni cat n 
-				format "name: %, value: %\n" n val
+				format "__FAIL__ name: %, UNKNOWN value: %\n" n val
 			)
 		)
-	)		
+	)	
+	format "LOAD PREF done \n\n" cat
 )
 
 

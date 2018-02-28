@@ -226,7 +226,8 @@ rollout assetEditorRLT "assets editor v2"
 		dropdownlist versionDL "last published version:"
 		edittext editSelFileET "asset selected version filename:" readonly: true
 		edittext wipSelFileET "next asset selected version wip filename:" readonly: true
-		button editAssetBT "edit"
+		button editAssetBT "edit v3" across: 2
+		button editAssetInNewMaxBT "edit in new max instance v3"
 	)
 	
 	
@@ -851,6 +852,20 @@ rollout assetEditorRLT "assets editor v2"
 		if checkForSave() do loadMaxFile wipFile useFileUnits: true
 		
 -- 		try refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
+		refreshEditGroup assetsToDisplay[assetsBL.selection]
+		format "Asset Edited: %\n" wipFile
+	)
+	
+	on editAssetInNewMaxBT pressed do
+	(
+		local asset = assetsToDisplay[assetsBL.selection]
+		local taskVersionList = asset.getMaxFilesCount2 ()
+		
+		local wipFile = asset.createWipFile2 taskListDL.selected (versionDL.selected as integer)
+		
+		if doesFileExist wipFile do shellLaunch (GetDir #maxroot + "3dsmax.exe") wipFile
+		
+		-- 		try refreshListBox() catch(format "*** % ***\n" (getCurrentException()))
 		refreshEditGroup assetsToDisplay[assetsBL.selection]
 		format "Asset Edited: %\n" wipFile
 	)

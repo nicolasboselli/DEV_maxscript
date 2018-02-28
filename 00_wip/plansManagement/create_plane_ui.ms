@@ -1,6 +1,9 @@
 /*
 maj:
 
+x- enregistrer le chemin d'accés au plan dans les file property
+	-- remplacer la variable root par la variable rootPlans
+
 x- display only jpg name
 x- check plan already in scene and display with "*" in the list
 x- add button  to open plan folder
@@ -120,14 +123,14 @@ struct planClass
 	
 )
 
-
+-- createPlaneRLT.rootPlans
 -- getProperty createPlaneRLT "root"
-
+-- getProperty  createPlaneRLT "rootPlans"
 try(destroyDialog createPlaneRLT)catch()
 -- global createPlaneRLT
 rollout createPlaneRLT "create plane"
 (
-	local params = #("pos", "root")
+	local params = #("pos", "root", "rootPlans")
 	
 -- 	vars
 	local maxIni = getMAXIniFile()
@@ -137,6 +140,8 @@ rollout createPlaneRLT "create plane"
 	local root = "C:\\"
 	local jpgList = #()
 	local jpgSel
+	
+	local rootPlans = "toto"
 	
 	local lastLine = 220
 	
@@ -304,6 +309,7 @@ rollout createPlaneRLT "create plane"
 		if plansFolder != undefined then
 		(	
 			root = plansFolder + "\\"
+			rootPlans = plansFolder + "\\"
 			
 			collectPlansList() 
 			refreshUI()			
@@ -397,6 +403,8 @@ rollout createPlaneRLT "create plane"
 	on createPlaneRLT open do
 	(
 		loadRolloutParams createPlaneRLT params
+-- 		rootPlans = root
+		root = rootPlans
 		collectPlansList()
 		refreshUI()
 	)
@@ -410,10 +418,12 @@ rollout createPlaneRLT "create plane"
 	(
 		local sub = 30
 		jpgListBox.height = createPlaneRLT.height - 90
-		createPlaneBT.pos = [ 50, createPlaneRLT.height - sub]
+		createPlaneBT.pos = [ 100 , createPlaneRLT.height - sub]
 		injectMapBT.pos = [150, createPlaneRLT.height - sub]
 		changeMapBT.pos = [250, createPlaneRLT.height - sub]
 		transferMapBT.pos = [350, createPlaneRLT.height - sub]
+		
+		createA4BT.pos =  [ 20 , createPlaneRLT.height - sub]
 	)
 	
 	on transferMapBT pressed do

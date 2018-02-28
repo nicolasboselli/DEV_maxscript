@@ -3,13 +3,16 @@ maj:
 	-- (asset explorer: update tools v2)
 	-- fonction de delete
 	
-	-- rendre optionnel le classement par ordre alphabétique(checkbox)
+	/- rendre optionnel le classement par ordre alphabétique(checkbox)
+	
+	-- rendre la tache et la version de tache editable pour l'update
+	-- proposer directement le bouton pour ouvrir l'asset d'origine dans un autre max
 	
 	x- forcer l'update pour le debug
 	
 	/- rename à l'update:
 		/- recupérer l'insatnce num de l'asset updater
-		-- renomer tout les objets de l'insantce updater en fonction de l'instance num et du basename de l'asset
+		/- renomer tout les objets de l'insantce updater en fonction de l'instance num et du basename de l'asset
 
 	/- rename à la duplication:
 		/- compter le nombre d'instance deja présents
@@ -33,12 +36,16 @@ rebuild:
 
 
 filein "assetManagerDef.ms"
-
+-- filein "assetCretorUI7.ms"
+/*
 fn collectAssetInScene =
 ( 
 	for h in helpers where classof h == point and getUserProp h "asset" collect h
 )
+*/
 
+/*
+-- collectAssetNames()
 fn collectAssetNames =
 (
 	local assetNamesAr = #()
@@ -48,7 +55,7 @@ fn collectAssetNames =
 	)
 	assetNamesAr
 )
--- collectAssetNames()
+*/
 
 
 fn returnMaxAssetCount assetName =
@@ -78,13 +85,24 @@ fn returnMaxAssetCount assetName =
 -- returnMaxAssetCount(getuserprop $ "assetName")
 -- returnMaxAssetCount "teapot"
 
-struct assetGroup
+
+fn sortAssestbyname2 v1 v2 =
 (
-	assetName,
-	assetInstances = #(),
-	fn initAssetGroup = 
+	-- qsort <array> sortbyname
+-- 	vars
+	local d
+	
+	if ( (toLower (v1.name + (v1.instNum as string))) < (toLower (v2.name + (v2.instNum as string))) )then
+		d=-1
+	else
+		d=1
+	
+--compare les numeros entre eux et les classe	
+	case of
 	(
-		assetInstances = for h in helpers where getUserProp h "assetName" == assetName collect h 
+		(d < 0.): -1
+		(d > 0.): 1
+		default: 0
 	)
 )
 
@@ -100,17 +118,15 @@ struct assetInScene
 	assetFolder,
 	assetIni,
 	
-	lastVersion,
-	lastVersionFile,
 	isLastVersion,
 	
-	/*
-	allAssetsRoot,
-	allAssetsFolder,
-	relativeFolder,
-	relativeFolder2,
-	*/
+	instNum,
+	task,
+	taskVersion,
 	
+	nextVersionFilename,
+	
+
 	fn publishInfo =
 	(
 		format "name:% , version:% , assetFolder:% \n" name version assetFolder
@@ -124,30 +140,35 @@ struct assetInScene
 		version = getuserprop ctrl "assetVersion"
 		assetFolder = getuserprop ctrl "assetfolder"
 		
-		/*
-		allAssetsRoot = getuserprop ctrl "allAssetsRoot"
-		allAssetsFolder = getuserprop ctrl "allAssetsFolder"
-		relativeFolder = getuserprop ctrl "relativeFolder"
-		relativeFolder2 = getuserprop ctrl "relativeFolder2"
-		*/
+		instNum = getuserprop ctrl "instanceNum"
+		task = getuserprop ctrl "task"
+		taskVersion = getuserprop ctrl "taskVersion"
 		
-		-- obsolete root and relativePath
-		root = getuserprop ctrl "root"
--- 		versionFile = root + (getuserprop ctrl "relativePath")
-		versionFile = cleanFilename(assetFolder + "\\" + (returnDigit version) + "\\" + name + ".max")
-
-		-- check last version
-		if assetFolder.count == 0 then assetFolder = getupperfolder(getFilenamePath  versionFile)
-		assetIni = assetFolder + "assetInfo.ini"
-
-		lastVersion = (getINISetting assetIni "assetProperties" "version") as integer
-		lastVersionFile = cleanFilename(assetFolder + "\\" +(returnDigit lastVersion) + "\\" + name + ".max")
-
-		isLastVersion = true
-		if lastVersion > version and doesfileexist lastVersionFile ==  true then isLastVersion = false
-
-	-- 		relVersPath = relativeFolder + (returnDigit lastVersion) +"\\" + name + ".max"
--- 		publishInfo()
+		
+-- 		local nextVersionFilename
+		if task == "without" then
+		(
+			versionFile = cleanFilename(assetFolder + "\\" + (returnDigit taskVersion) + "\\" + name + ".max")
+			nextVersionFilename = cleanFilename(assetFolder + "\\" + (returnDigit (taskVersion + 1)) + "\\" + name + ".max")
+		)
+		else
+		(
+			versionFile = cleanFilename(assetFolder + "\\"  + name + "." + task + "."  + (returnDigit taskVersion) +  ".max")
+			nextVersionFilename = cleanFilename(assetFolder + "\\"  + name + "." + task + "."  + (returnDigit (taskVersion + 1)) +  ".max")
+		)
+		
+		if doesfileexist nextVersionFilename then 
+		(
+			isLastVersion = false
+		)
+		else
+		(
+			nextVersionFilename = undefined
+			isLastVersion = true
+		)
+		
+		if doesfileexist versionFile then assetIni = assetFolder + "assetInfo.ini"
+		
 		oneCtrl
 	),
 	
@@ -157,10 +178,16 @@ struct assetInScene
 		newAsset = assetCreationClass()
 		newAsset.initFromIni assetIni --allAssetsFolder
 		
+		local assetVers = newAsset.getMaxFilesCount2
+		format "assetVers: %\n" assetVers
+		
+		
 		local instNum = getUserProp ctrl "instanceNum"
 		format "instNum:%\n" instNum
 		
-		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: true ignoreCacheLay: true objsNameConflict: #mergeDups instNum: instNum updateMaterials: updateMaterialsChoice 
+		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: true ignoreCacheLay: true objsNameConflict: #mergeDups \
+		instNum: instNum updateMaterials: updateMaterialsChoice task: task taskversion: (taskVersion + 1)
+		
 		newAssetCtrl.transform = ctrl.transform
 		newAssetCtrl.name = ctrl.name
 		newAssetCtrl
@@ -188,9 +215,7 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	edittext rootET "root:" text: root readonly: true
 	button collectAssetBT "collect assets"
 	*/
-	
-
-	
+		
 	group "assets to update:"
 	(
 		checkbox outOfDateOnlyCB "display out of date assets only"
@@ -200,12 +225,17 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	
 	group "asset selected infos:"
 	(
-		edittext assetET "asset version:" readonly: true
-		edittext currentVersionET "current version:" readonly: true
-		edittext lastVersionET "is last version:" readonly: true
-		edittext nextVersionET "next version file:" readonly: true
+		edittext assetET "current filename:" readonly: true
+		edittext taskET "current task:" readonly: true
+		edittext taskVersionET "current Task version:" readonly: true
 		edittext assetCtrlET "asset ctrl:" readonly: true
 		edittext instanceNumET "instance num:" readonly: true
+-- 		edittext currentVersionET "current version:" readonly: true
+		edittext lastVersionET "is last version:" readonly: true
+		edittext nextVersionET "next version file:" readonly: true
+
+
+		
 		
 		button duplicateAssetBT "duplicate asset" enabled: true
 	)
@@ -222,7 +252,7 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	fn updateAssetArray =
 	(	
 		assetClassAr = #()
-		assetAr = collectAssetInScene()
+		assetAr = for h in helpers where classof h == point and getUserProp h "asset" collect h
 		
 		for o in assetAr do
 		(
@@ -259,8 +289,9 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 			
 		)
 		-- classer par odre alphabetique
+		qsort assetClassArToShow sortAssestbyname2
 		
-		assetsLB.items = for o in assetClassArToShow collect o.name
+		assetsLB.items = for o in assetClassArToShow collect (o.name + "_" + (o.instNum as string))
 			
 		-- refresh champs de la selection
 	)
@@ -270,15 +301,18 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 -- 			selectmore assetClassArToShow[id].ctrl
 			
 		assetET.text = s.versionFile
-		currentVersionET.text =returnDigit (s.version as integer)
+-- 		currentVersionET.text =returnDigit (s.version as integer)
 		lastVersionET.text = s.islastVersion as string
 		assetCtrlET.text = s.ctrl.name
-		instanceNumET.text = (getuserprop s.ctrl "instanceNum") as string
+		instanceNumET.text = s.instNum as string
+		
+		taskET.text = s.task
+		taskVersionET.text = s.taskVersion as string
 		
 		if s.islastVersion == false then
 		(
 			updateAssetBT.enabled = true
-			nextVersionET.text = s.lastVersionFile
+			nextVersionET.text = s.nextVersionFilename
 		)
 		else 
 		(
@@ -408,7 +442,7 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 	)
 )
 
-createdialog updateAssetsToolRLT width: 800
+createdialog updateAssetsToolRLT width: 1200
 
 
 

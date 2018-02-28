@@ -516,11 +516,11 @@ struct assetCreationClass
 -- 			format "lastVersion: %, version: %\n" lastVersion version
 			lastVersion +=  1
 -- 			format "lastVersion: %, version: %\n" lastVersion version
-			print "check1"
+-- 			print "check1"
 			-- update asset info file
 -- 			updateAssetFileInfo()
 			createAssetFileInfo()
-			print "check1.5"
+-- 			print "check1.5"
 		)
 		else
 		(
@@ -585,7 +585,8 @@ struct assetCreationClass
 		maxNum
 	),
 	
-	fn mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: false objsNameConflict: #AutoRenameDups updateMaterials: #useSceneMtlDups instNum: 1 task: "without" taskversion: 0 =
+	fn mergeAsset3 mergeAsAsset: true ignoreVrSet: false ignoreCacheLay: false objsNameConflict: #AutoRenameDups \
+	updateMaterials: #useSceneMtlDups instNum: 1 task: "without" taskversion: 0 =
 	(
 		
 		local assetCtrl
