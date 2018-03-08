@@ -126,6 +126,8 @@ struct assetInScene
 	
 	nextVersionFilename,
 	
+	maxTask,
+	maxTaskVers,
 
 	fn publishInfo =
 	(
@@ -144,31 +146,55 @@ struct assetInScene
 		task = getuserprop ctrl "task"
 		taskVersion = getuserprop ctrl "taskVersion"
 		
-		
+		nextVersionFilename
 -- 		local nextVersionFilename
 		if task == "without" then
 		(
 			versionFile = cleanFilename(assetFolder + "\\" + (returnDigit taskVersion) + "\\" + name + ".max")
-			nextVersionFilename = cleanFilename(assetFolder + "\\" + (returnDigit (taskVersion + 1)) + "\\" + name + ".max")
 		)
 		else
 		(
 			versionFile = cleanFilename(assetFolder + "\\"  + name + "." + task + "."  + (returnDigit taskVersion) +  ".max")
-			nextVersionFilename = cleanFilename(assetFolder + "\\"  + name + "." + task + "."  + (returnDigit (taskVersion + 1)) +  ".max")
 		)
-		
-		if doesfileexist nextVersionFilename then 
+
+		if doesfileexist versionFile then
 		(
-			isLastVersion = false
+			assetIni = assetFolder + "assetInfo.ini"
+			newAsset = assetCreationClass()
+			newAsset.initFromIni assetIni
+			
+			local taskVersionList = newAsset.getMaxFilesCount2()
+			maxTask
+			maxTaskVers
+			
+			-- get derniere tache et derniere version de tache
+			for i = 1  to taskList.count do
+			(
+				if taskVersionList[i].count > 0 then
+				(
+					maxTask = taskList[i]
+					maxTaskVers = amax taskVersionList[i]
+				)
+			)
+			
+			nextVersionFilename = newAsset.getLastVersionFile2 ()
 		)
-		else
+		format "name: % versionfile: % nextVersionFilename: %\n" name versionFile nextVersionFilename
+		
+			
+		if nextVersionFilename != undefined then
 		(
-			nextVersionFilename = undefined
-			isLastVersion = true
-		)
-		
-		if doesfileexist versionFile then assetIni = assetFolder + "assetInfo.ini"
-		
+			if doesfileexist nextVersionFilename and nextVersionFilename != versionFile  then 
+			(
+				isLastVersion = false
+			)
+			else
+			(
+				nextVersionFilename = undefined
+				isLastVersion = true
+			)
+		)	
+				
 		oneCtrl
 	),
 	
@@ -179,14 +205,14 @@ struct assetInScene
 		newAsset.initFromIni assetIni --allAssetsFolder
 		
 		local assetVers = newAsset.getMaxFilesCount2
-		format "assetVers: %\n" assetVers
+-- 		format "assetVers: %\n" assetVers
 		
 		
 		local instNum = getUserProp ctrl "instanceNum"
 		format "instNum:%\n" instNum
 		
 		newAssetCtrl = newAsset.mergeAsset3 mergeAsAsset: true ignoreVrSet: true ignoreCacheLay: true objsNameConflict: #mergeDups \
-		instNum: instNum updateMaterials: updateMaterialsChoice task: task taskversion: (taskVersion + 1)
+		instNum: instNum updateMaterials: updateMaterialsChoice task: maxTask taskversion: maxTaskVers
 		
 		newAssetCtrl.transform = ctrl.transform
 		newAssetCtrl.name = ctrl.name
@@ -256,15 +282,15 @@ rollout updateAssetsToolRLT "update assets tool v.2"
 		
 		for o in assetAr do
 		(
-			try
-			(
+-- 			try
+-- 			(
 -- 				print "start asset creation"
 				newAsset = assetInScene()
 				newAsset.initFromCtrl o
 				format "asset updated: %\n" newAsset
 				append assetClassAr newAsset
 -- 				print "asset creation done"
-			)catch(format "*** % ***\n" (getCurrentException()))
+-- 			)catch(format "*** % ***\n" (getCurrentException()))
 		)
 	)
 	

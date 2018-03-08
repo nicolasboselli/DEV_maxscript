@@ -117,7 +117,7 @@ result
 -- sceneMaps = usedMaps()
 -- print sceneMaps
 -- collect vrmeshes
-fn collectOneVrMesh o=
+fn collectOneVrMesh o =
 (
 	res = false 
 	
@@ -147,8 +147,45 @@ fn collectOneVrMesh o=
 	(
 		o.filename = newFile
 	)
-
 )
+
+
+fn collectOneVrMesh2 o vrmeshesFolder =
+(
+	res = false 
+	
+-- 	assetFolder = getUpperFolder maxFilePath
+-- 	vrmeshesFolder = assetfolder + "vrmeshes"
+	
+	dir = getDirectories vrmeshesFolder
+	if dir.count == 0 then res = makedir vrmeshesFolder
+		
+	vrmeshFile = o.filename
+	vrmeshName = getFilenameFile vrmeshFile
+	
+	newFile = vrmeshesFolder + "\\" + vrmeshName + ".vrmesh"
+	
+	-- test if file already exist
+	fileExist = doesfileexist newFile
+	
+	-- copy file if it doesn't exists
+	if fileExist == false then 
+	(
+		res = copyfile vrmeshFile newFile
+	)
+	else res = true
+	
+	-- remap file
+	if res == true then
+	(
+		o.filename = newFile
+	)
+)
+
+-- sel = geometry as array
+-- vrProxies = for o in geometry where classof o == vrayproxy collect o
+-- vrPath = @"T:\Promologis\0917_Casselardit\Perspectives\Textures\vrmeshes"
+-- for vr in vrProxies do collectOneVrMesh2 vr vrPath
 
 
 fn checkAssetFolder =
@@ -338,17 +375,23 @@ rollout assetsToolsRLT "asset tools"
 	on collectVrayMeshesBT pressed do
 	(
 		sel = geometry as array
-		vrProxies = for o in sel where classof o == vrayproxy collect o
+		local vrProxies = for o in sel where classof o == vrayproxy collect o
+			
+		local assetFolder = maxFilePath
+		local vrmeshesFolder = assetfolder + "vrmeshes"
+		
+		for vr in vrProxies do collectOneVrMesh2 vr  vrmeshesFolder
+		
 -- 		vrmeshes	
 -- 		vrProxies = for o in geometry where classof o == vrayproxy collect o
-		for vr in vrProxies do collectOneVrMesh vr
+-- 		for vr in vrProxies do collectOneVrMesh vr
 	)	
 	
 	on createVrayMeshesBT pressed do 
 	(
 		sel = selection as array
 		vrmeshFolder = createVrMeshesFolder()
-		print vrmeshFolder
+-- 		print vrmeshFolder
 		if vrmeshFolder != undefined then
 		(
 			for s in sel do createOneVrmesh s vrmeshFolder

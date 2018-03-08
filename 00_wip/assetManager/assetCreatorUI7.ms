@@ -247,6 +247,7 @@ struct assetCreationClass
 				maxTaskVers = amax taskVersionList[i]
 			)
 		)
+-- 		format "maxTask: % maxTaskVers: %\n"  maxTask maxTaskVers
 		
 -- 		format "maxTask:% maxTaskVers:%\n" maxTask maxTaskVers
 		

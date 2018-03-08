@@ -106,10 +106,13 @@ try(destroydialog boxerizeRLT)catch()
 rollout boxerizeRLT "Boxerize"
 (
 	local wireAr = #(green, red, blue, orange, yellow, brown)
+	local params = #("pos", "boxSizeSP")
 	
 	group "faces:"
 	(
 		button createFacesBT "create faces"
+		button resetpivotBT "reset Pivot"
+		
 	)
 	
 	group "eplode:"
@@ -140,6 +143,16 @@ rollout boxerizeRLT "Boxerize"
 	
 	-- Actions
 	
+	on boxerizeRLT open do
+	(
+		loadRolloutParams boxerizeRLT Params
+	)
+	
+	on boxerizeRLT close do
+	(
+		writeRolloutParams boxerizeRLT Params
+	)
+	
 	on createFacesBT pressed do 
 	(
 		if selection == undefined then "selectionne un objet ou des ouvertures"
@@ -169,6 +182,11 @@ rollout boxerizeRLT "Boxerize"
 				default: print "selectionner des objets ou des ouvertures"
 			)
 		)
+	)
+	
+	on resetpivotBT pressed do
+	(
+		for s in selection do resetpivot s
 	)
 	
 	-- explosion

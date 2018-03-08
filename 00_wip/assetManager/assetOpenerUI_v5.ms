@@ -560,6 +560,8 @@ rollout assetEditorRLT "assets editor v2"
 			root = ""
 		)
 		
+		
+
 		format "rootini: % root:%\n" rootini root --to: logStr
 
 		-- nettoyage de l'array de chemin

@@ -273,11 +273,11 @@ fn skinMultiMatdef s =
 )
 
 
-fn isolateByMat mat =
+fn isolateByMat mat sel =
 (
 	clearselection()
 
-	for s in $* do
+	for s in sel do
 	(
 		if s.material == mat then
 		(
@@ -290,6 +290,28 @@ fn isolateByMat mat =
 		)
 	)
 )
+
+fn countByMat mat sel =
+(
+	clearselection()
+	local count  = 0
+	for s in sel do
+	(
+		if s.material == mat then
+		(
+			count +=1
+-- 			selectmore s
+-- 			s.ishidden = false
+		)
+		else
+		(
+-- 			s.ishidden = true
+		)
+	)
+	format "mat: % count: %\n" mat.name count
+)
+
+
 
 fn createVrMtl =
 (
@@ -459,16 +481,50 @@ fn convertToVrMatDef mat =
 			vrMat.diffuse = mat.Ceramic_Color
 			vrMat.texmap_diffuse = mat.Ceramic_Color_Map
 		)
+		else if  matchpattern (getPropNames mat)[1] pattern: "Glazing_Type"  then
+		(
+			if hasProperty mat "Glazing_Color" do vrMat.diffuse = mat.Glazing_Color
+			
+-- 			vrMat.texmap_diffuse = mat.Ceramic_Color_Map
+		)
+		else if matchpattern (getPropNames mat)[1] pattern: "Glazing_Color" then
+		(
+			if hasProperty mat "Glazing_Custom_Color" do vrMat.diffuse = mat.Glazing_Custom_Color
+		)
+		else if  matchpattern (getPropNames mat)[1] pattern: "Masonry_Type" then
+		(
+			vrMat.diffuse = mat.Masonry_Color
+-- 			vrMat.texmap_diffuse = mat.Ceramic_Color_Map
+		)
 		
-		else(format "UNKNOW:%\n" (getPropNames mat)[1])
-
+		else if  matchpattern (getPropNames mat)[1] pattern: "Wood_Image" then
+		(
+			vrMat.diffuse = mat.Wood_Stain_Color
+			vrMat.texmap_diffuse = mat.Wood_Image
+		)
+		
+		else
+		(
+		format "UNKNOW:%\n" (getPropNames mat)[1]
+		showproperties 	mat
+		)
+		
+		if not converted then 
+		(
+			format "UNKNOW:%\n" (getPropNames mat)[1]
+			showproperties 	mat
+		)
 -- 		replaceinstances mat vrMat
 -- 		meditMaterials[1] = vrMat
 	)
 	else (format "mat: % class: % \n" mat.name (classof mat) )
 	
 	if converted then replaceinstances mat vrMat 
-	else if not converted and vrmat!= undefined then meditMaterials[1] = vrMat
+	else if not converted and vrmat!= undefined then 
+	(
+		meditMaterials[1] = vrMat
+		format "confirm mat: %\n" vrMat
+	)
 	else()
 )
 -- classof meditMaterials[activeMeditSlot]
@@ -571,25 +627,42 @@ rollout deMultiMatRLT "Materials utilities"
 		button publishMatBT "publish"
 	)
 	
-	group "Material"
+	group "rename:"
+	(
+		edittext prefixET "pref:"
+		button addPrefBT "add"
+	)
+	
+	group "Vray Material:"
 	(
 		button createVrMtlBT "create vray material"
-		button isolateByMatBT "isolate selected material"
+		button convertToVrBT "convert to vray mat"
+		button okConvertBT "confirm"
+-- 		button showBT "show properties"
+
 -- 		button collectVrMtlBT "collect material"
 -- 		button createTileBT "create tile"
 	)
 	
-	group "selection  material"
+	group "collect materials... "
 	(
-		button collectSelMatBT "collect selection material"
-
+		button collectSelMatBT " of the selection"
 	)
 	
-	group "V-Ray:"
+	group "isolate sel medit material..."
 	(
-		button convertToVrBT "convert to vray mat"
--- 		button okConvertBT "confirm"
--- 		button showBT "show properties"
+		button isolateByMatBT "in scene"
+		button isolateByMat2BT "in visibles objects "
+	)
+	
+	group "count sel medit material..."
+	(
+		button countBymatBT "in visibles objects "
+	)
+	
+	group "count all medit material..."
+	(
+		button countAllmatBT "in visibles objects "
 	)
 	
 	group "uvw mapping box:"
@@ -750,9 +823,39 @@ rollout deMultiMatRLT "Materials utilities"
 	
 	on createTileBT pressed do createTile()
 	
+	on addPrefBT pressed do
+	(
+		meditMaterials[activeMeditSlot].name = prefixET.text + "_" + meditMaterials[activeMeditSlot].name
+	)
+	
 	on isolateByMatBT pressed do
 	(
-		isolateByMat meditMaterials[activeMeditSlot]
+		sel = $* as array
+		isolateByMat meditMaterials[activeMeditSlot] sel
+	)
+	
+	on isolateByMat2BT  pressed do
+	(
+		sel =  for o in  $* where o.ishidden == false collect o
+		isolateByMat meditMaterials[activeMeditSlot] sel
+	)
+	
+	on countbyMatBT pressed do
+	(
+		sel =  for o in  $* where o.ishidden == false collect o
+		countByMat meditMaterials[activeMeditSlot] sel
+	)
+	
+	on countAllmatBT pressed do
+	(
+		sel =  for o in  $* where o.ishidden == false collect o
+		mediMat = for m in meditMaterials collect m
+		
+		for i = 1 to medimat.count do
+		(
+			countByMat medimat[i] sel
+			format "i: %\n" i
+		)
 	)
 	
 	on uv100 pressed do addUVWCube2 100
