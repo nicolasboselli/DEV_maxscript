@@ -99,6 +99,14 @@ fn createScalerSys =
 
 )
 
+fn resizePlan scaler ratio = 
+(
+	undo on
+	(
+		scaler.scale = scaler.scale*ratio
+	)
+)
+
 -- GetDialogPos planResizerRLT
 
 try(destroydialog planResizerRLT)catch()
@@ -559,32 +567,37 @@ rollout planResizerRLT "blueprint resizer" width: 250
 -- 	-- resize!
 	on rescale_bt pressed do
 	(
-		local aimedDist
-		
-		aimedDist = size_sp.value
-		print aimedDist
-		
-		if startPt != undefined and scalerParent != undefined and aimedDist != 0 then
-		(
-			reelDist = float( distance startPt endPt)
-			-- aimedDist =  float(distance startSize endSize)
-			ratio = aimedDist/reelDist
 
-			startPt.parent = undefined
-			scalerParent.parent = scaler
-			scaler.scale = scaler.scale*ratio
--- 			startPt.scale = scaler.scale*ratio
-			scalerParent.parent = undefined
-			
-			scaler.scale = [1,1,1]
-			startPt.parent = scalerParent
-		)
-		else
-		(
-			print "correct your selection"
-		)
+			local aimedDist = size_sp.value
+			format "aimedDist: %\n" aimedDist 
+					
+			if startPt != undefined and scalerParent != undefined and aimedDist != 0 then
+			(
+				reelDist = float( distance startPt endPt)
+				-- aimedDist =  float(distance startSize endSize)
+				ratio = aimedDist/reelDist
+
+				startPt.parent = undefined
+				scalerParent.parent = scaler
+				
+				resizePlan scaler ratio
+-- 				scaler.scale = scaler.scale*ratio
+	-- 			startPt.scale = scaler.scale*ratio
+				scalerParent.parent = undefined
+				
+				scaler.scale = [1,1,1]
+				startPt.parent = scalerParent
+			)
+			else
+			(
+				format "correct your selection"
+			)
+		
 	)
 )
+
+
+
 
 /*
 try(closeRolloutFloater planResizerRF)catch()

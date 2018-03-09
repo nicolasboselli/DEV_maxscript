@@ -89,30 +89,24 @@ fn copyBmpIcons =
 	
 	-- determine les dossiers de destination
 	iconsRoot = (getdir #maxroot) + "\UI\Icons"
--- 	iconsRoot = ( (getFilenamePath (getMAXIniFile()))) + "ui\\usericons"
-	iconsRoot = (getdir #maxroot) + "usericons"
--- 	iconsRoot2 = ( (getFilenamePath (getMAXIniFile()))) + "usericons"
+	if not doesfileexist iconsRoot  then makedir iconsRoot all: true
 	
+	iconsRoot2 = (getdir #maxroot) + "usericons"
+	if not doesfileexist iconsRoot2  then makedir iconsRoot all: true
 	-- création du chemin de destination
 -- 	existence = getdirectories iconsRoot
 -- 	if existence.count == 0 then makedir iconsRoot all:true 
 	
-	if not doesfileexist iconsRoot then makedir iconsRoot all:true 
 	
 	-- make copy
 	for ic in iconsArray do
-	(
--- 		print icon
--- 		format "icon: %\n"  (iconsRoot + "\\"+ (filenameFromPath ic))
+	(		
+		local res = copyFile  ic (iconsRoot + "\\"+ (filenameFromPath ic))	
+		if res == true then format "copy in \"\UI\Icons\" done : %\n" ic
+		else format "copy in \"\UI\Icons\" fail: %\n" ic
 		
-		local res = copyFile  ic (iconsRoot + "\\"+ (filenameFromPath ic))
 		local res2 = copyFile  ic (iconsRoot2 + "\\"+ (filenameFromPath ic))
-		
-			
-		if res == true then format "copy in \"ui\\usericons\" done : %\n" ic
-		else format "copy in \"ui\\usericons\" fail: %\n" ic
-		
-		if res == true then format "copy in \"usericons\" done : %\n" ic
+		if res2 == true then format "copy in \"usericons\" done : %\n" ic
 		else format "copy in \"usericons\" fail: %\n" ic
 		
 	-- 	copyFile  icon iconsRoot 
