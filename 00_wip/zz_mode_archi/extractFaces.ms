@@ -19,7 +19,7 @@ fn extractFacesFN outVal shellVal objSel =
 	-- outline faces of new object
 	newNode = getnodebyname newName
 	select newNode
-
+	
 	polyop.setFaceSelection newNode #all
 	newNode.outlineAmount = outVal
 	newNode.EditablePoly.Outline ()
@@ -27,18 +27,20 @@ fn extractFacesFN outVal shellVal objSel =
 	-- add shell on object
 	myShell = Shell innerAmount:shellVal outerAmount:shellVal
 	addmodifier newNode myShell	
+	
+	newNode.material = undefined 
 
-	local appuiMat
-	-- material
-	if sceneMaterials["appui"] == undefined then
-	(
-		appuiMat = Standard name: "appui"
-	)
-	else
-	(
-		appuiMat = sceneMaterials["appui"]
-	)
-	newNode.material = appuiMat
+-- 	local appuiMat
+-- 	-- material
+-- 	if sceneMaterials["appui"] == undefined then
+-- 	(
+-- 		appuiMat = Standard name: "appui"
+-- 	)
+-- 	else
+-- 	(
+-- 		appuiMat = sceneMaterials["appui"]
+-- 	)
+-- 	newNode.material = appuiMat
 )
 
 
@@ -47,11 +49,9 @@ fn extractFacesFN outVal shellVal objSel =
 rollout extractFacesRLT "extract faces"
 (
 	-- 	vars
-	local maxIni = getMAXIniFile()
-	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
-	
--- 	local modeScriptFolder = getFilenamePath  (getThisScriptFilename() )
-	
+	local params = #("outSp", "shellSp")
+	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
+		
 	group "extraction"
 	(
 		spinner outSp "outline size" type: #worldunits range: [-1000, 1000, 0]
@@ -62,7 +62,7 @@ rollout extractFacesRLT "extract faces"
 	
 	on extractBT pressed do
 	(
-		sel = $selection as array
+		sel = selection as array
 		if sel.count == 1 do
 		(
 			extractFacesFN outSp.value shellSp.value sel 
@@ -71,25 +71,15 @@ rollout extractFacesRLT "extract faces"
 	
 	on extractFacesRLT open do
 	(
-		try 
-		(
-		outSp.value = 	(getINISetting armadasScriptsIni "extractFace" "outSp") as float
-		shellSp.value = 	(getINISetting armadasScriptsIni "extractFace" "shellSp" ) as float
-		)
-		catch
-		(
-			format "*** % ***\n" (getCurrentException())
-		)
+		loadRolloutParams extractFacesRLT Params
 	)
 	
 	on extractFacesRLT close do
 	(
-		-- maj ini file
-		setINISetting armadasScriptsIni "extractFace" "outSp" (outSp.value as string)
-		setINISetting armadasScriptsIni "extractFace" "shellSp" (shellSp.value as string)
-		print "maj ini done"
+		writeRolloutParams extractFacesRLT Params
 	)
 )
+
 
 createDialog extractFacesRLT
 

@@ -112,7 +112,6 @@ rollout boxerizeRLT "Boxerize"
 	(
 		button createFacesBT "create faces"
 		button resetpivotBT "reset Pivot"
-		
 	)
 	
 	group "eplode:"

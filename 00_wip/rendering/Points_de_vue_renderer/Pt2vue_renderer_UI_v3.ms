@@ -60,6 +60,8 @@ fn convertToVrCam s =
 try(destroyDialog Pt2vue_renderer_UI)catch()
 rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 (
+	local params = #("outputPath", "outputPathMaq")
+	
 	local maxIni = getMAXIniFile()
 	local armadasScriptsIni = (getFilenamePath maxIni) + "armadasScriptsIni.ini"
 	
@@ -75,10 +77,10 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	local stateSel
 	local stateSelAr = ()
 	
-	local outputPath
+	local outputPath = ""
 	local outputPathFolder
 	
-	local outputPathMaq
+	local outputPathMaq = ""
 	local outputPathMaqFolder
 	
 	local sceneCam = #()
@@ -90,17 +92,6 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	
 	local Pt2vueNode
 	
-	-- vars maquette materials
-	/*
-	local vr=renderers.current
-
-	local MatMaqDirt = VRayDirt radius: 100 occluded_color: (color 104 129 146) unoccluded_color: (color 230 230 230 )
-	local OverMatMaquette = VRayMtl name: "over_maquette" diffuse:  (color 230 230 230 ) texmap_diffuse: MatMaqDirt
-	
-	local AtmosVRtoon =  VrayToon widthtype: 1 color: (color 72 96 108)	opacity: 0.8 lineworld: 2
-
-	local OverMatVitre = VRayMtl name: "over_vitre" diffuse:  (color 92 175 196 ) 
-	*/
 -- 	vars bakup
 		
 	-- functions
@@ -279,9 +270,9 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	on Pt2vue_renderer_UI open do
 	(
 		camArray = collectCamFN ()
-		outputPath = getINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder"
-		outputPathMaq = getINISetting armadasScriptsIni "Pt2Vue" "outputPathMaqFolder"
-		-- ahouter une verification des chemins d'enregistrement
+		
+		loadRolloutParams Pt2vue_renderer_UI params
+		-- ajouter une verification des chemins d'enregistrement
 		
 		collectSceneStates()
 		
@@ -300,8 +291,7 @@ rollout Pt2vue_renderer_UI "Rendeur de points de vues" width: 500
 	(
 		if savepath.text != undefined do
 		(
-			setINISetting armadasScriptsIni "Pt2Vue" "outputPathFolder" 	outputPath
-			setINISetting armadasScriptsIni "Pt2Vue" "outputPathMaqFolder" 	outputPathMaq
+			writeRolloutParams Pt2vue_renderer_UI params
 		)
 	)
 	

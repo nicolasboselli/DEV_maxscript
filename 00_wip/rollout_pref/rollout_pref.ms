@@ -25,7 +25,7 @@ fn writeRolloutParams rlt params =
 			setINISetting armadasScriptsIni cat n  ((GetDialogSize rlt) as string)
 			format "name: size, value: %\n"  (GetDialogSize rlt)
 		)
-		else if n == "rootPlans" then
+		else if n == "rootPlans" or n == "outputPath" then
 		(
 -- 			format "getProperty % % : %\n" rlt n (getProperty  rlt n)
 			p = getProperty  rlt n
@@ -79,6 +79,9 @@ fn writeRolloutParams rlt params =
 -- fileProperties.findProperty #custom "rootPlans"
 -- fileProperties.getPropertyValue  #custom "rootPlans"
 
+filePref = #("rootPlans", "outputPath")
+
+
 fn loadRolloutParams rlt params =
 (
 	local armadasScriptsIni = (GetDir #maxData) + "armadasScriptsIni.ini"
@@ -115,6 +118,22 @@ fn loadRolloutParams rlt params =
 			)
 			setProperty  rlt n val
 		)
+		else if n == "outputPath" then
+		(
+			local val 
+			local testVal = fileProperties.findProperty #custom "outputPath"
+			if testVal > 0 then
+			(
+				val = fileProperties.getPropertyValue  #custom testVal
+				format "init with fileproperty name: % val: % \n" n val
+			)
+			else 
+			(
+				val = getINISetting armadasScriptsIni cat "outputPath"
+				format "init with root: %\n" val
+			)
+			setProperty  rlt n val
+		)
 		else
 		(
 			-- load controls properties
@@ -134,7 +153,6 @@ fn loadRolloutParams rlt params =
 				(
 					p.value = val as float
 				)
-				
 			)
 			else if classof p == Array then
 			(
@@ -164,7 +182,7 @@ fn loadRolloutParams rlt params =
 			(
 				-- load variable
 				local val = getINISetting armadasScriptsIni cat n 
-				format "__FAIL__ name: %, UNKNOWN value: %\n" n val
+				format "__FAIL__ name: %, value: %\n" n val
 			)
 		)
 	)	
