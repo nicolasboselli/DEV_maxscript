@@ -1,2 +1,0 @@
-freescenebitmaps  ()
-gc ()

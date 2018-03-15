@@ -1,2 +1,0 @@
--- copy/paste skin weight
-	--  sur une selection de points, transfere les influences d'un skin sur le skin en dessous

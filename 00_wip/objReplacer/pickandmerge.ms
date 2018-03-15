@@ -25,12 +25,7 @@ rollout PickNMergeRLT "Pick And Merge"
 	(
 		on mousePoint clickno do
 		(
-			format "clickno1: %\n"  clickno
-			mergeMAXFile maxToMerge mergedNodes: &mergedNodes
-			
-			sourceObj = point ()
-
-			for o in mergedNodes do o.parent = sourceObj
+-- 			format "############################### clickno1: %\n"  clickno
 			
 			local myRay = mapScreenToWorldRay viewPoint
 			local arr = intersectRayScene myRay
@@ -44,17 +39,19 @@ rollout PickNMergeRLT "Pick And Merge"
 			(				
 				for obj in arr do
 				(
-					for mn in mergedNodes do
+					local res = finditem mergedNodes obj[1]
+
+					if obj[1] != sourceObj  and  obj[1].ishidden == false and res == 0 do
 					(
-						if obj[1] != sourceObj and obj[1] != mn and obj[1].ishidden == false do
+					
+						tmpDist = distance viewPos obj[2].pos
+						
+						if tmpDist < nearestDist do
 						(
-							tmpDist = distance viewPos obj[2].pos
-							
-							if tmpDist < nearestDist do
-							(
-								nearestDist = tmpDist
-								goodRes = obj
-							)
+-- 									format "mn: %\n" mn.name
+							nearestDist = tmpDist
+							goodRes = obj
+-- 								format "obj: %\n" obj
 						)
 					)
 				)
@@ -69,12 +66,13 @@ rollout PickNMergeRLT "Pick And Merge"
 
 		on mouseMove clickno do
 		(
-			format "clickno2: %\n"  clickno
+-- 			format "############################ clickno2: %\n"  clickno
 			if lButton == true do
 			(
 				local myRay = mapScreenToWorldRay viewPoint
 
 				local arr = intersectRayScene myRay
+				format "arr: %\n" arr
 				
 				local viewMatrix =  Inverse(viewport.getTM())
 				local viewPos = viewMatrix.pos
@@ -85,14 +83,19 @@ rollout PickNMergeRLT "Pick And Merge"
 				(				
 					for obj in arr do
 					(
-						if obj[1] != sourceObj  and obj[1] != thebox and obj[1].ishidden == false do
+						local res = finditem mergedNodes obj[1]
+
+						if obj[1] != sourceObj  and  obj[1].ishidden == false and res == 0 do
 						(
+						
 							tmpDist = distance viewPos obj[2].pos
 							
 							if tmpDist < nearestDist do
 							(
+-- 									format "mn: %\n" mn.name
 								nearestDist = tmpDist
 								goodRes = obj
+-- 								format "obj: %\n" obj
 							)
 						)
 					)
@@ -111,8 +114,8 @@ rollout PickNMergeRLT "Pick And Merge"
 		
 		on mouseAbort clickno do
 		(
-			format "clickno3: %\n"  clickno
-			if isvalidnode sourceObj then delete sourceObj
+-- 			format "clickno3: %\n"  clickno
+-- 			if isvalidnode sourceObj then delete sourceObj
 		)
 	)
 	
@@ -176,6 +179,15 @@ rollout PickNMergeRLT "Pick And Merge"
 		local id = mergeListLB.selection
 		maxToMerge = objList[id]
 		format "maxToMerge: %\n" maxToMerge
+		mergeMAXFile maxToMerge #autoRenameDups mergedNodes: &mergedNodes  
+		format "format: %\n" mergedNodes
+		
+		sourceObj = point name: (uniquename((getFilenameFile maxToMerge) + "_CTRL"))
+		
+		local toParent = for m in  mergedNodes collect m
+		append toParent sourceObj
+		lastParent toParent
+		
 		
 		if state == true do
 		(

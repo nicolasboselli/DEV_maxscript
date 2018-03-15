@@ -1,3 +1,0 @@
--- decoupe etage
-	-- ajoute un slice 
-	-- aligne sur le repere de coupe

@@ -1,3 +1,0 @@
-sel = $ as array
-for s in sel:
-	var.wirecolor
